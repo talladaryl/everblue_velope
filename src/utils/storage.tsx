@@ -2,27 +2,41 @@ import { Template } from "@/types";
 
 const STORAGE_KEY = "everblue-templates";
 
-export const saveTemplate = (template: Template): void => {
-  const existing = getTemplates();
-  const updated = [...existing.filter((t) => t.id !== template.id), template];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-};
+export async function getTemplates() {
+  const raw = localStorage.getItem("everblue_templates");
+  return raw ? JSON.parse(raw) : [];
+}
 
-export const getTemplates = (): Template[] => {
-  if (typeof window === "undefined") return [];
+export async function saveTemplate(template: any) {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
+    const key = "everblue_templates";
+    const current = await getTemplates();
+    const updated = [
+      ...current.filter((t: any) => t.id !== template.id),
+      template,
+    ];
+    localStorage.setItem(key, JSON.stringify(updated));
+    return template;
+  } catch (err) {
+    console.error("saveTemplate error", err);
+    throw err;
   }
-};
+}
 
-export const deleteTemplate = (templateId: string): void => {
-  const existing = getTemplates();
-  const updated = existing.filter((t) => t.id !== templateId);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-};
+export async function removeTemplate(id: string) {
+  try {
+    const key = "everblue_templates";
+    const current = await getTemplates();
+    const updated = Array.isArray(current)
+      ? current.filter((t: any) => t.id !== id)
+      : [];
+    localStorage.setItem(key, JSON.stringify(updated));
+    return true;
+  } catch (err) {
+    console.error("removeTemplate error", err);
+    return false;
+  }
+}
 
 export const generateThumbnail = (template: Template): string => {
   // Cette fonction génère une miniature basique

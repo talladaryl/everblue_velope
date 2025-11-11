@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,13 +30,30 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Save, Download, Eye, Plus, Trash2, Palette, Home } from "lucide-react";
+import {
+  Save,
+  Download,
+  Eye,
+  Plus,
+  Trash2,
+  Palette,
+  Home,
+  Image as ImageIcon, // renamed to avoid colliding with window.Image
+  Type,
+} from "lucide-react";
 import Papa from "papaparse";
 import { nanoid } from "nanoid";
 import { cn } from "@/lib/utils";
 import EnvelopePreview from "./EnvelopePreview";
 import { Template } from "@/types";
-import { saveTemplate, generateThumbnail } from "@/utils/storage";
+import { saveTemplate, generateThumbnail, getTemplates } from "@/utils/storage";
+
+// Nouvelles importations demandées
+import { PAPER_THEMES } from "@/constants/paperThemes";
+import { TEXT_VARIABLES } from "@/constants/textVariables";
+import ImagePickerModal from "@/components/ImagePickerModal";
+import TextVariablesPanel from "@/components/TextVariablesPanel";
+import { PaperTheme, TextVariable } from "@/types";
 
 // Types
 interface EditorItemBase {
@@ -59,6 +76,8 @@ interface ImageItem extends EditorItemBase {
   src: string;
   width: number;
   height: number;
+  // optional flag if needed by modal
+  isBackground?: boolean;
 }
 
 type EditorItem = TextItem | ImageItem;
@@ -69,6 +88,10 @@ interface Guest {
   email: string;
   valid: boolean;
   message?: string;
+  // nouveaux champs demandés
+  location?: string;
+  date?: string;
+  time?: string;
 }
 interface Template {
   id: string;
@@ -78,7 +101,8 @@ interface Template {
   createdAt: Date;
 }
 
-type Step = 0 | 1 | 2; // 0: Design, 1: Details, 2: Send
+// Étapes maintenant 0..3 (Design, Détails, Prévisualisation, Envoi)
+type Step = 0 | 1 | 2 | 3;
 
 // Helpers
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -127,11 +151,14 @@ const defaultTemplates: Template[] = [
 
 export default function Builder() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState<Step>(0);
-  const [showPreview, setShowPreview] = useState(false);
 
   // Canvas state
   const [bgColor, setBgColor] = useState<string>("#F3F4F6");
+  // NEW: background image dataURL (if an image is set as background)
+  const [bgImage, setBgImage] = useState<string | null>(null);
+
   const [items, setItems] = useState<EditorItem[]>([initialText()]);
   const [selectedId, setSelectedId] = useState<string | null>(items[0].id);
   const [templates, setTemplates] = useState<Template[]>(defaultTemplates);
@@ -147,9 +174,20 @@ export default function Builder() {
   // Guests state
   const [guests, setGuests] = useState<Guest[]>([]);
 
+  // Count of valid emails (used in UI / buttons)
+  const validCount = guests.filter((g) => g.valid).length;
+
   // Send state
   const [sendMode, setSendMode] = useState<"all" | "personalize">("all");
 
+  // Nouveaux états demandés
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [showTextVariables, setShowTextVariables] = useState(false);
+  const [variableFilter, setVariableFilter] = useState(""); // small helper for variables panel visibility
+
+  // For preview: which guest to preview with
+  const [previewGuestId, setPreviewGuestId] = useState<string | null>(null);
+  // preview step is handled via `step === 2`
   const selected = useMemo(
     () => items.find((i) => i.id === selectedId) || null,
     [items, selectedId]
@@ -276,7 +314,7 @@ export default function Builder() {
 
       // Sauvegarder le template
       await saveTemplate(newTemplate);
-      
+
       toast("Modèle sauvegardé", {
         description: `"${name}" a été ajouté à vos modèles. Redirection vers l'accueil...`,
       });
@@ -285,19 +323,34 @@ export default function Builder() {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-
     } catch (err) {
       console.error("Erreur lors de la sauvegarde:", err);
-      toast("Erreur", { 
-        description: "Impossible de sauvegarder le modèle." 
+      toast("Erreur", {
+        description: "Impossible de sauvegarder le modèle.",
       });
     }
   };
 
   const loadTemplate = (template: Template) => {
-    setBgColor(template.bgColor);
-    setItems(JSON.parse(JSON.stringify(template.items)));
-    setSelectedId(template.items[0]?.id || null);
+    if (
+      typeof template.bgColor === "string" &&
+      template.bgColor.startsWith("url(")
+    ) {
+      // extrait le contenu entre url(...)
+      const match = template.bgColor.match(/^url\((.*)\)$/);
+      if (match) {
+        const url = match[1].replace(/^['"]|['"]$/g, "");
+        setBgImage(url);
+      } else {
+        setBgColor(template.bgColor);
+        setBgImage(null);
+      }
+    } else {
+      setBgColor(template.bgColor);
+      setBgImage(null);
+    }
+    setItems(JSON.parse(JSON.stringify(template.items || [])));
+    setSelectedId(template.items?.[0]?.id || null);
     toast("Modèle chargé", { description: `"${template.name}" appliqué.` });
   };
 
@@ -313,24 +366,65 @@ export default function Builder() {
     setSelectedId(t.id);
   };
 
-  const addImage = (file: File) => {
+  // Modifiée pour supporter le background image et l'image normale
+  const addImage = (file: File, isBackground: boolean = false) => {
     const reader = new FileReader();
     reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const item: ImageItem = {
-          id: nanoid(),
-          type: "image",
-          x: 80,
-          y: 80,
-          src: String(reader.result),
-          width: Math.min(260, img.width),
-          height: Math.min(180, img.height),
-        };
-        setItems((prev) => [...prev, item]);
-        setSelectedId(item.id);
+      // use global Image constructor (not the icon)
+      const imgEl = new window.Image();
+      imgEl.onload = () => {
+        if (isBackground) {
+          // set image as background
+          setBgImage(String(reader.result));
+        } else {
+          const item: ImageItem = {
+            id: nanoid(),
+            type: "image",
+            x: 80,
+            y: 80,
+            src: String(reader.result),
+            width: Math.min(260, imgEl.width),
+            height: Math.min(180, imgEl.height),
+            isBackground: false,
+          };
+          setItems((prev) => [...prev, item]);
+          setSelectedId(item.id);
+        }
       };
-      img.src = String(reader.result);
+      imgEl.onerror = (err) => {
+        console.error("Erreur chargement image:", err);
+        toast("Erreur image", {
+          description: "Impossible de lire le fichier image.",
+        });
+      };
+      imgEl.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Replace image src for an existing image item
+  const replaceImage = (file: File, id: string) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imgEl = new window.Image();
+      imgEl.onload = () => {
+        setItems((prev) =>
+          prev.map((it) =>
+            it.id === id && it.type === "image"
+              ? ({
+                  ...(it as ImageItem),
+                  src: String(reader.result),
+                  width: Math.min(800, imgEl.width),
+                  height: Math.min(800, imgEl.height),
+                } as ImageItem)
+              : it
+          )
+        );
+      };
+      imgEl.onerror = () => {
+        toast("Erreur image", { description: "Fichier image invalide." });
+      };
+      imgEl.src = String(reader.result);
     };
     reader.readAsDataURL(file);
   };
@@ -341,7 +435,7 @@ export default function Builder() {
     setSelectedId(null);
   };
 
-  // Guests import
+  // Guests import - extended to parse location/date/time if present
   const handleCSV = (file: File) => {
     Papa.parse(file, {
       header: true,
@@ -351,7 +445,20 @@ export default function Builder() {
         const parsed: Guest[] = rows.map((r) => {
           const name = String(r.name || r.nom || r.Nom || "").trim();
           const email = String(r.email || r.Email || r.mail || "").trim();
-          return { id: nanoid(), name, email, valid: emailRegex.test(email) };
+          const locationField = String(
+            r.location || r.lieu || r.adresse || ""
+          ).trim();
+          const dateField = String(r.date || r.Date || "").trim();
+          const timeField = String(r.time || r.heure || r.Heure || "").trim();
+          return {
+            id: nanoid(),
+            name,
+            email,
+            valid: emailRegex.test(email),
+            location: locationField || undefined,
+            date: dateField || undefined,
+            time: timeField || undefined,
+          };
         });
         setGuests(parsed);
         setStep(1 as Step);
@@ -362,12 +469,103 @@ export default function Builder() {
     });
   };
 
-  const validCount = guests.filter((g) => g.valid).length;
+  // when adding manual guest include new fields
+  const addGuest = () =>
+    setGuests((g) => [
+      ...g,
+      {
+        id: nanoid(),
+        name: "Invité",
+        email: "email@example.com",
+        valid: true,
+        location: "",
+        date: "",
+        time: "",
+      },
+    ]);
+
+  // Nouvelle fonction pour appliquer un thème de papier (peut être image ou couleur)
+  const applyPaperTheme = (theme: PaperTheme) => {
+    if (theme.type === "image" && theme.value) {
+      // si le thème contient une image url/data, on l'applique comme bgImage
+      setBgImage(theme.value);
+    } else {
+      setBgColor(theme.value);
+      setBgImage(null);
+    }
+  };
+
+  // Nouvelle fonction pour insérer des variables dans le texte
+  const handleInsertVariable = (variable: string) => {
+    if (selected && selected.type === "text") {
+      const textItem = selected as TextItem;
+      const newText = textItem.text + variable;
+
+      setItems((prev) =>
+        prev.map((p) =>
+          p.id === selectedId
+            ? ({
+                ...(p as TextItem),
+                text: newText,
+              } as EditorItem)
+            : p
+        )
+      );
+    }
+  };
+
+  // helper: replace variable tokens in text using guest object (ajout lieu/date/heure)
+  const replaceVariables = (text: string, guest?: Guest) => {
+    if (!guest) return text;
+    return text.replace(
+      /{{\s*([\w]+)\s*}}|{\s*([\w]+)\s*}|%([\w]+)%/g,
+      (_m, g1, g2, g3) => {
+        const key = (g1 || g2 || g3 || "").toLowerCase();
+        if (!key) return "";
+        if (["name", "nom", "fullname"].includes(key)) return guest.name || "";
+        if (["email", "mail"].includes(key)) return guest.email || "";
+        if (["location", "lieu", "adresse"].includes(key))
+          return guest.location || "";
+        if (["date"].includes(key)) return guest.date || "";
+        if (["time", "heure", "horaire"].includes(key)) return guest.time || "";
+        // fallback to any property on guest
+        // @ts-ignore
+        return guest[key] ?? "";
+      }
+    );
+  };
+
+  useEffect(() => {
+    // si URL contient ?template=ID on charge le template (search dans default + saved)
+    const params = new URLSearchParams(location.search);
+    const tid = params.get("template");
+    if (!tid) return;
+    (async () => {
+      try {
+        // chercher dans templates par défaut
+        const foundDefault = defaultTemplates.find((t) => t.id === tid);
+        if (foundDefault) {
+          loadTemplate(foundDefault);
+          return;
+        }
+        // chercher dans saved templates via utilitaire
+        const saved = (await Promise.resolve(getTemplates())) || [];
+        const foundSaved = Array.isArray(saved)
+          ? saved.find((t: any) => t.id === tid)
+          : undefined;
+        if (foundSaved) {
+          loadTemplate(foundSaved);
+        }
+      } catch (err) {
+        console.error("Erreur chargement template depuis URL:", err);
+      }
+    })();
+  }, [location.search]);
 
   // Render helpers
   const StepNav = () => (
     <div className="flex items-center gap-4">
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3].map((i) => (
         <button
           key={i}
           onClick={() => setStep(i as Step)}
@@ -388,7 +586,8 @@ export default function Builder() {
           </span>
           {i === 0 && "Design"}
           {i === 1 && "Détails"}
-          {i === 2 && "Envoi"}
+          {i === 2 && "Prévisualisation"}
+          {i === 3 && "Envoi"}
         </button>
       ))}
     </div>
@@ -409,7 +608,7 @@ export default function Builder() {
               <Home className="h-4 w-4" />
               Accueil
             </Button>
-            
+
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                 Builder d'invitations
@@ -424,9 +623,9 @@ export default function Builder() {
       </header>
 
       <main className="container py-6">
-        {/* Step 1: Design */}
+        {/* Step 0: Design */}
         {step === 0 && (
-          <div className="grid lg:grid-cols-[1fr_400px] gap-8 animate-enter">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 animate-enter">
             <div className="space-y-6">
               <Card>
                 <CardHeader className="pb-4">
@@ -448,10 +647,14 @@ export default function Builder() {
                         id="bg"
                         type="color"
                         value={bgColor}
-                        onChange={(e) => setBgColor(e.target.value)}
+                        onChange={(e) => {
+                          setBgColor(e.target.value);
+                          setBgImage(null);
+                        }}
                         className="h-8 w-8 rounded-md border bg-card cursor-pointer"
                       />
                     </div>
+
                     <Button
                       variant="outline"
                       onClick={addText}
@@ -460,23 +663,28 @@ export default function Builder() {
                       <Plus className="h-4 w-4" />
                       Texte
                     </Button>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) =>
-                          e.target.files && addImage(e.target.files[0])
-                        }
-                      />
-                      <span className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border hover:bg-accent transition-colors">
-                        <Plus className="h-4 w-4" />
-                        Image
-                      </span>
-                    </label>
+
                     <Button
                       variant="outline"
-                      onClick={() => setShowPreview(true)}
+                      onClick={() => setShowImagePicker(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      Image
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowTextVariables(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Type className="h-4 w-4" />
+                      Variables
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => setStep(2)}
                       className="flex items-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
@@ -488,8 +696,14 @@ export default function Builder() {
                     ref={canvasRef}
                     onMouseMove={onMouseMove}
                     onMouseUp={onMouseUp}
-                    className="relative w-full max-w-3xl aspect-[16/9] rounded-xl border-2 border-dashed border-border bg-muted shadow-lg overflow-hidden"
-                    style={{ background: bgColor }}
+                    className="relative w-full max-w-full lg:max-w-3xl aspect-[16/9] rounded-xl border-2 border-dashed border-border bg-muted shadow-lg overflow-hidden"
+                    style={{
+                      // use bgImage if present else bgColor
+                      background: bgImage
+                        ? `url(${bgImage}) center/cover`
+                        : bgColor,
+                      backgroundSize: "cover",
+                    }}
                   >
                     {items.map((it) => (
                       <div
@@ -519,7 +733,7 @@ export default function Builder() {
                                 )
                               )
                             }
-                            className="outline-none min-w-[80px]"
+                            className="outline-none min-w-[80px] bg-white/80 backdrop-blur-sm rounded px-2 py-1"
                             style={{
                               color: (it as TextItem).color,
                               letterSpacing:
@@ -613,7 +827,10 @@ export default function Builder() {
                     ))}
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Button onClick={handleSaveTemplate} className="flex items-center gap-2">
+                    <Button
+                      onClick={handleSaveTemplate}
+                      className="flex items-center gap-2"
+                    >
                       <Save className="h-4 w-4" />
                       Sauvegarder ce modèle
                     </Button>
@@ -631,7 +848,38 @@ export default function Builder() {
 
             {/* Properties Panel */}
             <div className="space-y-6">
-              <Card className="sticky top-6">
+              {/* Déplacer le panel des variables en haut de la sidebar */}
+              {showTextVariables && (
+                <Card className="lg:sticky lg:top-6">
+                  <CardHeader>
+                    <CardTitle>Variables de texte</CardTitle>
+                    <CardDescription>
+                      Cliquez pour insérer une variable dans le texte. Utilisez
+                      la recherche pour trouver rapidement.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Input
+                      placeholder="Rechercher une variable..."
+                      value={variableFilter}
+                      onChange={(e) => setVariableFilter(e.target.value)}
+                      aria-label="Rechercher une variable"
+                      className="mb-2"
+                    />
+                    <div className="space-y-2 max-h-56 overflow-auto">
+                      {/* If TextVariablesPanel supports props for filtering, pass it.
+                          Otherwise keep existing component for listing. */}
+                      <TextVariablesPanel
+                        onInsertVariable={handleInsertVariable}
+                        // @ts-ignore: optional filter prop if panel supports it
+                        variableFilter={variableFilter}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="lg:sticky lg:top-6">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg">Propriétés</CardTitle>
                 </CardHeader>
@@ -805,6 +1053,92 @@ export default function Builder() {
                     </>
                   )}
 
+                  {/* Image properties */}
+                  {selected && selected.type === "image" && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm w-20">Largeur</Label>
+                        <Input
+                          type="number"
+                          value={(selected as ImageItem).width}
+                          onChange={(e) =>
+                            setItems((prev) =>
+                              prev.map((p) =>
+                                p.id === selectedId
+                                  ? ({
+                                      ...(p as ImageItem),
+                                      width: Number(e.target.value),
+                                    } as EditorItem)
+                                  : p
+                              )
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm w-20">Hauteur</Label>
+                        <Input
+                          type="number"
+                          value={(selected as ImageItem).height}
+                          onChange={(e) =>
+                            setItems((prev) =>
+                              prev.map((p) =>
+                                p.id === selectedId
+                                  ? ({
+                                      ...(p as ImageItem),
+                                      height: Number(e.target.value),
+                                    } as EditorItem)
+                                  : p
+                              )
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f && selectedId) replaceImage(f, selectedId);
+                            }}
+                          />
+                          <span className="px-3 py-2 rounded border bg-card">
+                            Remplacer l'image
+                          </span>
+                        </label>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (selected && selected.type === "image") {
+                              setBgImage((selected as ImageItem).src);
+                              toast("Fond mis à jour", {
+                                description: "L'image est définie comme fond.",
+                              });
+                            }
+                          }}
+                        >
+                          Définir comme fond
+                        </Button>
+                      </div>
+                      <div className="pt-2 flex gap-2">
+                        <Button
+                          variant="destructive"
+                          onClick={removeSelected}
+                          className="flex-1"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Supprimer
+                        </Button>
+                        <Button onClick={() => setStep(1)} className="flex-1">
+                          Continuer →
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   {!selected && (
                     <div className="text-center py-8 text-muted-foreground">
                       <div className="rounded-full bg-muted p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
@@ -817,11 +1151,18 @@ export default function Builder() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Si l'utilisateur veut insérer des variables */}
+              {showTextVariables && (
+                <div>
+                  <TextVariablesPanel onInsertVariable={handleInsertVariable} />
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Steps 2 and 3 remain similar but with improved styling */}
+        {/* Step 1: Détails (guests) */}
         {step === 1 && (
           <div className="max-w-4xl mx-auto space-y-6 animate-enter">
             <Card>
@@ -859,20 +1200,7 @@ export default function Builder() {
                         Importer CSV
                       </span>
                     </label>
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        setGuests((g) => [
-                          ...g,
-                          {
-                            id: nanoid(),
-                            name: "Invité",
-                            email: "email@example.com",
-                            valid: true,
-                          },
-                        ])
-                      }
-                    >
+                    <Button variant="outline" onClick={addGuest}>
                       <Plus className="h-4 w-4 mr-2" />
                       Ajouter
                     </Button>
@@ -885,6 +1213,9 @@ export default function Builder() {
                       <TableRow>
                         <TableHead>Nom</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Lieu</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Heure</TableHead>
                         <TableHead>Statut</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -926,6 +1257,48 @@ export default function Builder() {
                             />
                           </TableCell>
                           <TableCell>
+                            <Input
+                              value={g.location || ""}
+                              onChange={(e) =>
+                                setGuests((prev) =>
+                                  prev.map((p) =>
+                                    p.id === g.id
+                                      ? { ...p, location: e.target.value }
+                                      : p
+                                  )
+                                )
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={g.date || ""}
+                              onChange={(e) =>
+                                setGuests((prev) =>
+                                  prev.map((p) =>
+                                    p.id === g.id
+                                      ? { ...p, date: e.target.value }
+                                      : p
+                                  )
+                                )
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={g.time || ""}
+                              onChange={(e) =>
+                                setGuests((prev) =>
+                                  prev.map((p) =>
+                                    p.id === g.id
+                                      ? { ...p, time: e.target.value }
+                                      : p
+                                  )
+                                )
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
                             <Badge
                               variant={g.valid ? "default" : "destructive"}
                             >
@@ -942,19 +1315,104 @@ export default function Builder() {
                   <Button variant="outline" onClick={() => setStep(0)}>
                     ← Retour
                   </Button>
-                  <Button
-                    onClick={() => setStep(2)}
-                    disabled={!guests.length || !validCount}
-                  >
-                    Continuer →
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={addGuest}>
+                      Ajouter invité
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (guests.length && !previewGuestId) {
+                          setPreviewGuestId(guests[0].id);
+                        }
+                        setStep(2);
+                      }}
+                      disabled={!guests.length || !validCount}
+                    >
+                      Continuer → (Prévisualisation)
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
 
+        {/* Step 2: Prévisualisation */}
         {step === 2 && (
+          <div className="max-w-4xl mx-auto space-y-6 animate-enter">
+            <Card>
+              <CardHeader>
+                <CardTitle>Prévisualisation</CardTitle>
+                <CardDescription>
+                  Voir l'invitation telle qu'elle arrivera chez l'invité (les
+                  variables sont remplacées)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-4 gap-4">
+                  <div className="flex items-center gap-3">
+                    <Label className="text-sm">Aperçu pour :</Label>
+                    <Select
+                      value={previewGuestId ?? ""}
+                      onValueChange={(val) => setPreviewGuestId(val || null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un invité" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {guests.map((g) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            {g.name} — {g.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setStep(1)}>
+                      ← Retour
+                    </Button>
+                    <Button onClick={() => setStep(3)}>
+                      Continuer → Envoi
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Prepare items with variables replaced */}
+                {(() => {
+                  const guest =
+                    guests.find((g) => g.id === previewGuestId) ?? guests[0];
+                  const previewItems = items.map((it) =>
+                    it.type === "text"
+                      ? ({
+                          ...(it as TextItem),
+                          text: replaceVariables((it as TextItem).text, guest),
+                        } as TextItem)
+                      : it
+                  );
+                  // pass bgImage if present else bgColor
+                  const previewBg = bgImage ? `url(${bgImage})` : bgColor;
+                  return (
+                    <div className="flex justify-center">
+                      <div className="w-full max-w-3xl">
+                        <EnvelopePreview
+                          items={previewItems}
+                          bgColor={previewBg}
+                          // keep same prop name onClose for compatibility; here we go back to details
+                          onClose={() => setStep(1)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Step 3: Envoi */}
+        {step === 3 && (
           <div className="max-w-4xl mx-auto space-y-6 animate-enter">
             <Card>
               <CardHeader>
@@ -1040,10 +1498,11 @@ export default function Builder() {
                           Sauvegarder ce design comme modèle
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Ce modèle sera disponible dans votre galerie pour de futures invitations
+                          Ce modèle sera disponible dans votre galerie pour de
+                          futures invitations
                         </p>
                       </div>
-                      <Button 
+                      <Button
                         onClick={handleSaveAndGoHome}
                         className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                       >
@@ -1055,7 +1514,7 @@ export default function Builder() {
                 </Card>
 
                 <div className="flex gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setStep(1)}>
+                  <Button variant="outline" onClick={() => setStep(2)}>
                     ← Retour
                   </Button>
                   <Button
@@ -1073,8 +1532,6 @@ export default function Builder() {
                       toast("Invitations envoyées", {
                         description: `${validCount} emails en file d'envoi.`,
                       });
-                      // Optionnel: rediriger après envoi
-                      // setTimeout(() => navigate("/"), 2000);
                     }}
                   >
                     Envoyer maintenant
@@ -1093,12 +1550,34 @@ export default function Builder() {
         )}
       </main>
 
-      {/* Preview Modal */}
-      {showPreview && (
-        <EnvelopePreview
-          items={items}
-          bgColor={bgColor}
-          onClose={() => setShowPreview(false)}
+      {/* ImagePicker Modal */}
+      {showImagePicker && (
+        <ImagePickerModal
+          isOpen={showImagePicker}
+          onClose={() => setShowImagePicker(false)}
+          onSelectImage={(file: File) => {
+            // ajoute comme image normale
+            addImage(file, false);
+            setShowImagePicker(false);
+          }}
+          onSelectTheme={(theme: PaperTheme) => {
+            applyPaperTheme(theme);
+            setShowImagePicker(false);
+          }}
+          onSetAsBackground={(fileOrFlag: File | boolean) => {
+            if (fileOrFlag instanceof File) {
+              addImage(fileOrFlag, true);
+            }
+          }}
+        />
+      )}
+
+      {/* Text variables panel */}
+      {showTextVariables && (
+        <TextVariablesPanel
+          isOpen={showTextVariables}
+          onClose={() => setShowTextVariables(false)}
+          onInsertVariable={handleInsertVariable}
         />
       )}
     </div>

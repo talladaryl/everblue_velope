@@ -35,3 +35,36 @@ export interface Template {
   thumbnail?: string;
   isCustom?: boolean;
 }
+
+// Ajoutez ces types à votre fichier existant
+export interface PaperTheme {
+  id: string;
+  name: string;
+  type: 'color' | 'gradient' | 'texture' | 'pattern';
+  value: string;
+  category: 'mariage' | 'anniversaire' | 'bapteme' | 'entreprise' | 'autre';
+  thumbnail: string;
+}
+
+export interface EnvelopeStyle {
+  id: string;
+  name: string;
+  component: React.ComponentType<EnvelopePreviewProps>;
+  thumbnail: string;
+}
+
+export interface ImageItem extends EditorItemBase {
+  type: "image";
+  src: string;
+  width: number;
+  height: number;
+  isBackground?: boolean;
+  opacity?: number;
+}
+
+// Variable pour les noms
+export interface TextVariable {
+  key: string;
+  label: string;
+  defaultValue: string;
+}
