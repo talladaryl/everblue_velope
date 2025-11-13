@@ -55,6 +55,7 @@ import ImagePickerModal from "@/components/ImagePickerModal";
 import TextVariablesPanel from "@/components/TextVariablesPanel";
 import { PaperTheme, TextVariable } from "@/types";
 
+
 // Types
 interface EditorItemBase {
   id: string;
@@ -96,9 +97,14 @@ interface Guest {
 interface Template {
   id: string;
   name: string;
+  description?: string;
   bgColor: string;
+  bgImage?: string | null; // <- added
   items: EditorItem[];
   createdAt: Date;
+  palette?: string[];
+  isCustom?: boolean;
+  thumbnail?: string;
 }
 
 // Étapes maintenant 0..3 (Design, Détails, Prévisualisation, Envoi)
@@ -251,6 +257,7 @@ export default function Builder() {
       name,
       description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
       bgColor,
+      bgImage: bgImage ?? null, // persist background image
       items: JSON.parse(JSON.stringify(items)),
       createdAt: new Date(),
       palette,
@@ -306,6 +313,7 @@ export default function Builder() {
         name,
         description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
         bgColor,
+        bgImage: bgImage ?? null,
         items: JSON.parse(JSON.stringify(items)),
         createdAt: new Date(),
         palette,
@@ -332,6 +340,12 @@ export default function Builder() {
   };
 
   const loadTemplate = (template: Template) => {
+    // if template has explicit bgImage, use it
+    if (template.bgImage) {
+      setBgImage(template.bgImage);
+    } else {
+      setBgImage(null);
+    }
     if (
       typeof template.bgColor === "string" &&
       template.bgColor.startsWith("url(")
@@ -343,11 +357,11 @@ export default function Builder() {
         setBgImage(url);
       } else {
         setBgColor(template.bgColor);
-        setBgImage(null);
+        // keep previously set bgImage (if any) or clear
       }
     } else {
       setBgColor(template.bgColor);
-      setBgImage(null);
+      // bgImage already set above if present
     }
     setItems(JSON.parse(JSON.stringify(template.items || [])));
     setSelectedId(template.items?.[0]?.id || null);
@@ -563,35 +577,33 @@ export default function Builder() {
   }, [location.search]);
 
   // Render helpers
-  const StepNav = () => (
-    <div className="flex items-center gap-4">
-      {[0, 1, 2, 3].map((i) => (
-        <button
-          key={i}
-          onClick={() => setStep(i as Step)}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200",
-            step === i
-              ? "bg-primary text-primary-foreground shadow-md border-primary"
-              : "bg-card hover:bg-accent hover:shadow-sm border-border"
-          )}
-        >
-          <span
+  // Steps as underline-only tabs, horizontally scrollable on small screens
+  const StepNav = () => {
+    const labels = ["Design", "Détails", "Prévisualisation", "Envoi"];
+    return (
+      <nav
+        aria-label="Étapes"
+        className="flex gap-3 overflow-x-auto px-1 py-1 lg:px-0 no-scrollbar"
+      >
+        {labels.map((label, i) => (
+          <button
+            key={label}
+            onClick={() => setStep(i as Step)}
             className={cn(
-              "inline-flex h-6 w-6 items-center justify-center rounded-full border text-sm font-medium",
-              step === i ? "border-primary-foreground" : "border-border"
+              "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 transition-colors",
+              step === i
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-gray-700"
             )}
+            aria-current={step === i ? "step" : undefined}
           >
-            {i + 1}
-          </span>
-          {i === 0 && "Design"}
-          {i === 1 && "Détails"}
-          {i === 2 && "Prévisualisation"}
-          {i === 3 && "Envoi"}
-        </button>
-      ))}
-    </div>
-  );
+            <span className="hidden sm:inline mr-2">{i + 1}.</span>
+            {label}
+          </button>
+        ))}
+      </nav>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -675,7 +687,7 @@ export default function Builder() {
 
                     <Button
                       variant="outline"
-                      onClick={() => setShowTextVariables(true)}
+                      onClick={() => setShowTextVariables((s) => !s)} // toggle (show only side panel)
                       className="flex items-center gap-2"
                     >
                       <Type className="h-4 w-4" />
@@ -1153,11 +1165,6 @@ export default function Builder() {
               </Card>
 
               {/* Si l'utilisateur veut insérer des variables */}
-              {showTextVariables && (
-                <div>
-                  <TextVariablesPanel onInsertVariable={handleInsertVariable} />
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -1573,13 +1580,13 @@ export default function Builder() {
       )}
 
       {/* Text variables panel */}
-      {showTextVariables && (
+      {/* {showTextVariables && (
         <TextVariablesPanel
           isOpen={showTextVariables}
           onClose={() => setShowTextVariables(false)}
           onInsertVariable={handleInsertVariable}
         />
-      )}
+      )} */}
     </div>
   );
 }
