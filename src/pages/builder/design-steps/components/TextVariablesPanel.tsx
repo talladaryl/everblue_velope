@@ -1,13 +1,19 @@
-// components/TextVariablesPanel.tsx
+// src/pages/builder/components/TextVariablesPanel.tsx
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, Eye, Copy } from "lucide-react";
 
-export function TextVariablesPanel({ ctx, onClose }: { ctx: any; onClose: () => void }) {
+export function TextVariablesPanel({
+  ctx,
+  onClose,
+}: {
+  ctx: any;
+  onClose: () => void;
+}) {
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   const textVariables = ctx.textVariables || [
     {
       name: "Prénom",
@@ -17,10 +23,26 @@ export function TextVariablesPanel({ ctx, onClose }: { ctx: any; onClose: () => 
     { name: "Nom", token: "{{last_name}}", description: "Nom du destinataire" },
     { name: "Email", token: "{{email}}", description: "Adresse email" },
     { name: "RSVP", token: "{{rsvp_url}}", description: "Lien RSVP" },
-    { name: "Événement", token: "{{event_name}}", description: "Nom de l'événement" },
-    { name: "Date", token: "{{event_date}}", description: "Date de l'événement" },
-    { name: "Lieu", token: "{{event_location}}", description: "Lieu de l'événement" },
-    { name: "Heure", token: "{{event_time}}", description: "Heure de l'événement" },
+    {
+      name: "Événement",
+      token: "{{event_name}}",
+      description: "Nom de l'événement",
+    },
+    {
+      name: "Date",
+      token: "{{event_date}}",
+      description: "Date de l'événement",
+    },
+    {
+      name: "Lieu",
+      token: "{{event_location}}",
+      description: "Lieu de l'événement",
+    },
+    {
+      name: "Heure",
+      token: "{{event_time}}",
+      description: "Heure de l'événement",
+    },
   ];
 
   const filteredVariables = textVariables.filter((v: any) =>
@@ -62,6 +84,7 @@ export function TextVariablesPanel({ ctx, onClose }: { ctx: any; onClose: () => 
         ctx.setSelectedId(newItem.id);
       }
     }
+    onClose();
   };
 
   const previewVariable = (variable: any) => {
@@ -109,30 +132,32 @@ export function TextVariablesPanel({ ctx, onClose }: { ctx: any; onClose: () => 
                   Insérer
                 </Button>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <code className="text-xs bg-muted px-2 py-1 rounded">
                   {variable.token}
                 </code>
-                
+
                 <div className="flex gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
                       navigator.clipboard.writeText(variable.token);
-                      ctx.toast?.("Copié!", { description: "Token copié dans le presse-papier" });
+                      ctx.toast?.("Copié!", {
+                        description: "Token copié dans le presse-papier",
+                      });
                     }}
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      ctx.toast?.(variable.name, { 
-                        description: `Aperçu: ${previewVariable(variable)}` 
+                      ctx.toast?.(variable.name, {
+                        description: `Aperçu: ${previewVariable(variable)}`,
                       });
                     }}
                   >
@@ -151,7 +176,10 @@ export function TextVariablesPanel({ ctx, onClose }: { ctx: any; onClose: () => 
         </div>
 
         <div className="text-xs text-muted-foreground">
-          <p>Les variables seront remplacées par les vraies valeurs dans l'étape suivante</p>
+          <p>
+            Les variables seront remplacées par les vraies valeurs dans l'étape
+            suivante
+          </p>
         </div>
       </CardContent>
     </Card>

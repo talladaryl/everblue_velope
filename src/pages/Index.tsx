@@ -274,7 +274,7 @@ export default function IndexPage() {
             </div>
 
             <Button
-              onClick={() => navigate("/builder")}
+              onClick={() => navigate("/builder/")}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transition-all duration-300 whitespace-nowrap text-sm"
               size="sm"
             >
