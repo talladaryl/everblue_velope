@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Index from "./pages/Index";
+import HomePage from "./pages/HomePage";
+
 import NotFound from "./pages/NotFound";
 import Builder from "./pages/Builder";
 // optional stub pages (create files if not present)
@@ -26,7 +28,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="designs" replace />} />
-            <Route path="designs" element={<Index />} />
+            <Route path="designs" element={<HomePage />} />
             <Route path="builder" element={<Builder />} />
             <Route path="messages" element={<Messages />} />
             <Route path="events" element={<Events />} />
