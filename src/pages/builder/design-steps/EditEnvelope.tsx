@@ -181,7 +181,7 @@ export function EditEnvelope({ ctx }: { ctx: any }) {
           <TabsTrigger value="finish">Finition</TabsTrigger>
         </TabsList>
 
-        <div className="flex-1">
+        <div className="flex-1">          
           <TabsContent value="style">
             {/* Style de l'enveloppe */}
             <div>

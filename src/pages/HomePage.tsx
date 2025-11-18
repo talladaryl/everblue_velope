@@ -186,7 +186,7 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [customTemplates, setCustomTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDesign, setSelectedDesign] = useState<Template | null>(null);
+  const [editCard, seteditCard] = useState<Template | null>(null);
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [cardColors, setCardColors] = useState<Record<string, string>>({});
@@ -262,13 +262,13 @@ export default function HomePage() {
   };
 
   const openDesignModal = (design: Template) => {
-    setSelectedDesign(design);
+    seteditCard(design);
     setSelectedColor(design.colors?.[0] || cardColors[design.id] || "#000000");
     setCurrentSlide(allDesigns.findIndex((d) => d.id === design.id));
   };
 
   const closeDesignModal = () => {
-    setSelectedDesign(null);
+    seteditCard(null);
     setSelectedColor("");
   };
 
@@ -282,7 +282,7 @@ export default function HomePage() {
     setCurrentSlide(newIndex);
     const newDesign = allDesigns[newIndex];
     if (newDesign) {
-      setSelectedDesign(newDesign);
+      seteditCard(newDesign);
       setSelectedColor(
         newDesign.colors?.[0] || cardColors[newDesign.id] || "#000000"
       );
@@ -290,7 +290,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (!selectedDesign) return;
+    if (!editCard) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         navigateSlide("prev");
@@ -302,7 +302,7 @@ export default function HomePage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedDesign, currentSlide, allDesigns]);
+  }, [editCard, currentSlide, allDesigns]);
 
   // Animation de prévisualisation
   const playPreview = (design?: Template | null) => {
@@ -382,11 +382,11 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (!selectedDesign && previewTl.current) {
+    if (!editCard && previewTl.current) {
       previewTl.current.kill();
       previewTl.current = null;
     }
-  }, [selectedDesign]);
+  }, [editCard]);
 
   const SkeletonGrid = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -980,12 +980,12 @@ export default function HomePage() {
       </main>
 
       {/* Modal de visualisation amélioré */}
-      <Dialog open={!!selectedDesign} onOpenChange={closeDesignModal}>
+      <Dialog open={!!editCard} onOpenChange={closeDesignModal}>
         <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-hidden rounded-3xl p-0 border-0 shadow-2xl">
           <DialogHeader className="p-6 border-b bg-gradient-to-r from-slate-50 to-blue-50">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl font-bold text-gray-900">
-                {selectedDesign?.name}
+                {editCard?.name}
               </DialogTitle>
               <Button
                 variant="ghost"
@@ -1008,7 +1008,7 @@ export default function HomePage() {
                     className="w-full h-full flex items-center justify-center"
                   >
                     <DesignPreview
-                      design={selectedDesign}
+                      design={editCard}
                       colorOverride={selectedColor || undefined}
                       isModal
                     />
@@ -1029,7 +1029,7 @@ export default function HomePage() {
                   </Button>
 
                   <Button
-                    onClick={() => playPreview(selectedDesign)}
+                    onClick={() => playPreview(editCard)}
                     className="flex items-center gap-2 rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all"
                   >
                     <Eye className="h-4 w-4" />
@@ -1069,7 +1069,7 @@ export default function HomePage() {
                         Couleur principale
                       </h4>
                       <div className="flex flex-wrap gap-3">
-                        {selectedDesign?.colors?.map((color, index) => (
+                        {editCard?.colors?.map((color, index) => (
                           <button
                             key={index}
                             className={`w-10 h-10 rounded-xl border-3 transition-all hover:scale-110 ${
@@ -1080,10 +1080,10 @@ export default function HomePage() {
                             style={{ backgroundColor: color }}
                             onClick={() => {
                               setSelectedColor(color);
-                              if (selectedDesign)
+                              if (editCard)
                                 setCardColors((prev) => ({
                                   ...prev,
-                                  [selectedDesign.id]: color,
+                                  [editCard.id]: color,
                                 }));
                             }}
                           />
@@ -1094,7 +1094,7 @@ export default function HomePage() {
                     {/* Bouton d'édition principal */}
                     <Button
                       onClick={() => {
-                        navigate(`/builder?template=${selectedDesign?.id}`);
+                        navigate(`/builder?template=${editCard?.id}`);
                         closeDesignModal();
                       }}
                       className="w-full flex items-center gap-3 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
@@ -1102,6 +1102,7 @@ export default function HomePage() {
                       <Edit className="h-5 w-5" />
                       Éditer cette carte
                     </Button>
+                    
 
                     {/* Informations du design */}
                     <div className="space-y-4 pt-4 border-t">
@@ -1118,7 +1119,7 @@ export default function HomePage() {
                             variant="outline"
                             className="capitalize font-medium"
                           >
-                            {selectedDesign?.category}
+                            {editCard?.category}
                           </Badge>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1126,7 +1127,7 @@ export default function HomePage() {
                             Popularité:
                           </span>
                           <span className="font-semibold text-green-600">
-                            {selectedDesign?.popularity}%
+                            {editCard?.popularity}%
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1134,7 +1135,7 @@ export default function HomePage() {
                             Éléments:
                           </span>
                           <span className="font-semibold">
-                            {selectedDesign?.items?.length || 0}
+                            {editCard?.items?.length || 0}
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-2">
@@ -1142,7 +1143,7 @@ export default function HomePage() {
                             Créé le:
                           </span>
                           <span className="font-medium">
-                            {formatDate(selectedDesign?.createdAt)}
+                            {formatDate(editCard?.createdAt)}
                           </span>
                         </div>
                       </div>
