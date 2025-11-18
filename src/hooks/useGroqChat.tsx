@@ -2,6 +2,10 @@
 import { useState } from "react";
 import { ChatMessage } from "@/types/design";
 import { DesignService } from "@/services/designService";
+import {
+  DesignAnalysisService,
+  DesignAnalysis,
+} from "@/services/DesignAnalysisService";
 
 // Templates unifiés locaux pour fallback
 const UNIFIED_TEMPLATES = [
@@ -88,17 +92,136 @@ const UNIFIED_TEMPLATES = [
   },
 ];
 
+interface ImprovementState {
+  originalDesign: any;
+  proposedDesign: any;
+  analysis: DesignAnalysis | null;
+  isImprovementMode: boolean;
+}
+
 export const useGroqChat = (designContext: any) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
       content:
-        '🎨 **Bonjour ! Je suis votre assistant design IA**\n\nJe peux vous aider à créer la carte parfaite ! Décrivez-moi ce que vous souhaitez :\n\n• 🎂 **Anniversaire** - Carte festive et colorée\n• 💖 **Amour/Romance** - Carte romantique\n• 💼 **Professionnel** - Design corporate\n• 🎨 **Simple & Élégant** - Minimaliste\n\n*Exemple : "carte d\'anniversaire colorée" ou "design professionnel sobre"*',
+        '🎨 **Bonjour ! Je suis votre assistant design IA**\n\nJe peux vous aider à :\n• 🎂 **Créer** une nouvelle carte (anniversaire, professionnelle, etc.)\n• ✨ **Améliorer** votre design existant\n• 💡 **Proposer** des idées créatives\n\n*Exemples : "carte d\'anniversaire colorée" ou "améliore mon design avec un style moderne"*',
       role: "assistant",
       timestamp: new Date(),
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [improvementState, setImprovementState] = useState<ImprovementState>({
+    originalDesign: null,
+    proposedDesign: null,
+    analysis: null,
+    isImprovementMode: false,
+  });
+
+  // Détection des requêtes d'amélioration
+  const detectImprovementRequest = (content: string): boolean => {
+    const improvementKeywords = [
+      "améliore",
+      "améliorer",
+      "modernise",
+      "amélioration",
+      "moderne",
+      "organise",
+      "organisation",
+      "améliore mon",
+      "rends plus",
+      "style plus",
+      "meilleur",
+      "perfectionne",
+      "optimise",
+      "refais",
+      "revois",
+    ];
+
+    return improvementKeywords.some((keyword) =>
+      content.toLowerCase().includes(keyword)
+    );
+  };
+
+  // Gestion des requêtes de nouveau design
+  const handleNewDesignRequest = async (content: string) => {
+    console.log("Nouveau design demandé");
+
+    const designResult = await DesignService.generateDesignFromDescription(
+      content
+    );
+
+    let responseContent = designResult.message;
+
+    if (designResult.template) {
+      console.log("Template trouvé, application...", designResult.template);
+
+      setTimeout(() => {
+        applyDesignTemplate(designResult.template, designResult.elements);
+      }, 500);
+    } else {
+      const fallbackTemplate = findFallbackTemplate(content);
+      if (fallbackTemplate) {
+        responseContent = `🎨 **J'ai trouvé un template "${fallbackTemplate.name}" pour vous!**\n\nJe applique ce design automatiquement.`;
+
+        setTimeout(() => {
+          applyDesignTemplate(fallbackTemplate, []);
+        }, 500);
+      }
+    }
+
+    const assistantMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      content: responseContent,
+      role: "assistant",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+  };
+
+  // Gestion des requêtes d'amélioration
+  const handleImprovementRequest = async (content: string) => {
+    console.log("Amélioration demandée");
+
+    // Sauvegarder le design actuel
+    const currentDesign = {
+      bgColor: designContext.bgColor,
+      bgImage: designContext.bgImage,
+      items: [...designContext.items],
+    };
+
+    try {
+      // Analyser et proposer des améliorations
+      const analysis = await DesignAnalysisService.analyzeAndImprove(
+        currentDesign,
+        content
+      );
+
+      setImprovementState({
+        originalDesign: currentDesign,
+        proposedDesign: analysis.newDesign,
+        analysis: analysis,
+        isImprovementMode: true,
+      });
+
+      // Construire le message avec les options
+      const improvementMessage = buildImprovementMessage(analysis, content);
+
+      setMessages((prev) => [...prev, improvementMessage]);
+    } catch (error) {
+      console.error("Erreur lors de l'analyse du design:", error);
+
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        content:
+          "❌ Désolé, je n'ai pas pu analyser votre design. Veuillez réessayer avec une description plus spécifique.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    }
+  };
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -117,71 +240,122 @@ export const useGroqChat = (designContext: any) => {
     try {
       console.log("Envoi de la demande:", content);
 
-      // Appel au service de design
-      const designResult = await DesignService.generateDesignFromDescription(
-        content
-      );
+      // Détection du type de requête
+      const isImprovementRequest = detectImprovementRequest(content);
 
-      console.log("Résultat DesignService:", designResult);
-
-      let responseContent = designResult.message;
-
-      // Appliquer le template si disponible
-      if (designResult.template) {
-        console.log("Template trouvé, application...", designResult.template);
-
-        // Appliquer le template après un court délai
-        setTimeout(() => {
-          applyDesignTemplate(designResult.template, designResult.elements);
-        }, 500);
+      if (isImprovementRequest) {
+        await handleImprovementRequest(content);
       } else {
-        // Fallback: chercher manuellement dans les templates unifiés
-        console.log("Aucun template trouvé, recherche manuelle...");
-        const fallbackTemplate = findFallbackTemplate(content);
-        if (fallbackTemplate) {
-          responseContent = `🎨 **J'ai trouvé un template "${fallbackTemplate.name}" pour vous!**\n\nJe applique ce design automatiquement.`;
-
-          setTimeout(() => {
-            applyDesignTemplate(fallbackTemplate, []);
-          }, 500);
-        }
+        await handleNewDesignRequest(content);
       }
-
-      const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: responseContent,
-        role: "assistant",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Erreur useGroqChat:", error);
 
-      // Fallback en cas d'erreur
-      const fallbackTemplate = findFallbackTemplate(content);
-      let errorMessage =
-        "Désolé, je rencontre un problème technique. Veuillez réessayer.";
-
-      if (fallbackTemplate) {
-        errorMessage = `🔄 **Problème technique - J'applique un template "${fallbackTemplate.name}" de secours!**`;
-
-        setTimeout(() => {
-          applyDesignTemplate(fallbackTemplate, []);
-        }, 500);
-      }
-
-      const errorAssistantMessage: ChatMessage = {
+      const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: errorMessage,
+        content:
+          "❌ Désolé, je rencontre un problème technique. Pouvez-vous reformuler votre demande ?",
         role: "assistant",
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, errorAssistantMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Construire le message d'amélioration avec options
+  const buildImprovementMessage = (
+    analysis: DesignAnalysis,
+    userRequest: string
+  ): ChatMessage => {
+    const improvementsList = analysis.improvements
+      .map((imp) => `• ${imp}`)
+      .join("\n");
+
+    const content = `✨ **J'ai analysé votre design et voici mes propositions :**
+
+📊 **Améliorations suggérées :**
+${improvementsList}
+
+💡 **Explication :**
+${analysis.explanation}
+
+🎯 **Que souhaitez-vous faire ?**`;
+
+    return {
+      id: (Date.now() + 1).toString(),
+      content,
+      role: "assistant",
+      timestamp: new Date(),
+    };
+  };
+
+  // Appliquer les améliorations proposées
+  const applyImprovements = () => {
+    if (!improvementState.proposedDesign) return;
+
+    const { proposedDesign } = improvementState;
+
+    // Appliquer le nouveau design
+    if (proposedDesign.bgColor) {
+      designContext.setBgColor(proposedDesign.bgColor);
+    }
+
+    if (proposedDesign.items && proposedDesign.items.length > 0) {
+      designContext.setItems([...proposedDesign.items]);
+    }
+
+    // Message de confirmation
+    const confirmationMessage: ChatMessage = {
+      id: (Date.now() + 2).toString(),
+      content:
+        "✅ **Améliorations appliquées !**\n\nVotre design a été mis à jour avec les suggestions. Vous pouvez continuer à le modifier ou demander d'autres améliorations.",
+      role: "assistant",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, confirmationMessage]);
+
+    // Réinitialiser l'état d'amélioration
+    setImprovementState({
+      originalDesign: null,
+      proposedDesign: null,
+      analysis: null,
+      isImprovementMode: false,
+    });
+  };
+
+  // Revenir au design original
+  const revertToOriginal = () => {
+    if (!improvementState.originalDesign) return;
+
+    const { originalDesign } = improvementState;
+
+    // Restaurer le design original
+    designContext.setBgColor(originalDesign.bgColor);
+    designContext.setBgImage(originalDesign.bgImage);
+    designContext.setItems([...originalDesign.items]);
+
+    // Message de confirmation
+    const confirmationMessage: ChatMessage = {
+      id: (Date.now() + 2).toString(),
+      content:
+        "↩️ **Retour au design original**\n\nVotre design a été restauré. N'hésitez pas à demander d'autres types d'améliorations !",
+      role: "assistant",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, confirmationMessage]);
+
+    // Réinitialiser l'état d'amélioration
+    setImprovementState({
+      originalDesign: null,
+      proposedDesign: null,
+      analysis: null,
+      isImprovementMode: false,
+    });
   };
 
   // Fonction de fallback pour trouver un template basé sur le contenu
@@ -218,7 +392,7 @@ export const useGroqChat = (designContext: any) => {
     }
 
     console.log("Fallback: template par défaut");
-    return UNIFIED_TEMPLATES[0]; // Premier template par défaut
+    return UNIFIED_TEMPLATES[0];
   };
 
   const applyDesignTemplate = (
@@ -228,16 +402,13 @@ export const useGroqChat = (designContext: any) => {
     console.log("Application du template:", template);
 
     if (template && template.bgColor) {
-      // Appliquer le fond
       designContext.setBgColor(template.bgColor);
       designContext.setBgImage(null);
 
-      // Appliquer les éléments du template
       if (template.items && Array.isArray(template.items)) {
         designContext.setItems([...template.items]);
       }
 
-      // Ajouter les éléments supplémentaires après un délai
       if (additionalElements.length > 0) {
         setTimeout(() => {
           designContext.setItems((prev: any[]) => [
@@ -257,5 +428,8 @@ export const useGroqChat = (designContext: any) => {
     messages,
     isLoading,
     sendMessage,
+    improvementState,
+    applyImprovements,
+    revertToOriginal,
   };
 };

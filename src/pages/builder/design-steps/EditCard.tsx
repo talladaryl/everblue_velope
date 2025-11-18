@@ -28,13 +28,22 @@ import {
   Upload,
   Loader2,
   Sparkles,
+  RotateCw,
+  FlipHorizontal,
+  FlipVertical,
+  Shadow,
+  Filter,
+  Video,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { TextVariablesPanel } from "./components/TextVariablesPanel";
 import { useGroqChat } from "@/hooks/useGroqChat";
 
 // Templates unifiés
 const UNIFIED_TEMPLATES = [
-  // Templates professionnels
   {
     id: "corporate-1",
     name: "Corporate Élégant",
@@ -90,7 +99,6 @@ const UNIFIED_TEMPLATES = [
     isCustom: false,
     popularity: 92,
   },
-  // Templates d'anniversaire
   {
     id: "birthday-1",
     name: "Anniversaire Joyeux",
@@ -147,63 +155,6 @@ const UNIFIED_TEMPLATES = [
     popularity: 88,
     hasEnvelope: true,
   },
-  // Templates d'amour
-  {
-    id: "love-1",
-    name: "Carte d'Amour",
-    description: "Carte romantique pour déclarer votre flamme",
-    category: "love",
-    colors: ["#0077B2", "#D00000", "#ffffff", "#f8f6f7"],
-    pattern: "gradient",
-    message: "Je t'aime",
-    style: "romantic",
-    bgColor: "linear-gradient(135deg, #ff6b6b 0%, #f06292 100%)",
-    items: [
-      {
-        id: "text-1",
-        type: "text",
-        text: "Je t'aime",
-        x: 50,
-        y: 50,
-        fontSize: 30,
-        color: "#ffffff",
-        fontFamily: "'Great Vibes', cursive",
-        fontWeight: "bold",
-        textAlign: "center",
-      },
-    ],
-    isCustom: false,
-    popularity: 96,
-    hasEnvelope: true,
-  },
-  {
-    id: "valentine-1",
-    name: "Saint-Valentin",
-    description: "Carte spéciale pour la fête des amoureux",
-    category: "love",
-    colors: ["#ff4d4d", "#ff8080", "#ff6666", "#ffffff"],
-    pattern: "gradient",
-    message: "Bonne Saint-Valentin",
-    style: "romantic",
-    bgColor: "linear-gradient(135deg, #ff4d4d 0%, #ff8080 100%)",
-    items: [
-      {
-        id: "text-1",
-        type: "text",
-        text: "Bonne Saint-Valentin",
-        x: 50,
-        y: 50,
-        fontSize: 24,
-        color: "#ffffff",
-        fontFamily: "'Alex Brush', cursive",
-        fontWeight: "bold",
-        textAlign: "center",
-      },
-    ],
-    isCustom: false,
-    popularity: 94,
-    hasEnvelope: true,
-  },
 ];
 
 export function EditCard({ ctx }: { ctx: any }) {
@@ -233,7 +184,14 @@ export function EditCard({ ctx }: { ctx: any }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Utilisation du hook Groq Chat
-  const { messages: chatMessages, isLoading, sendMessage } = useGroqChat(ctx);
+  const {
+    messages: chatMessages,
+    isLoading,
+    sendMessage,
+    improvementState,
+    applyImprovements,
+    revertToOriginal,
+  } = useGroqChat(ctx);
 
   const selected = items.find((i: any) => i.id === selectedId) ?? null;
 
@@ -280,13 +238,11 @@ export function EditCard({ ctx }: { ctx: any }) {
   const applyProfessionalTemplate = (template: any) => {
     setBgColor(template.bgColor);
     setBgImage(null);
-
-    // Effacer les éléments existants et ajouter ceux du template
     setItems(template.items || []);
   };
 
-  // Fonctions pour les propriétés d'image
-  const updateImageProperty = (property: string, value: any) => {
+  // Fonction générique pour mettre à jour les propriétés
+  const updateItemProperty = (property: string, value: any) => {
     setItems((prev: any[]) =>
       prev.map((item: any) =>
         item.id === selectedId ? { ...item, [property]: value } : item
@@ -301,31 +257,75 @@ export function EditCard({ ctx }: { ctx: any }) {
     }
   };
 
-  // Gestion de l'upload d'image
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Gestion de l'upload de médias
+  const handleMediaUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    mediaType: "image" | "video" | "gif"
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
+        const mediaUrl = e.target?.result as string;
 
-        const newItem = {
-          id: `image-${Date.now()}`,
-          type: "image",
-          src: imageUrl,
+        const newItem: any = {
+          id: `${mediaType}-${Date.now()}`,
+          type: mediaType,
+          src: mediaUrl,
           x: 100,
           y: 100,
-          width: 150,
-          height: 150,
+          width: mediaType === "video" ? 200 : 150,
+          height: mediaType === "video" ? 150 : 150,
           borderRadius: 0,
-          crop: "none",
           opacity: 100,
+          rotation: 0,
+          flipX: false,
+          flipY: false,
+          shadow: {
+            enabled: false,
+            color: "#000000",
+            blur: 5,
+            offsetX: 2,
+            offsetY: 2,
+          },
+          filters: {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+            blur: 0,
+            grayscale: 0,
+          },
         };
+
+        if (mediaType === "video") {
+          newItem.autoPlay = false;
+          newItem.loop = false;
+          newItem.muted = true;
+          newItem.playing = false;
+        }
+
+        if (mediaType === "gif") {
+          newItem.animated = true;
+          newItem.playing = true;
+        }
 
         setItems((prev: any[]) => [...prev, newItem]);
         setSelectedId(newItem.id);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Contrôles vidéo/GIF
+  const toggleMediaPlayback = () => {
+    if (selected && (selected.type === "video" || selected.type === "gif")) {
+      updateItemProperty("playing", !selected.playing);
+    }
+  };
+
+  const toggleMute = () => {
+    if (selected && selected.type === "video") {
+      updateItemProperty("muted", !selected.muted);
     }
   };
 
@@ -356,7 +356,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative min-h-screen">
-      {/* Zone de design principale - Design amélioré */}
+      {/* Zone de design principale */}
       <div className="lg:col-span-2">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50">
           <CardHeader className="pb-4 border-b bg-gradient-to-r from-gray-50 to-white">
@@ -405,7 +405,26 @@ export function EditCard({ ctx }: { ctx: any }) {
                     left: it.x,
                     top: it.y,
                     borderRadius:
-                      it.type === "image" ? `${it.borderRadius}px` : "12px",
+                      it.type !== "text" ? `${it.borderRadius}px` : "12px",
+                    transform: `
+                      ${selectedId === it.id ? "scale(1.05)" : ""}
+                      rotate(${it.rotation || 0}deg)
+                      scaleX(${it.flipX ? -1 : 1})
+                      scaleY(${it.flipY ? -1 : 1})
+                    `,
+                    filter: `
+                      brightness(${it.filters?.brightness || 100}%)
+                      contrast(${it.filters?.contrast || 100}%)
+                      saturate(${it.filters?.saturation || 100}%)
+                      blur(${it.filters?.blur || 0}px)
+                      grayscale(${it.filters?.grayscale || 0}%)
+                      ${
+                        it.shadow?.enabled
+                          ? `drop-shadow(${it.shadow.offsetX}px ${it.shadow.offsetY}px ${it.shadow.blur}px ${it.shadow.color})`
+                          : ""
+                      }
+                    `,
+                    opacity: (it.opacity || 100) / 100,
                   }}
                 >
                   {it.type === "text" ? (
@@ -431,12 +450,53 @@ export function EditCard({ ctx }: { ctx: any }) {
                         fontSize: it.fontSize || "16px",
                         fontFamily: it.fontFamily || "Arial",
                         fontWeight: it.fontWeight || "normal",
-                        textShadow: it.animation
-                          ? "0 2px 8px rgba(0,0,0,0.2)"
-                          : "none",
+                        textAlign: it.textAlign || "left",
+                        textShadow: it.textShadow || "none",
                       }}
                     >
                       {it.text || "Texte"}
+                    </div>
+                  ) : it.type === "video" ? (
+                    <div className="relative">
+                      <video
+                        src={it.src}
+                        autoPlay={it.autoPlay}
+                        loop={it.loop}
+                        muted={it.muted}
+                        className="shadow-xl border-2 border-white/60 object-cover rounded-xl"
+                        style={{
+                          width: it.width || "200px",
+                          height: it.height || "150px",
+                        }}
+                      />
+                      <div className="absolute bottom-2 right-2 flex gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMediaPlayback();
+                          }}
+                          className="bg-black/70 text-white p-1 rounded"
+                        >
+                          {it.playing ? (
+                            <Pause className="h-3 w-3" />
+                          ) : (
+                            <Play className="h-3 w-3" />
+                          )}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMute();
+                          }}
+                          className="bg-black/70 text-white p-1 rounded"
+                        >
+                          {it.muted ? (
+                            <VolumeX className="h-3 w-3" />
+                          ) : (
+                            <Volume2 className="h-3 w-3" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <img
@@ -445,12 +505,8 @@ export function EditCard({ ctx }: { ctx: any }) {
                       draggable={false}
                       className="shadow-xl border-2 border-white/60 object-cover transition-all duration-200 hover:shadow-2xl hover:border-white/80"
                       style={{
-                        width: it.width || "100px",
-                        height: it.height || "100px",
-                        borderRadius: it.borderRadius
-                          ? `${it.borderRadius}px`
-                          : "12px",
-                        opacity: (it.opacity || 100) / 100,
+                        width: it.width || "150px",
+                        height: it.height || "150px",
                       }}
                     />
                   )}
@@ -476,14 +532,14 @@ export function EditCard({ ctx }: { ctx: any }) {
         </Card>
       </div>
 
-      {/* Panneau de contrôle sur le côté - Design amélioré */}
-      <div className="space-y-4">
-        <Card className="border-0 shadow-lg bg-gradient-to-b from-white to-gray-50/50 overflow-hidden">
-          <CardContent className="p-0">
+      {/* Panneau de contrôle sur le côté - HAUTEUR AMÉLIORÉE */}
+      <div className="space-y-4 h-180">
+        <Card className="border-0 shadow-lg bg-gradient-to-b from-white to-gray-50/50 overflow-hidden h-180">
+          <CardContent className="p-0 h-180 flex flex-col">
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
-              className="w-full"
+              className="w-full flex-1 flex flex-col"
             >
               <div className="border-b bg-gradient-to-r from-gray-50 to-white">
                 <TabsList className="grid grid-cols-3 w-full bg-transparent p-0 h-12">
@@ -511,7 +567,10 @@ export function EditCard({ ctx }: { ctx: any }) {
                 </TabsList>
               </div>
 
-              <TabsContent value="elements" className="p-4 space-y-4 m-0">
+              <TabsContent
+                value="elements"
+                className="p-4 space-y-4 m-0 flex-1 overflow-y-auto"
+              >
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     variant="outline"
@@ -526,13 +585,39 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                   <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all duration-200">
                     <div className="p-2 bg-green-100 rounded-lg">
-                      <Upload className="h-5 w-5 text-green-600" />
+                      <ImageIcon className="h-5 w-5 text-green-600" />
                     </div>
-                    <span className="text-sm font-medium">Upload Image</span>
+                    <span className="text-sm font-medium">Image</span>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
+                      onChange={(e) => handleMediaUpload(e, "image")}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Video className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <span className="text-sm font-medium">Vidéo</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => handleMediaUpload(e, "video")}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-all duration-200">
+                    <div className="p-2 bg-pink-100 rounded-lg">
+                      <ImageIcon2 className="h-5 w-5 text-pink-600" />
+                    </div>
+                    <span className="text-sm font-medium">GIF</span>
+                    <input
+                      type="file"
+                      accept="image/gif"
+                      onChange={(e) => handleMediaUpload(e, "gif")}
                       className="hidden"
                     />
                   </label>
@@ -540,10 +625,10 @@ export function EditCard({ ctx }: { ctx: any }) {
                   <Button
                     variant="outline"
                     onClick={() => setShowVariables(true)}
-                    className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 rounded-xl col-span-2"
+                    className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 rounded-xl col-span-2"
                   >
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Plus className="h-5 w-5 text-purple-600" />
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <Plus className="h-5 w-5 text-orange-600" />
                     </div>
                     <span className="text-sm font-medium">
                       Variables de texte
@@ -552,7 +637,10 @@ export function EditCard({ ctx }: { ctx: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="background" className="p-4 space-y-4 m-0">
+              <TabsContent
+                value="background"
+                className="p-4 space-y-4 m-0 flex-1 overflow-y-auto"
+              >
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
                     Couleur de fond
@@ -612,212 +700,666 @@ export function EditCard({ ctx }: { ctx: any }) {
                 </label>
               </TabsContent>
 
-              <TabsContent value="properties" className="p-4 space-y-4 m-0">
+             <TabsContent value="properties" 
+             className="p-4 m-0 flex-1 overflow-y-auto"
+             > 
                 {selected ? (
-                  <div className="space-y-4">
+                 <div className="h-[460px] overflow-y-auto">
+                    {/* En-tête des propriétés */}
+                    <div className="border-b pb-3">
+                      <h3 className="font-bold text-lg text-gray-900">
+                        Propriétés
+                      </h3>
+                      <p className="text-sm text-gray-600 capitalize">
+                        {selected.type} sélectionné
+                      </p>
+                    </div>
+
                     {selected.type === "text" ? (
                       <>
-                        <div>
-                          <Label className="text-sm font-medium mb-2 block">
-                            Contenu du texte
-                          </Label>
-                          <Input
-                            value={selected.text || ""}
-                            onChange={(e) =>
-                              setItems((prev: any[]) =>
-                                prev.map((p: any) =>
-                                  p.id === selected.id
-                                    ? { ...p, text: e.target.value }
-                                    : p
-                                )
-                              )
-                            }
-                            className="h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
+                        {/* SECTION TEXTE */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-blue-500 pl-2">
+                            Contenu
+                          </h4>
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Taille de police
+                              Texte
                             </Label>
                             <Input
-                              type="number"
-                              value={selected.fontSize || 16}
+                              value={selected.text || ""}
                               onChange={(e) =>
-                                setItems((prev: any[]) =>
-                                  prev.map((p: any) =>
-                                    p.id === selected.id
-                                      ? {
-                                          ...p,
-                                          fontSize: Number(e.target.value),
-                                        }
-                                      : p
-                                  )
-                                )
+                                updateItemProperty("text", e.target.value)
                               }
                               className="h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500"
                             />
                           </div>
-                          <div>
-                            <Label className="text-sm font-medium mb-2 block">
-                              Couleur
-                            </Label>
-                            <div className="relative">
-                              <input
-                                type="color"
-                                value={selected.color || "#000000"}
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Taille
+                              </Label>
+                              <Input
+                                type="number"
+                                value={selected.fontSize || 16}
                                 onChange={(e) =>
-                                  setItems((prev: any[]) =>
-                                    prev.map((p: any) =>
-                                      p.id === selected.id
-                                        ? { ...p, color: e.target.value }
-                                        : p
-                                    )
+                                  updateItemProperty(
+                                    "fontSize",
+                                    Number(e.target.value)
                                   )
                                 }
-                                className="h-12 w-full rounded-xl border-2 border-gray-200 cursor-pointer"
+                                className="h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Couleur
+                              </Label>
+                              <div className="relative">
+                                <input
+                                  type="color"
+                                  value={selected.color || "#000000"}
+                                  onChange={(e) =>
+                                    updateItemProperty("color", e.target.value)
+                                  }
+                                  className="h-12 w-full rounded-xl border-2 border-gray-200 cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Police
+                            </Label>
+                            <select
+                              value={selected.fontFamily || "Arial"}
+                              onChange={(e) =>
+                                updateItemProperty("fontFamily", e.target.value)
+                              }
+                              className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                            >
+                              <optgroup label="Professionnelles">
+                                <option value="'Inter', sans-serif">
+                                  Inter
+                                </option>
+                                <option value="'Roboto', sans-serif">
+                                  Roboto
+                                </option>
+                                <option value="'Helvetica', sans-serif">
+                                  Helvetica
+                                </option>
+                              </optgroup>
+                              <optgroup label="Élégantes">
+                                <option value="'Playfair Display', serif">
+                                  Playfair Display
+                                </option>
+                                <option value="'Cormorant Garamond', serif">
+                                  Cormorant
+                                </option>
+                                <option value="'Lora', serif">Lora</option>
+                              </optgroup>
+                              <optgroup label="Modernes">
+                                <option value="'Poppins', sans-serif">
+                                  Poppins
+                                </option>
+                                <option value="'Montserrat', sans-serif">
+                                  Montserrat
+                                </option>
+                                <option value="'Space Grotesk', sans-serif">
+                                  Space Grotesk
+                                </option>
+                              </optgroup>
+                            </select>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Alignement
+                              </Label>
+                              <select
+                                value={selected.textAlign || "left"}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "textAlign",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                              >
+                                <option value="left">Gauche</option>
+                                <option value="center">Centre</option>
+                                <option value="right">Droite</option>
+                              </select>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Poids
+                              </Label>
+                              <select
+                                value={selected.fontWeight || "normal"}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "fontWeight",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                              >
+                                <option value="normal">Normal</option>
+                                <option value="bold">Gras</option>
+                                <option value="lighter">Fin</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      // SECTION MÉDIAS (Images, Vidéos, GIFs)
+                      <>
+                        {/* PROPRIÉTÉS DE BASE */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-green-500 pl-2">
+                            Base
+                          </h4>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Largeur
+                              </Label>
+                              <Input
+                                type="number"
+                                value={selected.width || 150}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "width",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Hauteur
+                              </Label>
+                              <Input
+                                type="number"
+                                value={selected.height || 150}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "height",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Opacité
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={selected.opacity || 100}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "opacity",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.opacity || 100}%
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Rotation
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="360"
+                                value={selected.rotation || 0}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "rotation",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.rotation || 0}°
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Flip
+                            </Label>
+                            <div className="flex gap-2">
+                              <Button
+                                variant={selected.flipX ? "default" : "outline"}
+                                size="sm"
+                                onClick={() =>
+                                  updateItemProperty("flipX", !selected.flipX)
+                                }
+                                className="flex-1 h-10"
+                              >
+                                <FlipHorizontal className="h-4 w-4 mr-2" />
+                                Horizontal
+                              </Button>
+                              <Button
+                                variant={selected.flipY ? "default" : "outline"}
+                                size="sm"
+                                onClick={() =>
+                                  updateItemProperty("flipY", !selected.flipY)
+                                }
+                                className="flex-1 h-10"
+                              >
+                                <FlipVertical className="h-4 w-4 mr-2" />
+                                Vertical
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* STYLE ET BORDURES */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-purple-500 pl-2">
+                            Style
+                          </h4>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Bordure arrondie
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="50"
+                                value={selected.borderRadius || 0}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "borderRadius",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.borderRadius || 0}px
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Couleur bordure
+                              </Label>
+                              <input
+                                type="color"
+                                value={selected.borderColor || "#000000"}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "borderColor",
+                                    e.target.value
+                                  )
+                                }
+                                className="h-10 w-full rounded-lg border-2 border-gray-200 cursor-pointer"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">
+                                Épaisseur
+                              </Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="20"
+                                value={selected.borderWidth || 0}
+                                onChange={(e) =>
+                                  updateItemProperty(
+                                    "borderWidth",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
                               />
                             </div>
                           </div>
                         </div>
 
-                        <div>
-                          <Label className="text-sm font-medium mb-2 block">
-                            Famille de police
-                          </Label>
-                          <select
-                            value={selected.fontFamily || "Arial"}
-                            onChange={(e) =>
-                              setItems((prev: any[]) =>
-                                prev.map((p: any) =>
-                                  p.id === selected.id
-                                    ? { ...p, fontFamily: e.target.value }
-                                    : p
-                                )
-                              )
-                            }
-                            className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
-                          >
-                            <optgroup label="Professionnelles">
-                              <option value="'Inter', sans-serif">Inter</option>
-                              <option value="'Roboto', sans-serif">
-                                Roboto
-                              </option>
-                              <option value="'Helvetica', sans-serif">
-                                Helvetica
-                              </option>
-                            </optgroup>
-                            <optgroup label="Élégantes">
-                              <option value="'Playfair Display', serif">
-                                Playfair Display
-                              </option>
-                              <option value="'Cormorant Garamond', serif">
-                                Cormorant
-                              </option>
-                              <option value="'Lora', serif">Lora</option>
-                            </optgroup>
-                            <optgroup label="Modernes">
-                              <option value="'Poppins', sans-serif">
-                                Poppins
-                              </option>
-                              <option value="'Montserrat', sans-serif">
-                                Montserrat
-                              </option>
-                              <option value="'Space Grotesk', sans-serif">
-                                Space Grotesk
-                              </option>
-                            </optgroup>
-                          </select>
-                        </div>
-                      </>
-                    ) : (
-                      // Propriétés pour les images
-                      <>
-                        <div>
-                          <Label className="text-sm font-medium mb-2 block">
-                            Bordure arrondie
-                          </Label>
-                          <div className="flex items-center gap-3">
+                        {/* OMBRES */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-yellow-500 pl-2">
+                            Ombres
+                          </h4>
+
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium">
+                              Activer l'ombre
+                            </Label>
                             <input
-                              type="range"
-                              min="0"
-                              max="50"
-                              value={selected.borderRadius || 0}
+                              type="checkbox"
+                              checked={selected.shadow?.enabled || false}
                               onChange={(e) =>
-                                updateImageProperty(
-                                  "borderRadius",
-                                  Number(e.target.value)
-                                )
+                                updateItemProperty("shadow", {
+                                  ...selected.shadow,
+                                  enabled: e.target.checked,
+                                })
                               }
-                              className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                              className="h-4 w-4 rounded border-gray-300"
                             />
-                            <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
-                              {selected.borderRadius || 0}px
-                            </span>
+                          </div>
+
+                          {selected.shadow?.enabled && (
+                            <>
+                              <div>
+                                <Label className="text-sm font-medium mb-2 block">
+                                  Couleur ombre
+                                </Label>
+                                <input
+                                  type="color"
+                                  value={selected.shadow?.color || "#000000"}
+                                  onChange={(e) =>
+                                    updateItemProperty("shadow", {
+                                      ...selected.shadow,
+                                      color: e.target.value,
+                                    })
+                                  }
+                                  className="h-10 w-full rounded-lg border-2 border-gray-200 cursor-pointer"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <Label className="text-sm font-medium mb-2 block">
+                                    Flou
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="50"
+                                    value={selected.shadow?.blur || 5}
+                                    onChange={(e) =>
+                                      updateItemProperty("shadow", {
+                                        ...selected.shadow,
+                                        blur: Number(e.target.value),
+                                      })
+                                    }
+                                    className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium mb-2 block">
+                                    Décalage X
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min="-50"
+                                    max="50"
+                                    value={selected.shadow?.offsetX || 2}
+                                    onChange={(e) =>
+                                      updateItemProperty("shadow", {
+                                        ...selected.shadow,
+                                        offsetX: Number(e.target.value),
+                                      })
+                                    }
+                                    className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <Label className="text-sm font-medium mb-2 block">
+                                  Décalage Y
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="-50"
+                                  max="50"
+                                  value={selected.shadow?.offsetY || 2}
+                                  onChange={(e) =>
+                                    updateItemProperty("shadow", {
+                                      ...selected.shadow,
+                                      offsetY: Number(e.target.value),
+                                    })
+                                  }
+                                  className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {/* FILTRES */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-red-500 pl-2">
+                            Filtres
+                          </h4>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Luminosité
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="200"
+                                value={selected.filters?.brightness || 100}
+                                onChange={(e) =>
+                                  updateItemProperty("filters", {
+                                    ...selected.filters,
+                                    brightness: Number(e.target.value),
+                                  })
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.filters?.brightness || 100}%
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Contraste
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="200"
+                                value={selected.filters?.contrast || 100}
+                                onChange={(e) =>
+                                  updateItemProperty("filters", {
+                                    ...selected.filters,
+                                    contrast: Number(e.target.value),
+                                  })
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.filters?.contrast || 100}%
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Saturation
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="200"
+                                value={selected.filters?.saturation || 100}
+                                onChange={(e) =>
+                                  updateItemProperty("filters", {
+                                    ...selected.filters,
+                                    saturation: Number(e.target.value),
+                                  })
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.filters?.saturation || 100}%
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Flou
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="20"
+                                value={selected.filters?.blur || 0}
+                                onChange={(e) =>
+                                  updateItemProperty("filters", {
+                                    ...selected.filters,
+                                    blur: Number(e.target.value),
+                                  })
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.filters?.blur || 0}px
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Niveaux de gris
+                            </Label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={selected.filters?.grayscale || 0}
+                                onChange={(e) =>
+                                  updateItemProperty("filters", {
+                                    ...selected.filters,
+                                    grayscale: Number(e.target.value),
+                                  })
+                                }
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                                {selected.filters?.grayscale || 0}%
+                              </span>
+                            </div>
                           </div>
                         </div>
 
-                        <div>
-                          <Label className="text-sm font-medium mb-2 block">
-                            Forme de l'image
-                          </Label>
-                          <div className="flex gap-2">
-                            <Button
-                              variant={
-                                selected.crop === "none" ? "default" : "outline"
-                              }
-                              size="sm"
-                              onClick={() =>
-                                updateImageProperty("crop", "none")
-                              }
-                              className="flex-1 h-12 rounded-xl border-2 data-[state=active]:bg-blue-100 data-[state=active]:border-blue-500 data-[state=active]:text-blue-700"
-                            >
-                              <Square className="h-4 w-4 mr-2" />
-                              Carré
-                            </Button>
-                            <Button
-                              variant={
-                                selected.crop === "circle"
-                                  ? "default"
-                                  : "outline"
-                              }
-                              size="sm"
-                              onClick={() =>
-                                updateImageProperty("crop", "circle")
-                              }
-                              className="flex-1 h-12 rounded-xl border-2 data-[state=active]:bg-blue-100 data-[state=active]:border-blue-500 data-[state=active]:text-blue-700"
-                            >
-                              <Circle className="h-4 w-4 mr-2" />
-                              Cercle
-                            </Button>
-                          </div>
-                        </div>
+                        {/* CONTRÔLES VIDÉO/GIF */}
+                        {(selected.type === "video" ||
+                          selected.type === "gif") && (
+                          <div className="space-y-4">
+                            <h4 className="font-semibold text-md text-gray-800 border-l-4 border-blue-500 pl-2">
+                              Contrôles Média
+                            </h4>
 
-                        <div>
-                          <Label className="text-sm font-medium mb-2 block">
-                            Opacité
-                          </Label>
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="range"
-                              min="10"
-                              max="100"
-                              value={selected.opacity || 100}
-                              onChange={(e) =>
-                                updateImageProperty(
-                                  "opacity",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                            />
-                            <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
-                              {selected.opacity || 100}%
-                            </span>
-                          </div>
-                        </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <Button
+                                onClick={toggleMediaPlayback}
+                                variant={
+                                  selected.playing ? "outline" : "default"
+                                }
+                                className="h-10"
+                              >
+                                {selected.playing ? (
+                                  <Pause className="h-4 w-4 mr-2" />
+                                ) : (
+                                  <Play className="h-4 w-4 mr-2" />
+                                )}
+                                {selected.playing ? "Pause" : "Lecture"}
+                              </Button>
 
+                              {selected.type === "video" && (
+                                <Button
+                                  onClick={toggleMute}
+                                  variant={
+                                    selected.muted ? "outline" : "default"
+                                  }
+                                  className="h-10"
+                                >
+                                  {selected.muted ? (
+                                    <VolumeX className="h-4 w-4 mr-2" />
+                                  ) : (
+                                    <Volume2 className="h-4 w-4 mr-2" />
+                                  )}
+                                  {selected.muted ? "Son" : "Mute"}
+                                </Button>
+                              )}
+                            </div>
+
+                            {selected.type === "video" && (
+                              <>
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-sm font-medium">
+                                    Lecture auto
+                                  </Label>
+                                  <input
+                                    type="checkbox"
+                                    checked={selected.autoPlay || false}
+                                    onChange={(e) =>
+                                      updateItemProperty(
+                                        "autoPlay",
+                                        e.target.checked
+                                      )
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300"
+                                  />
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-sm font-medium">
+                                    Boucle
+                                  </Label>
+                                  <input
+                                    type="checkbox"
+                                    checked={selected.loop || false}
+                                    onChange={(e) =>
+                                      updateItemProperty(
+                                        "loop",
+                                        e.target.checked
+                                      )
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+
+                        {/* BOUTON FOND D'ÉCRAN */}
                         <Button
                           onClick={setImageAsBackground}
                           className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
@@ -828,6 +1370,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                       </>
                     )}
 
+                    {/* BOUTON SUPPRIMER */}
                     <Button
                       variant="destructive"
                       onClick={removeSelected}
@@ -838,15 +1381,17 @@ export function EditCard({ ctx }: { ctx: any }) {
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border-gray-200">
-                    <Settings className="h-12 w-12 mx-auto mb-3 opacity-40 text-gray-400" />
-                    <p className="text-base font-medium text-gray-600 mb-1">
-                      Aucun élément sélectionné
-                    </p>
-                    <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                      Cliquez sur un élément dans l'éditeur pour modifier ses
-                      propriétés
-                    </p>
+                  <div className="text-center py-8 text-muted-foreground bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border-gray-200 h-full flex items-center justify-center">
+                    <div>
+                      <Settings className="h-12 w-12 mx-auto mb-3 opacity-40 text-gray-400" />
+                      <p className="text-base font-medium text-gray-600 mb-1">
+                        Aucun élément sélectionné
+                      </p>
+                      <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                        Cliquez sur un élément dans l'éditeur pour modifier ses
+                        propriétés
+                      </p>
+                    </div>
                   </div>
                 )}
               </TabsContent>
@@ -863,7 +1408,7 @@ export function EditCard({ ctx }: { ctx: any }) {
         )}
       </div>
 
-      {/* Bouton flottant du chatbot amélioré */}
+      {/* Bouton flottant du chatbot */}
       {!isChatOpen && (
         <Button
           onClick={() => setIsChatOpen(true)}
@@ -877,10 +1422,10 @@ export function EditCard({ ctx }: { ctx: any }) {
         </Button>
       )}
 
-      {/* Fenêtre du chatbot améliorée */}
+      {/* Fenêtre du chatbot */}
       {isChatOpen && (
         <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 flex flex-col overflow-hidden">
-          {/* Header du chat amélioré */}
+          {/* Header du chat */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-xl">
@@ -901,7 +1446,7 @@ export function EditCard({ ctx }: { ctx: any }) {
             </Button>
           </div>
 
-          {/* Messages du chat améliorés */}
+          {/* Messages du chat */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
             {chatMessages.map((message) => (
               <div
@@ -936,6 +1481,28 @@ export function EditCard({ ctx }: { ctx: any }) {
                       minute: "2-digit",
                     })}
                   </span>
+
+                  {/* Boutons d'action pour les messages d'amélioration */}
+                  {improvementState.isImprovementMode &&
+                    improvementState.analysis && (
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+                        <Button
+                          onClick={applyImprovements}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 h-auto"
+                          size="sm"
+                        >
+                          ✅ Appliquer les améliorations
+                        </Button>
+                        <Button
+                          onClick={revertToOriginal}
+                          variant="outline"
+                          className="flex-1 text-xs py-2 h-auto border-gray-300"
+                          size="sm"
+                        >
+                          ↩️ Revenir à l'original
+                        </Button>
+                      </div>
+                    )}
                 </div>
               </div>
             ))}
@@ -965,14 +1532,14 @@ export function EditCard({ ctx }: { ctx: any }) {
             )}
           </div>
 
-          {/* Input du chat amélioré */}
+          {/* Input du chat */}
           <div className="p-4 border-t border-gray-200 bg-white">
             <div className="flex gap-2">
               <Input
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Décrivez votre carte professionnelle..."
+                placeholder="Décrivez votre carte ou demandez des améliorations..."
                 className="flex-1 h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500 bg-gray-50"
                 disabled={isLoading}
               />
@@ -990,13 +1557,14 @@ export function EditCard({ ctx }: { ctx: any }) {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-3 text-center">
-              💡 Exemple : "Carte corporate sobre avec logo et coordonnées"
+              💡 Exemples : "carte d'anniversaire" ou "améliore mon design avec
+              un style moderne"
             </p>
           </div>
         </div>
       )}
 
-      {/* Modal des modèles professionnels amélioré */}
+      {/* Modal des modèles professionnels */}
       {showBackgroundPicker && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden border border-gray-200">

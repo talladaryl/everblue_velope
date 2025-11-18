@@ -14,6 +14,7 @@ export interface ChatMessage {
   content: string;
   role: "user" | "assistant";
   timestamp: Date;
+  hasActions?: boolean;
 }
 
 export interface DesignContextType {
