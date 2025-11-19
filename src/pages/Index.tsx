@@ -1,518 +1,546 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Palette, Calendar, Trash2 } from "lucide-react";
-import { Template } from "@/types";
-import { getTemplates, removeTemplate } from "@/utils/storage";
+  Search,
+  Filter,
+  Grid,
+  List,
+  ArrowRight,
+  Sparkles,
+  Eye,
+  Edit3,
+  Star,
+  Zap,
+  Palette,
+  Download,
+  Share2,
+  Calendar,
+  MapPin,
+  Users,
+  Crown,
+} from "lucide-react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { AuthModal } from "@/components/AuthModal";
 
-/* --- Small UI charts (inline, lightweight) --- */
-const generateSparkData = (seed: number, points = 7) => {
-  // deterministic-ish pseudo data from seed
-  const out: number[] = [];
-  let v = (seed % 10) + 3;
-  for (let i = 0; i < points; i++) {
-    v = Math.max(1, Math.round(v + Math.sin((seed + i) * 0.7) * 2));
-    out.push(v);
-  }
-  return out;
-};
-
-const Sparkline: React.FC<{
-  data: number[];
-  color?: string;
-  width?: number;
-  height?: number;
-}> = ({ data, color = "#2563eb", width = 120, height = 28 }) => {
-  if (!data || data.length === 0) return null;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const len = data.length;
-  const stepX = width / Math.max(1, len - 1);
-  const points = data
-    .map((d, i) => {
-      const x = i * stepX;
-      const y =
-        max === min ? height / 2 : height - ((d - min) / (max - min)) * height;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  const polylinePoints = points;
-  return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      className="block"
-    >
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        points={polylinePoints}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-
-const MiniBars: React.FC<{ data: number[]; color?: string }> = ({
-  data,
-  color = "#059669",
-}) => {
-  if (!data || data.length === 0) return null;
-  const max = Math.max(...data);
-  return (
-    <div className="flex items-end gap-1 h-8">
-      {data.map((d, i) => (
-        <div
-          key={i}
-          style={{ height: `${(d / max) * 100}%` }}
-          className="w-1.5 rounded-sm"
-        />
-      ))}
-      <style>{`.w-1.5 { width: 6px; background: ${color} }`}</style>
-    </div>
-  );
-};
-
-/* Designs par défaut */
-const DEFAULT_DESIGNS: Template[] = [
+// Images réelles de Pexels/Pinterest pour chaque catégorie
+const mockCards = [
   {
     id: "1",
-    name: "Dazzling Dress Invitation",
-    description: "Invitation élégante pour quinceañera avec robe scintillante.",
-    palette: ["#2C2C54", "#EA2027", "#FDA7DC"],
-    bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    items: [],
-    createdAt: new Date(),
-    isCustom: false,
+    title: "Mariage Élégant",
+    category: "Mariage",
+    featured: true,
+    premium: true,
+    image:
+      "https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "💍",
   },
   {
     id: "2",
-    name: "Golden Wedding",
-    description: "Modèle élégant doré pour mariages classieux.",
-    palette: ["#FFD700", "#FFE55C", "#FFF9C4"],
-    bgColor: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
-    items: [],
-    createdAt: new Date(),
-    isCustom: false,
+    title: "Anniversaire Festif",
+    category: "Anniversaire",
+    featured: false,
+    premium: false,
+    image:
+      "https://images.pexels.com/photos/1556704/pexels-photo-1556704.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "🎂",
   },
   {
     id: "3",
-    name: "Design Tropical",
-    description: "Modèle élégant avec des feuilles tropicales.",
-    palette: ["#00B894", "#00cec9", "#ffeaa7"],
-    bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    items: [],
-    createdAt: new Date(),
-    isCustom: false,
+    title: "Événement d'Entreprise",
+    category: "Professionnel",
+    featured: true,
+    premium: true,
+    image:
+      "https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "💼",
   },
   {
     id: "4",
-    name: "Fête d'été",
-    description: "Invitation vibrante pour une fête d'été.",
-    palette: ["#FDCB6E", "#EE5A24", "#2C3A47"],
-    bgColor: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-    items: [],
-    createdAt: new Date(),
-    isCustom: false,
+    title: "Célébration de Noël",
+    category: "Noël",
+    featured: false,
+    premium: false,
+    image:
+      "https://images.pexels.com/photos/1303085/pexels-photo-1303085.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "🎄",
   },
   {
     id: "5",
-    name: "Design Classique",
-    description: "Invitation sobre et élégante pour tout événement.",
-    palette: ["#2C2C54", "#636E72", "#2D3436"],
-    bgColor: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-    items: [],
-    createdAt: new Date(),
-    isCustom: false,
+    title: "Soirée Élégante",
+    category: "Soirée",
+    featured: true,
+    premium: true,
+    image:
+      "https://images.pexels.com/photos/2741923/pexels-photo-2741923.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "🎉",
   },
   {
     id: "6",
-    name: "Jungle Urbaine",
-    description: "Thème moderne avec motifs de plantes et d'animaux.",
-    palette: ["#00B894", "#60A3BC", "#A29BFE"],
-    bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    items: [],
-    createdAt: new Date(),
-    isCustom: false,
+    title: "Baptême Angélique",
+    category: "Baptême",
+    featured: false,
+    premium: false,
+    image:
+      "https://images.pexels.com/photos/761963/pexels-photo-761963.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "👼",
+  },
+  {
+    id: "7",
+    title: "Réunion d'Affaires",
+    category: "Professionnel",
+    featured: false,
+    premium: false,
+    image:
+      "https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "📊",
+  },
+  {
+    id: "8",
+    title: "Mariage Romantique",
+    category: "Mariage",
+    featured: true,
+    premium: true,
+    image:
+      "https://images.pexels.com/photos/1024960/pexels-photo-1024960.jpeg?auto=compress&cs=tinysrgb&w=600",
+    icon: "🌹",
   },
 ];
 
-export default function IndexPage() {
-  const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
-  const [customTemplates, setCustomTemplates] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+const categories = [
+  "Tous",
+  "Mariage",
+  "Anniversaire",
+  "Professionnel",
+  "Noël",
+  "Baptême",
+  "Soirée",
+];
 
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        setLoading(true);
-        const maybe = await getTemplates();
-        const saved = Array.isArray(maybe) ? (maybe as Template[]) : [];
-        setCustomTemplates(saved);
-      } catch (error) {
-        console.error("Erreur chargement templates:", error);
-        setCustomTemplates([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadTemplates();
-  }, []);
+const features = [
+  {
+    icon: Palette,
+    title: "Design Personnalisable",
+    description: "Modifiez chaque détail pour créer une invitation unique",
+  },
+  {
+    icon: Zap,
+    title: "Création Rapide",
+    description: "Générez des invitations professionnelles en quelques minutes",
+  },
+  {
+    icon: Download,
+    title: "Téléchargement Illimité",
+    description: "Accédez à tous vos designs en haute qualité",
+  },
+  {
+    icon: Share2,
+    title: "Partage Facile",
+    description: "Envoyez vos invitations par email ou réseaux sociaux",
+  },
+];
 
-  const handleDeleteTemplate = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (!confirm("Supprimer ce modèle ?")) return;
-    try {
-      await removeTemplate?.(id);
-    } catch (err) {
-      console.error("Erreur suppression template:", err);
-    }
-    setCustomTemplates((prev) => prev.filter((t) => t.id !== id));
-  };
+const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-100/50 via-transparent to-transparent"></div>
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl"></div>
 
-  const allDesigns = useMemo(() => {
-    return [
-      ...DEFAULT_DESIGNS,
-      ...(Array.isArray(customTemplates) ? customTemplates : []),
-    ];
-  }, [customTemplates]);
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-sm font-medium">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Plateforme premium d'invitations
+              </div>
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase();
-    let designs = allDesigns;
-    if (activeTab === "custom")
-      designs = Array.isArray(customTemplates) ? customTemplates : [];
-    else if (activeTab === "default") designs = DEFAULT_DESIGNS;
-    return designs.filter((d) => {
-      const name = (d.name || "").toString().toLowerCase();
-      const desc = (d.description || "").toString().toLowerCase();
-      return name.includes(q) || desc.includes(q);
-    });
-  }, [query, activeTab, allDesigns, customTemplates]);
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
+                Créez des
+                <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  invitations
+                </span>
+                exceptionnelles
+              </h1>
 
-  const stats = useMemo(
-    () => ({
-      total: allDesigns.length,
-      custom: Array.isArray(customTemplates) ? customTemplates.length : 0,
-      default: DEFAULT_DESIGNS.length,
-    }),
-    [allDesigns.length, customTemplates]
+              <p className="text-xl text-gray-600 max-w-lg leading-relaxed">
+                Transformez vos événements avec des invitations personnalisées
+                conçues par des experts. Simple, rapide et professionnel.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                size="lg"
+                className="h-14 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                onClick={onOpenLogin}
+              >
+                Commencer gratuitement
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-14 px-8 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+                onClick={() =>
+                  document
+                    .getElementById("catalog")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+              >
+                Voir les modèles
+              </Button>
+            </div>
+
+            <div className="flex items-center space-x-8 pt-8">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">500+</div>
+                <div className="text-sm text-gray-600">Modèles Premium</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">25k+</div>
+                <div className="text-sm text-gray-600">Clients satisfaits</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center text-2xl font-bold text-yellow-500">
+                  4.9 <Star className="h-5 w-5 ml-1 fill-current" />
+                </div>
+                <div className="text-sm text-gray-600">Avis clients</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
+                <div className="text-center mb-6">
+                  <div className="text-2xl font-bold mb-2">Sophie & Thomas</div>
+                  <div className="text-blue-100">
+                    vous invitent à célébrer leur union
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="text-center">
+                    <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-200" />
+                    <div className="font-semibold">15 Juin 2024</div>
+                    <div className="text-sm text-blue-200">18h30</div>
+                  </div>
+                  <div className="text-center">
+                    <MapPin className="h-6 w-6 mx-auto mb-2 text-blue-200" />
+                    <div className="font-semibold">Château de Versailles</div>
+                    <div className="text-sm text-blue-200">Salle des Fêtes</div>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <Users className="h-6 w-6 mx-auto mb-2 text-blue-200" />
+                  <div className="text-sm text-blue-200">
+                    Code vestimentaire : Tenue de soirée
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="w-1 h-16 bg-gradient-to-b from-blue-600 to-transparent rounded-full"></div>
+      </div>
+    </section>
   );
+};
 
-  const SkeletonGrid = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {[...Array(8)].map((_, i) => (
-        <Card
-          key={i}
-          className="bg-white/80 backdrop-blur-sm border-0 shadow-sm"
-        >
-          <CardContent className="p-0">
-            <Skeleton className="h-32 sm:h-40 w-full rounded-t-lg" />
-            <div className="p-4 space-y-3">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-2/3" />
-              <div className="flex justify-between">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-3 w-16" />
+const FeaturesSection = () => {
+  return (
+    <section id="features" className="py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Pourquoi choisir Everblue ?
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Découvrez les fonctionnalités qui font de notre plateforme la
+            solution idéale pour vos invitations
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature, index) => (
+            <Card
+              key={index}
+              className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <feature.icon className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const InvitationCard = ({
+  title,
+  category,
+  featured,
+  premium,
+  image,
+  onOpenLogin,
+}: {
+  title: string;
+  category: string;
+  featured: boolean;
+  premium: boolean;
+  image: string;
+  onOpenLogin: () => void;
+}) => {
+  return (
+    <Card className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="relative overflow-hidden">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+
+          {featured && (
+            <div className="absolute top-3 left-3">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-500 text-white text-xs font-medium">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Populaire
+              </span>
+            </div>
+          )}
+
+          {premium && (
+            <div className="absolute top-3 right-3">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium">
+                <Crown className="h-3 w-3 mr-1" />
+                Premium
+              </span>
+            </div>
+          )}
+
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                className="bg-white/90 backdrop-blur-sm text-gray-900 hover:bg-white"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Aperçu
+              </Button>
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={onOpenLogin}
+              >
+                <Edit3 className="h-4 w-4 mr-1" />
+                Personnaliser
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="font-bold text-gray-900 text-lg line-clamp-1">
+              {title}
+            </h3>
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+              {category}
+            </span>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Modèle {category.toLowerCase()} élégant et entièrement
+            personnalisable
+          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1 text-yellow-500">
+              <Star className="h-4 w-4 fill-current" />
+              <span className="text-sm text-gray-600">4.8</span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+              onClick={onOpenLogin}
+            >
+              Utiliser
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const CatalogSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Tous");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const filteredCards = mockCards.filter((card) => {
+    const matchesSearch = card.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "Tous" || card.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <section id="catalog" className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Nos modèles d'invitations
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Découvrez notre collection de modèles premium conçus par des
+            designers professionnels pour tous vos événements spéciaux
+          </p>
+        </div>
+
+        <Card className="border-0 shadow-lg mb-8">
+          <CardContent className="p-6">
+            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Rechercher un modèle..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    variant={
+                      selectedCategory === category ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={
+                      selectedCategory === category
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                    }
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex items-center space-x-2 bg-gray-100 rounded-xl p-1">
+                <Button
+                  size="sm"
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  onClick={() => setViewMode("grid")}
+                  className="px-3 rounded-lg"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  onClick={() => setViewMode("list")}
+                  className="px-3 rounded-lg"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
-      ))}
-    </div>
-  );
 
-  const formatDate = (d: any) => {
-    try {
-      const date = d ? new Date(d) : new Date();
-      return date.toLocaleDateString("fr-FR");
-    } catch {
-      return new Date().toLocaleDateString("fr-FR");
-    }
+        <div className="flex items-center justify-between mb-8">
+          <p className="text-gray-600">
+            {filteredCards.length} modèle{filteredCards.length !== 1 ? "s" : ""}{" "}
+            trouvé{filteredCards.length !== 1 ? "s" : ""}
+          </p>
+          <Button
+            variant="outline"
+            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Plus de filtres
+          </Button>
+        </div>
+
+        <div
+          className={`grid gap-8 ${
+            viewMode === "grid"
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "grid-cols-1"
+          }`}
+        >
+          {filteredCards.map((card, index) => (
+            <div
+              key={card.id}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <InvitationCard {...card} onOpenLogin={onOpenLogin} />
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl px-8"
+            onClick={onOpenLogin}
+          >
+            Voir tous les modèles
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default function Index() {
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (userData: any) => {
+    setUser(userData);
+    setIsAuthOpen(false);
   };
 
   return (
-    <div>
-      <header className="mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent">
-              Galerie de Designs
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base max-w-2xl">
-              Créez des invitations uniques en choisissant parmi nos modèles ou
-              en démarrant de zéro
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:block max-w-xs">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Rechercher un design, événement, thème..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="pl-10 py-2 bg-white/80 backdrop-blur-sm border-0 shadow-sm focus:shadow-md transition-all text-sm"
-                />
-              </div>
-            </div>
-
-            <Button
-              onClick={() => navigate("/builder/")}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transition-all duration-300 whitespace-nowrap text-sm"
-              size="sm"
-            >
-              <Plus size={16} />
-              Nouveau Design
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats with small graphs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xl font-bold text-gray-900">
-                    {stats.total}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Designs Total</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <Sparkline
-                    data={generateSparkData(stats.total)}
-                    color="#1d4ed8"
-                    width={120}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">7 jours</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xl font-bold text-gray-900">
-                    {stats.custom}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Personnalisés</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <MiniBars
-                    data={generateSparkData(stats.custom)}
-                    color="#059669"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">activité</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xl font-bold text-gray-900">
-                    {stats.default}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Modèles Prêts</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <Sparkline
-                    data={generateSparkData(stats.default)}
-                    color="#7c3aed"
-                    width={120}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">trend</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </header>
-
-      {/* Grid of designs */}
-      {loading ? (
-        <SkeletonGrid />
-      ) : (
-        <div>
-          <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filtered.map((design) => {
-              const bg =
-                typeof design.bgColor === "string" ? design.bgColor : undefined;
-              const palette = Array.isArray(design.palette)
-                ? design.palette
-                : [];
-              const items = Array.isArray(design.items) ? design.items : [];
-              return (
-                <Card
-                  key={design.id}
-                  className="group cursor-pointer bg-white/90 backdrop-blur-sm border-0 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                  onClick={() => navigate(`/builder?template=${design.id}`)}
-                >
-                  <div className="relative h-40 sm:h-48 overflow-hidden">
-                    <div
-                      className="w-full h-full flex items-center justify-center p-4 transition-transform duration-500 group-hover:scale-105"
-                      style={{
-                        background:
-                          bg || "linear-gradient(135deg,#f3f4f6,#e6eefc)",
-                      }}
-                    >
-                      {items.length > 0 ? (
-                        items.slice(0, 2).map((item: any, index: number) =>
-                          item?.type === "text" ? (
-                            <div
-                              key={item.id ?? index}
-                              className="absolute text-center font-medium drop-shadow-sm"
-                              style={{
-                                left: `${18 + index * 10}%`,
-                                top: `${28 + index * 15}%`,
-                                color: item.color || "#000000",
-                                fontSize: `${Math.max(
-                                  12,
-                                  (item.fontSize || 20) / 2
-                                )}px`,
-                                fontWeight: item.fontWeight || 600,
-                                fontFamily: item.fontFamily || "system-ui",
-                                textAlign: item.textAlign as any,
-                                maxWidth: "70%",
-                              }}
-                            >
-                              {item.text}
-                            </div>
-                          ) : null
-                        )
-                      ) : (
-                        <div className="text-center">
-                          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Palette className="h-5 w-5 text-white/80" />
-                          </div>
-                          <p className="text-white/90 text-sm font-medium">
-                            {design.name}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/16 transition-all duration-300 flex items-center justify-center">
-                        <Button
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white/95 text-gray-900 hover:bg-white shadow-lg border-0 text-sm"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Utiliser
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Palette */}
-                    <div className="absolute top-3 right-3 flex gap-1.5">
-                      {palette.slice(0, 3).map((color, index) => (
-                        <div
-                          key={index}
-                          className="w-3 h-3 rounded-full border-2 border-white/80 shadow-sm"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Delete button */}
-                    <button
-                      onClick={(e) => handleDeleteTemplate(e, design.id)}
-                      className="absolute top-3 left-3 bg-white/90 rounded-full p-1 shadow-sm hover:bg-red-50 z-20"
-                      title="Supprimer le modèle"
-                    >
-                      <Trash2 className="h-4 w-4 text-red-600" />
-                    </button>
-                  </div>
-
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <CardTitle className="text-sm md:text-base font-semibold line-clamp-1 text-gray-900">
-                        {design.name || "Sans titre"}
-                      </CardTitle>
-                    </div>
-
-                    <CardDescription className="text-xs md:text-sm line-clamp-2 mb-3 text-gray-600">
-                      {design.description || ""}
-                    </CardDescription>
-
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatDate(design.createdAt)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Palette className="h-3 w-3" />
-                        {items.length || 0} éléments
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-
-            {/* New card */}
-            <Card
-              className="group cursor-pointer bg-gradient-to-br from-blue-50/80 to-purple-50/80 border-2 border-dashed border-blue-300 hover:border-blue-400 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 backdrop-blur-sm"
-              onClick={() => navigate("/builder")}
-            >
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center h-48">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                  <Plus className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="font-semibold text-base mb-1 text-gray-900">
-                  Nouveau Design
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Créez une invitation unique depuis zéro
-                </p>
-              </CardContent>
-            </Card>
-          </section>
-
-          {filtered.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center mx-auto mb-4">
-                <Search className="h-10 w-10 text-blue-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Aucun design trouvé
-              </h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Aucun design ne correspond à votre recherche. Essayez de
-                modifier vos critères ou créez un nouveau design personnalisé.
-              </p>
-              <Button
-                onClick={() => navigate("/builder")}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg px-6"
-                size="sm"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Créer un Nouveau Design
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+    <div className="min-h-screen bg-white">
+      <Header onOpenLogin={() => setIsAuthOpen(true)} user={user} />
+      <main>
+        <HeroSection onOpenLogin={() => setIsAuthOpen(true)} />
+        <FeaturesSection />
+        <CatalogSection onOpenLogin={() => setIsAuthOpen(true)} />
+      </main>
+      <Footer />
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onLogin={handleLogin}
+      />
     </div>
   );
 }
