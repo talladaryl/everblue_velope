@@ -134,7 +134,7 @@ export default function StepPreview({ ctx }: { ctx: any }) {
                       <SelectItem key={g.id} value={g.id}>
                         {g.name} — {g.email}
                       </SelectItem>
-                    ))}
+                    ))} 
                   </SelectContent>
                 </Select>
               </div>
