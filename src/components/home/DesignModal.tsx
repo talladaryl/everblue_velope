@@ -21,7 +21,7 @@ import {
 import { Template } from "@/types";
 
 interface DesignModalProps {
-  selectedDesign: Template | null;
+  editCard: Template | null;
   closeDesignModal: () => void;
   currentSlide: number;
   allDesigns: Template[];
@@ -34,10 +34,11 @@ interface DesignModalProps {
   navigate: (path: string) => void;
   formatDate: (date?: string | Date) => string;
   previewRef: React.RefObject<HTMLDivElement>;
+  handleUseTemplate: (design: Template, colorOverride?: string) => void;
 }
 
 const DesignModal: React.FC<DesignModalProps> = ({
-  selectedDesign,
+  editCard,
   closeDesignModal,
   currentSlide,
   allDesigns,
@@ -50,10 +51,11 @@ const DesignModal: React.FC<DesignModalProps> = ({
   navigate,
   formatDate,
   previewRef,
+  handleUseTemplate,
 }) => {
-  if (!selectedDesign) return null;
+  if (!editCard) return null;
 
-  // Réutiliser le même DesignPreview que dans HomePage
+  // Composant DesignPreview réutilisable
   const DesignPreview = ({
     design,
     colorOverride,
@@ -98,7 +100,132 @@ const DesignModal: React.FC<DesignModalProps> = ({
               </div>
             </div>
           );
-        // ... autres cas pour chaque modèle
+        case "simple-hover":
+          return (
+            <div className="model3-envelope scale-150">
+              <div className="model3-back" />
+              <div className="model3-letter model3-lift">
+                <div className="model3-text">Remember To Change The World!</div>
+              </div>
+              <div className="model3-front" />
+              <div className="model3-top" />
+              <div className="model3-shadow" />
+            </div>
+          );
+        case "love":
+          return (
+            <div className="model4-envlope-wrapper scale-150 open">
+              <div className="model4-envelope open">
+                <div className="model4-front model4-flap" />
+                <div className="model4-front model4-pocket" />
+                <div className="model4-letter">
+                  <div className="model4-words model4-line1" />
+                  <div className="model4-words model4-line2" />
+                  <div className="model4-words model4-line3" />
+                  <div className="model4-words model4-line4" />
+                </div>
+                <div className="model4-hearts">
+                  <div className="model4-heart model4-a1" />
+                  <div className="model4-heart model4-a2" />
+                  <div className="model4-heart model4-a3" />
+                </div>
+              </div>
+            </div>
+          );
+        case "valentine":
+          return (
+            <div className="model5-container-valentine scale-150">
+              <div className="model5-envelope active">
+                <div className="model5-envelope-back" />
+                <div className="model5-envelope-inner" />
+                <div className="model5-letter">
+                  <div className="model5-letter-content">Your message</div>
+                </div>
+                <div className="model5-envelope-front" />
+                <div className="model5-envelope-flap" />
+              </div>
+            </div>
+          );
+        case "heart":
+          return (
+            <div className="model11-letter_ct scale-150">
+              <input
+                type="checkbox"
+                id="model11-check"
+                checked={true}
+                readOnly
+                className="model11-check"
+              />
+              <label htmlFor="model11-check" className="model11-label">
+                <span className="model11-letter model11-main"></span>
+                <div className="model11-note">
+                  <p className="model11-int">Dear [NAME],</p>
+                  <p>
+                    [MESSAGE]
+                    <br />
+                    [MESSAGE]
+                  </p>
+                  <p className="model11-sign">
+                    [greeting],
+                    <br />
+                    [OWN NAME]
+                  </p>
+                </div>
+                <span className="model11-front"></span>
+                <span className="model11-letter model11-flap-bg"></span>
+                <span className="model11-letter model11-flap"></span>
+                <span className="model11-heart"></span>
+              </label>
+            </div>
+          );
+        case "extravagant":
+          return (
+            <div className="model7-envelop scale-150">
+              <div className="model7-envelop__front-paper" />
+              <div className="model7-envelop__back-paper" />
+              <div className="model7-envelop__up-paper" />
+              <div className="model7-envelop__sticker" />
+              <div className="model7-envelop__false-sticker" />
+              <div className="model7-envelop__content">
+                <div className="model7-love-notes">
+                  <div className="model7-note">
+                    <div className="model7-note__text">
+                      <p>Hola amor...</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        case "basic":
+          return (
+            <div className="model8-page1 scale-150">
+              <div className="model8-envelope-wrapper open">
+                <div className="model8-envelope open">
+                  <div className="model8-flap" />
+                  <div className="model8-stripe" />
+                </div>
+                <div className="model8-letter popped">
+                  Hey Lorraine...{" "}
+                  <button className="model8-next-btn">Next</button>
+                </div>
+              </div>
+            </div>
+          );
+        case "fly":
+          return (
+            <div className="model9-envelope_form_wrap scale-150">
+              <div className="model9-env_wrap">
+                <div className="model9-env_form_wrap">
+                  <h3>Drop in your email</h3>
+                </div>
+                <div className="model9-env_top" />
+                <div className="model9-env_bottom_wrap">
+                  <div className="model9-env_bottom" />
+                </div>
+              </div>
+            </div>
+          );
         default:
           return (
             <div className="flex items-center justify-center w-full h-full">
@@ -123,12 +250,12 @@ const DesignModal: React.FC<DesignModalProps> = ({
   };
 
   return (
-    <Dialog open={!!selectedDesign} onOpenChange={closeDesignModal}>
+    <Dialog open={!!editCard} onOpenChange={closeDesignModal}>
       <DialogContent className="max-w-7xl w-full max-h-[90vh] overflow-hidden rounded-3xl p-0 border-0 shadow-2xl">
         <DialogHeader className="p-6 border-b bg-gradient-to-r from-slate-50 to-blue-50">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold text-gray-900">
-              {selectedDesign.name}
+              {editCard.name}
             </DialogTitle>
             <Button
               variant="ghost"
@@ -151,7 +278,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                   className="w-full h-full flex items-center justify-center"
                 >
                   <DesignPreview
-                    design={selectedDesign}
+                    design={editCard}
                     colorOverride={selectedColor || undefined}
                   />
                 </div>
@@ -171,7 +298,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                 </Button>
 
                 <Button
-                  onClick={() => playPreview(selectedDesign)}
+                  onClick={() => playPreview(editCard)}
                   className="flex items-center gap-2 rounded-xl px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all text-base"
                 >
                   <Eye className="h-5 w-5" />
@@ -211,7 +338,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                       Couleur principale
                     </h4>
                     <div className="flex flex-wrap gap-4">
-                      {selectedDesign.colors?.map((color, index) => (
+                      {editCard.colors?.map((color, index) => (
                         <button
                           key={index}
                           className={`w-12 h-12 rounded-2xl border-4 transition-all hover:scale-110 ${
@@ -224,7 +351,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                             setSelectedColor(color);
                             setCardColors({
                               ...cardColors,
-                              [selectedDesign.id]: color,
+                              [editCard.id]: color,
                             });
                           }}
                         />
@@ -235,7 +362,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                   {/* Bouton d'édition principal */}
                   <Button
                     onClick={() => {
-                      navigate(`/builder?template=${selectedDesign.id}`);
+                      handleUseTemplate(editCard, selectedColor);
                       closeDesignModal();
                     }}
                     className="w-full flex items-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg shadow-2xl hover:shadow-3xl transition-all"
@@ -259,7 +386,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                           variant="secondary"
                           className="capitalize font-semibold text-sm"
                         >
-                          {selectedDesign.category}
+                          {editCard.category}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center py-3 border-b border-gray-100">
@@ -267,19 +394,33 @@ const DesignModal: React.FC<DesignModalProps> = ({
                           Popularité:
                         </span>
                         <span className="font-bold text-green-600">
-                          {selectedDesign.popularity}%
+                          {editCard.popularity}%
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-3 border-b border-gray-100">
                         <span className="text-muted-foreground">Éléments:</span>
                         <span className="font-bold">
-                          {selectedDesign.items?.length || 0}
+                          {editCard.items?.length || 0}
                         </span>
+                      </div>
+                      <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                        <span className="text-muted-foreground">
+                          Enveloppe:
+                        </span>
+                        <Badge
+                          className={
+                            editCard.hasEnvelope
+                              ? "bg-green-600 text-white"
+                              : "bg-gray-500 text-white"
+                          }
+                        >
+                          {editCard.hasEnvelope ? "Incluse" : "Non incluse"}
+                        </Badge>
                       </div>
                       <div className="flex justify-between items-center py-3">
                         <span className="text-muted-foreground">Créé le:</span>
                         <span className="font-semibold">
-                          {formatDate(selectedDesign.createdAt)}
+                          {formatDate(editCard.createdAt)}
                         </span>
                       </div>
                     </div>

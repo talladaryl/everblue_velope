@@ -581,31 +581,61 @@ export default function Builder() {
   }, [location.search]);
 
   // Render helpers
-  // Steps as underline-only tabs, horizontally scrollable on small screens
+  // Steps navigation - Version améliorée avec design moderne
   const StepNav = () => {
     const labels = ["Design", "Détails", "Prévisualisation", "Envoi"];
     return (
-      <nav
-        aria-label="Étapes"
-        className="flex gap-3 overflow-x-auto px-1 py-1 lg:px-0 no-scrollbar"
-      >
-        {labels.map((label, i) => (
-          <button
-            key={label}
-            onClick={() => setStep(i as Step)}
-            className={cn(
-              "flex-shrink-0 px-3 py-2 text-sm font-medium border-b-2 transition-colors",
-              step === i
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-gray-700"
-            )}
-            aria-current={step === i ? "step" : undefined}
-          >
-            <span className="hidden sm:inline mr-2">{i + 1}.</span>
-            {label}
-          </button>
-        ))}
-      </nav>
+      <div className="relative">
+        {/* Ligne de progression */}
+        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 hidden md:block">
+          <div
+            className="h-full bg-blue-600 transition-all duration-300"
+            style={{
+              width: `${((step + 1) / labels.length) * 100}%`,
+            }}
+          />
+        </div>
+
+        {/* Étapes cliquables */}
+        <nav
+          aria-label="Étapes"
+          className="relative flex justify-between gap-2 md:gap-4"
+        >
+          {labels.map((label, i) => (
+            <button
+              key={label}
+              onClick={() => setStep(i as Step)}
+              className={`group flex flex-col items-center gap-1 md:gap-2 transition-all ${
+                step === i
+                  ? "scale-105"
+                  : "hover:scale-105 opacity-70 hover:opacity-100"
+              }`}
+              aria-current={step === i ? "step" : undefined}
+            >
+              <div
+                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm transition-all ${
+                  step === i
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
+                    : step > i
+                    ? "bg-green-500 text-white"
+                    : "bg-white border-2 border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600"
+                }`}
+              >
+                {step > i ? "✓" : i + 1}
+              </div>
+              <span
+                className={`text-xs md:text-sm font-medium transition-all ${
+                  step === i
+                    ? "text-blue-600"
+                    : "text-gray-600 group-hover:text-blue-600"
+                }`}
+              >
+                {label}
+              </span>
+            </button>
+          ))}
+        </nav>
+      </div>
     );
   };
 

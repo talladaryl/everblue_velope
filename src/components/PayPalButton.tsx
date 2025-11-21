@@ -1,3 +1,4 @@
+// components/PayPalButton.tsx
 import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import { useState } from "react";
 
@@ -8,11 +9,11 @@ interface PayPalButtonProps {
   onError: (error: string) => void;
 }
 
-export const PayPalButton = ({
-  amount,
-  planName,
-  onSuccess,
-  onError,
+export const PayPalButton = ({ 
+  amount, 
+  planName, 
+  onSuccess, 
+  onError 
 }: PayPalButtonProps) => {
   const [{ isPending }] = usePayPalScriptReducer();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -23,7 +24,7 @@ export const PayPalButton = ({
         {
           description: `Abonnement: ${planName}`,
           amount: {
-            value: amount.replace("€", ""),
+            value: amount.replace('€', ''), // Retirer le symbole €
             currency_code: "EUR",
           },
         },
@@ -46,7 +47,7 @@ export const PayPalButton = ({
     }
   };
 
-  const onPayPalError = (err: any) => {
+  const onError = (err: any) => {
     onError("Erreur lors de l'initialisation du paiement PayPal");
   };
 
@@ -55,9 +56,7 @@ export const PayPalButton = ({
       <div className="flex justify-center items-center p-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         <span className="ml-2">
-          {isProcessing
-            ? "Traitement du paiement..."
-            : "Chargement de PayPal..."}
+          {isProcessing ? "Traitement du paiement..." : "Chargement de PayPal..."}
         </span>
       </div>
     );
@@ -73,7 +72,7 @@ export const PayPalButton = ({
       }}
       createOrder={createOrder}
       onApprove={onApprove}
-      onError={onPayPalError}
+      onError={onError}
     />
   );
 };

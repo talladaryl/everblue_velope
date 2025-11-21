@@ -1,10 +1,16 @@
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+// components/PayPalProvider.tsx
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
-const stripePromise = loadStripe(
-  "pk_test_51ExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExampleExample"
-);
+const paypalOptions = {
+  clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+  currency: "EUR",
+  intent: "capture",
+};
 
-export const StripeProvider = ({ children }: { children: React.ReactNode }) => {
-  return <Elements stripe={stripePromise}>{children}</Elements>;
+export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <PayPalScriptProvider options={paypalOptions}>
+      {children}
+    </PayPalScriptProvider>
+  );
 };

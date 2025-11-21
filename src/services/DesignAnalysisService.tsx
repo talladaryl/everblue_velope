@@ -131,24 +131,126 @@ IMPORTANT:
     currentDesign: any,
     userRequest: string
   ): DesignAnalysis {
-    // Fallback avec améliorations basiques
-    const improvements = [
-      "Harmonisation des couleurs pour un look plus moderne",
-      "Amélioration de la typographie et de la hiérarchie visuelle",
-      "Rééquilibrage de la composition",
-    ];
+    // Déterminer le type de design basé sur la requête
+    const requestLower = userRequest.toLowerCase();
+    let bgColor = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+    let mainText = "Votre Message Ici";
+    let fontSize = 24;
+    let fontFamily = "'Poppins', sans-serif";
+    let textColor = "#ffffff";
+
+    // Adapter selon le type de carte demandé
+    if (requestLower.includes("mariage") || requestLower.includes("wedding")) {
+      bgColor = "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)";
+      mainText = "Vous êtes invités à notre mariage";
+      fontSize = 28;
+      fontFamily = "'Playfair Display', serif";
+      textColor = "#8b4513";
+    } else if (
+      requestLower.includes("anniversaire") ||
+      requestLower.includes("birthday")
+    ) {
+      bgColor = "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)";
+      mainText = "Joyeux Anniversaire!";
+      fontSize = 32;
+      fontFamily = "'Dancing Script', cursive";
+      textColor = "#ffffff";
+    } else if (
+      requestLower.includes("professionnel") ||
+      requestLower.includes("business") ||
+      requestLower.includes("corporate")
+    ) {
+      bgColor = "linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%)";
+      mainText = "Invitation Professionnelle";
+      fontSize = 22;
+      fontFamily = "'Inter', sans-serif";
+      textColor = "#ffffff";
+    } else if (
+      requestLower.includes("moderne") ||
+      requestLower.includes("modern")
+    ) {
+      bgColor = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+      mainText = "Design Moderne";
+      fontSize = 26;
+      fontFamily = "'Montserrat', sans-serif";
+      textColor = "#ffffff";
+    }
+
+    // Améliorer le design existant ou créer un nouveau
+    const hasItems = currentDesign.items && currentDesign.items.length > 0;
+    const newItems = hasItems
+      ? currentDesign.items.map((item: any) => {
+          if (item.type === "text") {
+            return {
+              ...item,
+              fontFamily: fontFamily,
+              color: textColor,
+              fontSize: Math.max(item.fontSize || 16, fontSize - 4),
+            };
+          }
+          return item;
+        })
+      : [
+          {
+            id: "text-1",
+            type: "text",
+            text: mainText,
+            x: 50,
+            y: 80,
+            fontSize: fontSize,
+            color: textColor,
+            fontFamily: fontFamily,
+            fontWeight: "bold",
+            textAlign: "center",
+          },
+          {
+            id: "text-2",
+            type: "text",
+            text: "Rejoignez-nous pour célébrer",
+            x: 50,
+            y: 140,
+            fontSize: fontSize - 8,
+            color: textColor,
+            fontFamily: fontFamily,
+            fontWeight: "normal",
+            textAlign: "center",
+          },
+        ];
+
+    const improvements = hasItems
+      ? [
+          "Harmonisation des couleurs pour un look plus moderne",
+          "Amélioration de la typographie et de la hiérarchie visuelle",
+          "Rééquilibrage de la composition et des espacements",
+        ]
+      : [
+          "Création d'un design cohérent et esthétique",
+          "Utilisation de couleurs harmonieuses et modernes",
+          "Typographie élégante et lisible",
+        ];
 
     return {
       improvements,
       newDesign: {
-        bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        items: currentDesign.items || [],
+        bgColor: bgColor,
+        items: newItems,
         suggestions: [
-          "Ajouter plus d'espace entre les éléments",
-          "Utiliser des contrastes plus forts",
+          "Personnalisez le texte selon vos besoins",
+          "Ajoutez des images ou des éléments décoratifs",
+          "Ajustez les couleurs à votre thème",
         ],
       },
-      explanation: `J'ai analysé votre design et propose ces améliorations pour le rendre plus moderne et professionnel.`,
+      explanation: hasItems
+        ? `J'ai analysé votre design et propose ces améliorations pour le rendre plus moderne et professionnel selon votre demande.`
+        : `J'ai créé un design ${
+            requestLower.includes("mariage")
+              ? "élégant pour un mariage"
+              : requestLower.includes("anniversaire")
+              ? "festif pour un anniversaire"
+              : requestLower.includes("professionnel")
+              ? "professionnel"
+              : "moderne"
+          } avec une typographie soignée et des couleurs harmonieuses.`,
     };
   }
 }

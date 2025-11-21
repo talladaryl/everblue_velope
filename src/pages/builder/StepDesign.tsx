@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Palette,
   Eye,
@@ -19,21 +18,19 @@ import {
 } from "lucide-react";
 
 // Sous-composants
-import { SelectDesign } from "./design-steps/SelectDesign";
 import { EditCard } from "./design-steps/EditCard";
 import { EditEnvelope } from "./design-steps/EditEnvelope";
 
 export default function StepDesign({ ctx }: { ctx: any }) {
-  const [currentSubStep, setCurrentSubStep] = useState<
-    "select" | "card" | "envelope"
-  >("select");
+  const [currentSubStep, setCurrentSubStep] = useState<"card" | "envelope">(
+    "card"
+  );
   const { setStep } = ctx;
 
-  // expose setSubStep so child (SelectDesign) can switch sub-step via ctx.setSubStep(...)
-  // ensure it's a function (pass setter) to avoid passing the current value by mistake
+  // expose setSubStep so child can switch sub-step via ctx.setSubStep(...)
   const enhancedCtx = {
     ...ctx,
-    setSubStep: (s: "select" | "card" | "envelope") => setCurrentSubStep(s),
+    setSubStep: (s: "card" | "envelope") => setCurrentSubStep(s),
   };
 
   // Error boundary to avoid full white screen and surface runtime errors
@@ -60,7 +57,8 @@ export default function StepDesign({ ctx }: { ctx: any }) {
               Erreur dans l'éditeur
             </div>
             <div className="text-sm text-muted-foreground mt-2">
-                Une erreur est survenue lors du rendu de cette section de l'éditeur.
+              Une erreur est survenue lors du rendu de cette section de
+              l'éditeur.
             </div>
           </div>
         );
@@ -71,39 +69,28 @@ export default function StepDesign({ ctx }: { ctx: any }) {
 
   const renderSubStep = () => {
     switch (currentSubStep) {
-      case "select":
-        return (
-          <SelectDesign
-            ctx={enhancedCtx}
-            onDesignSelected={() => setCurrentSubStep("card")}
-          />
-        );
       case "card":
         return <EditCard ctx={enhancedCtx} />;
       case "envelope":
         return <EditEnvelope ctx={enhancedCtx} />;
       default:
-        return <SelectDesign ctx={enhancedCtx} />;
+        return <EditCard ctx={enhancedCtx} />;
     }
   };
 
   const getNextStep = () => {
     switch (currentSubStep) {
-      case "select":
-        return "card";
       case "card":
         return "envelope";
       case "envelope":
-        return "select";
+        return "card";
     }
   };
 
   const getPrevStep = () => {
     switch (currentSubStep) {
-      case "select":
-        return "select";
       case "card":
-        return "select";
+        return "card";
       case "envelope":
         return "card";
     }
@@ -111,95 +98,101 @@ export default function StepDesign({ ctx }: { ctx: any }) {
 
   return (
     <div className="space-y-6">
-      {/* En-tête de navigation */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Création de l'invitation
-              </CardTitle>
-              <CardDescription>
-                Étape 1: Personnalisez votre carte et votre enveloppe
-              </CardDescription>
-            </div>
+      {/* En-tête de navigation - Version améliorée */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Palette className="h-6 w-6 text-blue-600" />
+            Création de l'invitation
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Personnalisez votre carte et votre enveloppe
+          </p>
+        </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setStep(2)}
-                className="flex items-center gap-2"
-              >
-                <Eye className="h-4 w-4" />
-                Prévisualiser
-              </Button>
-            </div>
-          </div>
+        <Button
+          variant="outline"
+          onClick={() => setStep(2)}
+          className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 transition-all"
+        >
+          <Eye className="h-4 w-4" />
+          Prévisualiser
+        </Button>
+      </div>
 
-          {/* Barre de progression */}
-          <div className="w-full bg-muted rounded-full h-2 mt-4">
-            <div
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{
-                width:
-                  currentSubStep === "select"
-                    ? "33%"
-                    : currentSubStep === "card"
-                    ? "66%"
-                    : "100%",
-              }}
-            />
-          </div>
+      {/* Navigation par étapes - Version simplifiée et élégante */}
+      <div className="relative">
+        {/* Ligne de progression */}
+        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200">
+          <div
+            className="h-full bg-blue-600 transition-all duration-300"
+            style={{
+              width: currentSubStep === "card" ? "50%" : "100%",
+            }}
+          />
+        </div>
 
-          {/* Indicateurs d'étapes - maintenant cliquables */}
-          <div className="flex justify-between mt-2">
+        {/* Étapes cliquables */}
+        <div className="relative flex justify-between">
+          {/* Étape 1: Carte */}
+          <button
+            onClick={() => setCurrentSubStep("card")}
+            className={`group flex flex-col items-center gap-2 transition-all ${
+              currentSubStep === "card"
+                ? "scale-105"
+                : "hover:scale-105 opacity-70 hover:opacity-100"
+            }`}
+          >
             <div
-              role="button"
-              tabIndex={0}
-              onClick={() => setCurrentSubStep("select")}
-              onKeyDown={(e) =>
-                e.key === "Enter" && setCurrentSubStep("select")
-              }
-              className={`text-sm cursor-pointer ${
-                currentSubStep === "select"
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground"
-              }`}
-            >
-              1. Choisir un design
-            </div>
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => setCurrentSubStep("card")}
-              onKeyDown={(e) => e.key === "Enter" && setCurrentSubStep("card")}
-              className={`text-sm cursor-pointer ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                 currentSubStep === "card"
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
+                  : "bg-white border-2 border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600"
               }`}
             >
-              2. Modifier la carte
+              1
             </div>
+            <span
+              className={`text-sm font-medium transition-all ${
+                currentSubStep === "card"
+                  ? "text-blue-600"
+                  : "text-gray-600 group-hover:text-blue-600"
+              }`}
+            >
+              Modifier la carte
+            </span>
+          </button>
+
+          {/* Étape 2: Enveloppe */}
+          <button
+            onClick={() => setCurrentSubStep("envelope")}
+            className={`group flex flex-col items-center gap-2 transition-all ${
+              currentSubStep === "envelope"
+                ? "scale-105"
+                : "hover:scale-105 opacity-70 hover:opacity-100"
+            }`}
+          >
             <div
-              role="button"
-              tabIndex={0}
-              onClick={() => setCurrentSubStep("envelope")}
-              onKeyDown={(e) =>
-                e.key === "Enter" && setCurrentSubStep("envelope")
-              }
-              className={`text-sm cursor-pointer ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                 currentSubStep === "envelope"
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
+                  : "bg-white border-2 border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600"
               }`}
             >
-              3. Personnaliser l'enveloppe
+              2
             </div>
-          </div>
-        </CardHeader>
-      </Card>
+            <span
+              className={`text-sm font-medium transition-all ${
+                currentSubStep === "envelope"
+                  ? "text-blue-600"
+                  : "text-gray-600 group-hover:text-blue-600"
+              }`}
+            >
+              Personnaliser l'enveloppe
+            </span>
+          </button>
+        </div>
+      </div>
 
       {/* Contenu de l'étape (protégé par ErrorBoundary pour éviter page blanche) */}
       <ErrorBoundary>{renderSubStep()}</ErrorBoundary>
@@ -209,7 +202,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
         <Button
           variant="outline"
           onClick={() => setCurrentSubStep(getPrevStep())}
-          disabled={currentSubStep === "select"}
+          disabled={currentSubStep === "card"}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />

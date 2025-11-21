@@ -68,3 +68,58 @@ export interface TextVariable {
   label: string;
   defaultValue: string;
 }
+
+// @/types/index.ts
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  colors: string[];
+  preview: string;
+  bgColor: string;
+  items: TemplateItem[];
+  envelope?: {
+    bgColor: string;
+    items: TemplateItem[];
+  };
+  createdAt: Date;
+  isCustom: boolean;
+  popularity: number;
+  hasEnvelope: boolean;
+}
+
+export interface TemplateItem {
+  id: string;
+  type: 'text' | 'image' | 'video' | 'gif';
+  text?: string;
+  src?: string;
+  x: number;
+  y: number;
+  fontSize?: number;
+  color?: string;
+  fontFamily?: string;
+  fontWeight?: string;
+  textAlign?: string;
+  width?: number;
+  height?: number;
+  borderRadius?: number;
+  opacity?: number;
+  rotation?: number;
+  flipX?: boolean;
+  flipY?: boolean;
+  shadow?: {
+    enabled: boolean;
+    color: string;
+    blur: number;
+    offsetX: number;
+    offsetY: number;
+  };
+  filters?: {
+    brightness: number;
+    contrast: number;
+    saturation: number;
+    blur: number;
+    grayscale: number;
+  };
+}

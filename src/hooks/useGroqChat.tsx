@@ -190,6 +190,22 @@ export const useGroqChat = (designContext: any) => {
       items: [...designContext.items],
     };
 
+    // Vérifier si la carte est vide
+    const isEmptyCard = !currentDesign.items || currentDesign.items.length === 0;
+
+    if (isEmptyCard) {
+      // Si la carte est vide, traiter comme une nouvelle génération
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        content:
+          "💡 **Votre carte est vide !**\n\nJe vais créer un nouveau design pour vous. Décrivez-moi le type de carte que vous souhaitez (anniversaire, mariage, professionnel, etc.)",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      return;
+    }
+
     try {
       // Analyser et proposer des améliorations
       const analysis = await DesignAnalysisService.analyzeAndImprove(
@@ -248,6 +264,8 @@ export const useGroqChat = (designContext: any) => {
       } else {
         await handleNewDesignRequest(content);
       }
+      
+      // NE PAS FERMER LE CHAT - La conversation reste ouverte
     } catch (error) {
       console.error("Erreur useGroqChat:", error);
 
@@ -282,13 +300,14 @@ ${improvementsList}
 💡 **Explication :**
 ${analysis.explanation}
 
-🎯 **Que souhaitez-vous faire ?**`;
+🎯 **Choisissez une action ci-dessous :**`;
 
     return {
       id: (Date.now() + 1).toString(),
       content,
       role: "assistant",
       timestamp: new Date(),
+      showActions: true, // Flag pour afficher les boutons d'action
     };
   };
 

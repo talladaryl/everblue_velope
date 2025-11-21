@@ -182,6 +182,13 @@ export function EditCard({ ctx }: { ctx: any }) {
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [userInput, setUserInput] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const chatMessagesEndRef = React.useRef<HTMLDivElement>(null);
+  const previousActiveTabRef = React.useRef(activeTab);
+
+  // Sauvegarder l'onglet actif pour éviter les changements non désirés
+  React.useEffect(() => {
+    previousActiveTabRef.current = activeTab;
+  }, [activeTab]);
 
   // Utilisation du hook Groq Chat
   const {
@@ -192,6 +199,13 @@ export function EditCard({ ctx }: { ctx: any }) {
     applyImprovements,
     revertToOriginal,
   } = useGroqChat(ctx);
+
+  // Scroll automatique vers le bas quand un nouveau message arrive
+  React.useEffect(() => {
+    if (isChatOpen && chatMessagesEndRef.current) {
+      chatMessagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages, isChatOpen]);
 
   const selected = items.find((i: any) => i.id === selectedId) ?? null;
 
@@ -242,12 +256,15 @@ export function EditCard({ ctx }: { ctx: any }) {
   };
 
   // Fonction générique pour mettre à jour les propriétés
+  // Ne change PAS l'onglet actif - reste sur "properties"
   const updateItemProperty = (property: string, value: any) => {
     setItems((prev: any[]) =>
       prev.map((item: any) =>
         item.id === selectedId ? { ...item, [property]: value } : item
       )
     );
+    // Garder l'onglet "properties" actif après modification
+    // Ne pas changer activeTab ici
   };
 
   const setImageAsBackground = () => {
@@ -624,14 +641,22 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                   <Button
                     variant="outline"
-                    onClick={() => setShowVariables(true)}
+                    onClick={() => {
+                      setShowVariables(true);
+                      // Si un texte est sélectionné, passer en mode édition
+                      if (selected && selected.type === "text") {
+                        setActiveTab("properties");
+                      }
+                    }}
                     className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 rounded-xl col-span-2"
                   >
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <Plus className="h-5 w-5 text-orange-600" />
                     </div>
                     <span className="text-sm font-medium">
-                      Variables de texte
+                      Variables de texte ({"{"}
+                      {"{"}nom{"}"}, {"{"}
+                      {"{"}email{"}"}, etc.)
                     </span>
                   </Button>
                 </div>
@@ -1448,64 +1473,80 @@ export function EditCard({ ctx }: { ctx: any }) {
 
           {/* Messages du chat */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
-            {chatMessages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+            {chatMessages.map((message, index) => {
+              const isLastMessage = index === chatMessages.length - 1;
+              const showActionButtons =
+                isLastMessage &&
+                improvementState.isImprovementMode &&
+                improvementState.analysis &&
+                message.role === "assistant";
+
+              return (
                 <div
-                  className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 ${
-                    message.role === "user"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                      : "bg-white border border-gray-200 text-gray-800 shadow-lg"
+                  key={message.id}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    {message.role === "assistant" ? (
-                      <Bot className="h-4 w-4" />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                    <span className="text-xs font-medium opacity-80">
-                      {message.role === "assistant" ? "Assistant IA" : "Vous"}
+                  <div
+                    className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 ${
+                      message.role === "user"
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                        : "bg-white border border-gray-200 text-gray-800 shadow-lg"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      {message.role === "assistant" ? (
+                        <Bot className="h-4 w-4" />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                      <span className="text-xs font-medium opacity-80">
+                        {message.role === "assistant" ? "Assistant IA" : "Vous"}
+                      </span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {message.content}
+                    </p>
+                    <span className="text-xs opacity-60 block mt-2 text-right">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
-                  </div>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {message.content}
-                  </p>
-                  <span className="text-xs opacity-60 block mt-2 text-right">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
 
-                  {/* Boutons d'action pour les messages d'amélioration */}
-                  {improvementState.isImprovementMode &&
-                    improvementState.analysis && (
+                    {/* Boutons d'action uniquement sur le dernier message d'amélioration */}
+                    {showActionButtons && (
                       <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
                         <Button
-                          onClick={applyImprovements}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            applyImprovements();
+                            // NE PAS fermer le chat
+                          }}
                           className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 h-auto"
                           size="sm"
                         >
-                          ✅ Appliquer les améliorations
+                          ✅ Appliquer
                         </Button>
                         <Button
-                          onClick={revertToOriginal}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            revertToOriginal();
+                            // NE PAS fermer le chat
+                          }}
                           variant="outline"
                           className="flex-1 text-xs py-2 h-auto border-gray-300"
                           size="sm"
                         >
-                          ↩️ Revenir à l'original
+                          ↩️ Annuler
                         </Button>
                       </div>
                     )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-lg">
@@ -1530,6 +1571,8 @@ export function EditCard({ ctx }: { ctx: any }) {
                 </div>
               </div>
             )}
+            {/* Élément invisible pour le scroll automatique */}
+            <div ref={chatMessagesEndRef} />
           </div>
 
           {/* Input du chat */}
