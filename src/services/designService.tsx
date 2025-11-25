@@ -3,55 +3,33 @@ import { groqApi } from "./groqApi";
 import { UNIFIED_TEMPLATES } from "@/data/templates";
 
 export class DesignService {
-  static async generateDesignFromDescription(description: string): Promise<{
-    template: any | null;
-    suggestions: string[];
-    elements: any[];
-    message: string;
-  }> {
+  static async generateDesignFromDescription(description: string) {
     const prompt = `
-En tant qu'assistant design expert, analyse cette description de carte et recommande le meilleur template.
+Analyse la description de la carte ci-dessous et renvoie STRICTEMENT un JSON valide.
 
-DESCRIPTION UTILISATEUR: "${description}"
+DESCRIPTION: "${description}"
 
-TEMPLATES DISPONIBLES par catégorie:
-
-🎂 ANNIVERSAIRE (birthday):
-- Anniversaire Joyeux: carte festive colorée
-- Fête Colorée: anniversaire avec couleurs vibrantes
-
-💖 AMOUR/ROMANTIQUE (love):
-- Carte d'Amour: déclaration romantique
-- Saint-Valentin: fête des amoureux
-
-💼 PROFESSIONNEL (business):
-- Corporate Élégant: design professionnel
-- Luxe Moderne: style premium
-
-🎨 SIMPLE (simple):
-- Design Épuré: minimaliste et élégant
-- Carte Basique: classique et intemporel
-
-Réponds AU FORMAT JSON avec:
+FORMAT ATTENDU:
 {
   "recommendedTemplate": "id_du_template",
-  "reason": "explication courte pourquoi ce template convient",
-  "suggestedElements": ["élément1", "élément2"],
-  "colorAdvice": "conseil couleurs",
-  "category": "category_du_template"
+  "category": "birthday | love | business | simple",
+  "reason": "texte court",
+  "suggestedElements": ["texte1", "texte2"],
+  "colorAdvice": "texte"
 }
 
-IMPORTANT: Si la description mentionne "anniversaire", CHOISIS UN TEMPLATE DE CATÉGORIE "birthday"!
+IMPORTANT:
+- Réponds uniquement du JSON.
+- Jamais de texte autour.
+- Si tu n'as pas d’idée → mets null.
 `;
 
     try {
-      const response = await groqApi([
+      const raw = await groqApi([
         {
           role: "system",
-          content: `Tu es un assistant design spécialisé dans la création de cartes. 
-          Réponds TOUJOURS en JSON valide. 
-          Les catégories disponibles sont: birthday, love, business, simple.
-          Pour les anniversaires, utilise toujours la catégorie "birthday".`,
+          content:
+            "Tu es un assistant design. Tu DOIS répondre uniquement avec un JSON valide, sans aucun texte autour.",
         },
         {
           role: "user",
@@ -59,143 +37,133 @@ IMPORTANT: Si la description mentionne "anniversaire", CHOISIS UN TEMPLATE DE CA
         },
       ]);
 
-      console.log("Réponse Groq:", response);
+      console.log("🔥 Réponse brute GROQ:", raw);
 
-      // Extraire le JSON de la réponse
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          const data = JSON.parse(jsonMatch[0]);
-          console.log("Données parsées:", data);
+      // Extraction JSON super robuste
+      const safeJson = DesignService.extractJson(raw);
 
-          // Chercher le template par ID d'abord, puis par catégorie
-          let template = UNIFIED_TEMPLATES.find(
-            (t) => t.id === data.recommendedTemplate
-          );
-
-          // Si pas trouvé par ID, chercher par catégorie
-          if (!template && data.category) {
-            const categoryTemplates = UNIFIED_TEMPLATES.filter(
-              (t) => t.category === data.category
-            );
-            if (categoryTemplates.length > 0) {
-              template = categoryTemplates[0]; // Prendre le premier de la catégorie
-            }
-          }
-
-          // Fallback: si toujours pas trouvé, prendre un template d'anniversaire pour les demandes d'anniversaire
-          if (!template && description.toLowerCase().includes("anniversaire")) {
-            template = UNIFIED_TEMPLATES.find((t) => t.category === "birthday");
-          }
-
-          console.log("Template sélectionné:", template);
-
-          if (template) {
-            return {
-              template: template,
-              suggestions: data.suggestedElements || [
-                "Message personnalisé",
-                "Date",
-                "Lieu",
-              ],
-              elements: this.generateElementsFromSuggestions(
-                data.suggestedElements || []
-              ),
-              message:
-                `🎨 **J'ai trouvé le template parfait: "${template.name}"**\n\n` +
-                `📋 **Catégorie**: ${this.getCategoryLabel(
-                  template.category
-                )}\n` +
-                `💡 **Conseils**: ${
-                  data.reason || "Parfait pour votre occasion!"
-                }\n\n` +
-                `Je vais appliquer ce design automatiquement !`,
-            };
-          }
-        } catch (parseError) {
-          console.error("Erreur parsing JSON:", parseError);
-        }
+      if (!safeJson) {
+        console.warn("⚠️ Impossible d'extraire le JSON, fallback…");
+        return DesignService.fallback(description);
       }
 
-      // Fallback pour les anniversaires
-      if (description.toLowerCase().includes("anniversaire")) {
-        const birthdayTemplate = UNIFIED_TEMPLATES.find(
-          (t) => t.category === "birthday"
-        );
-        if (birthdayTemplate) {
-          return {
-            template: birthdayTemplate,
-            suggestions: ["Message d'anniversaire", "Âge", "Date de fête"],
-            elements: [],
-            message:
-              "🎂 **Template d'anniversaire sélectionné!** Je applique un design festif pour célébrer cette occasion spéciale!",
-          };
-        }
+      const data = DesignService.safeParseJSON(safeJson);
+
+      if (!data) {
+        console.warn("⚠️ JSON invalide après parsing, fallback…");
+        return DesignService.fallback(description);
       }
+
+      // Sélection du template
+      const template = DesignService.resolveTemplate(
+        data.recommendedTemplate,
+        data.category,
+        description
+      );
 
       return {
-        template: null,
-        suggestions: [],
-        elements: [],
-        message:
-          "Je n'ai pas pu trouver un template parfaitement adapté. Pouvez-vous préciser votre demande ? Par exemple : 'carte d'anniversaire colorée' ou 'carte professionnelle sobre'.",
+        template,
+        suggestions: data.suggestedElements || ["Texte", "Date", "Message"],
+        elements: DesignService.generateElementsFromSuggestions(
+          data.suggestedElements || []
+        ),
+        message: `🎨 Template sélectionné : **${template?.name || "aucun"}**`,
       };
-    } catch (error) {
-      console.error("Erreur DesignService:", error);
-
-      // Fallback en cas d'erreur
-      if (description.toLowerCase().includes("anniversaire")) {
-        const birthdayTemplate = UNIFIED_TEMPLATES.find(
-          (t) => t.category === "birthday"
-        );
-        if (birthdayTemplate) {
-          return {
-            template: birthdayTemplate,
-            suggestions: ["Message de félicitations", "Âge", "Célébration"],
-            elements: [],
-            message:
-              "🎉 **Template d'anniversaire appliqué!** Profitez de cette carte festive!",
-          };
-        }
-      }
-
-      return {
-        template: null,
-        suggestions: [],
-        elements: [],
-        message:
-          "Désolé, je rencontre un problème technique. Mais voici un template d'anniversaire par défaut!",
-      };
+    } catch (err) {
+      console.error("❌ Erreur DesignService:", err);
+      return DesignService.fallback(description);
     }
   }
 
-  private static generateElementsFromSuggestions(suggestions: string[]): any[] {
-    const elements: any[] = [];
+  // -------------------------------
+  // 🔹 Extraction JSON ultra robuste
+  // -------------------------------
+  private static extractJson(text: string): string | null {
+    if (!text) return null;
 
-    suggestions.forEach((suggestion, index) => {
-      elements.push({
-        id: `suggestion-${Date.now()}-${index}`,
-        type: "text",
-        text: suggestion,
-        x: 50,
-        y: 100 + index * 60,
-        fontSize: 16,
-        color: "#000000",
-        fontFamily: "'Inter', sans-serif",
-      });
+    // supprime les ```json ou ``` code blocks
+    text = text.replace(/```[\s\S]*?```/g, (block) => {
+      const jsonInside = block.match(/\{[\s\S]*\}/);
+      return jsonInside ? jsonInside[0] : "";
     });
 
-    return elements;
+    // capture le premier objet JSON
+    const match = text.match(/\{[\s\S]*\}/);
+
+    return match ? match[0] : null;
   }
 
-  private static getCategoryLabel(category: string): string {
-    const labels: { [key: string]: string } = {
-      birthday: "🎂 Anniversaire",
-      love: "💖 Amour & Romance",
-      business: "💼 Professionnel",
-      simple: "🎨 Simple & Élégant",
-      premium: "⭐ Premium",
+  // -------------------------------
+  // 🔹 Parsing JSON sécurisé
+  // -------------------------------
+  private static safeParseJSON(json: string) {
+    try {
+      return JSON.parse(json);
+    } catch (e) {
+      console.error("❌ Parsing JSON impossible:", e);
+      console.log("Contenu JSON reçu =", json);
+      return null;
+    }
+  }
+
+  // -------------------------------
+  // 🔹 Résolution du template
+  // -------------------------------
+  private static resolveTemplate(
+    id: string | null,
+    category: string | null,
+    description: string
+  ) {
+    // 1️⃣ Essai via ID
+    if (id) {
+      const t = UNIFIED_TEMPLATES.find((x) => x.id === id);
+      if (t) return t;
+    }
+
+    // 2️⃣ Essai via catégorie
+    if (category) {
+      const t = UNIFIED_TEMPLATES.find((x) => x.category === category);
+      if (t) return t;
+    }
+
+    // 3️⃣ Si "anniversaire" dans description → birthday
+    if (description.toLowerCase().includes("anniversaire")) {
+      const t = UNIFIED_TEMPLATES.find((x) => x.category === "birthday");
+      if (t) return t;
+    }
+
+    // 4️⃣ Absolument éviter null
+    return UNIFIED_TEMPLATES[0];
+  }
+
+  // -------------------------------
+  // 🔹 Génération d’éléments
+  // -------------------------------
+  private static generateElementsFromSuggestions(sug: string[]) {
+    return sug.map((s, i) => ({
+      id: `el-${Date.now()}-${i}`,
+      type: "text",
+      text: s,
+      x: 50,
+      y: 120 + i * 50,
+      color: "#000",
+      fontSize: 18,
+    }));
+  }
+
+  // -------------------------------
+  // 🔹 Fallback en cas d’erreur
+  // -------------------------------
+  private static fallback(description: string) {
+    const defaultTemplate =
+      UNIFIED_TEMPLATES.find((t) => t.category === "birthday") ||
+      UNIFIED_TEMPLATES[0];
+
+    return {
+      template: defaultTemplate,
+      suggestions: ["Texte principal", "Sous-titre"],
+      elements: [],
+      message: `⚠️ Problème technique, j’applique un template par défaut.`,
     };
-    return labels[category] || category;
   }
 }

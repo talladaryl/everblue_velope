@@ -3,6 +3,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { HomePageTopBar } from "@/components/HomePageTopBar";
 import {
   Card,
   CardContent,
@@ -1089,8 +1092,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <header className="py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
+      <HomePageTopBar />
+      <header className="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 dark:from-slate-900 via-blue-50 dark:via-slate-800 to-indigo-100 dark:to-slate-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
             <div className="space-y-3">

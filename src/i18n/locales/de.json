@@ -1,0 +1,68 @@
+{
+  "common": {
+    "theme": "Design",
+    "language": "Sprache",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "english": "English",
+    "french": "Français",
+    "italian": "Italiano",
+    "german": "Deutsch"
+  },
+  "header": {
+    "home": "Startseite",
+    "designs": "Designs",
+    "pricing": "Preise",
+    "help": "Hilfe",
+    "login": "Anmelden",
+    "signup": "Meine Einladung erstellen",
+    "mySpace": "Mein Bereich"
+  },
+  "hero": {
+    "badge": "Premium-Einladungsplattform",
+    "title": "Erstellen Sie",
+    "titleHighlight": "außergewöhnliche Einladungen",
+    "description": "Verwandeln Sie Ihre Veranstaltungen mit personalisierten Einladungen, die von Experten entworfen wurden. Einfach, schnell und professionell.",
+    "startFree": "Kostenlos starten",
+    "viewModels": "Vorlagen anzeigen",
+    "modelsCount": "500+",
+    "modelsLabel": "Premium-Vorlagen",
+    "clientsCount": "25k+",
+    "clientsLabel": "Zufriedene Kunden",
+    "rating": "4.9",
+    "ratingLabel": "Kundenbewertungen"
+  },
+  "features": {
+    "title": "Warum Everblue wählen?",
+    "description": "Entdecken Sie die Funktionen, die unsere Plattform zur idealen Lösung für Ihre besonderen Veranstaltungen machen",
+    "design": "Anpassbares Design",
+    "designDesc": "Ändern Sie jedes Detail, um eine einzigartige Einladung zu erstellen",
+    "speed": "Schnelle Erstellung",
+    "speedDesc": "Erstellen Sie professionelle Einladungen in wenigen Minuten",
+    "download": "Unbegrenzter Download",
+    "downloadDesc": "Greifen Sie auf alle Ihre Designs in hoher Qualität zu",
+    "share": "Einfaches Teilen",
+    "shareDesc": "Senden Sie Ihre Einladungen per E-Mail oder in sozialen Medien"
+  },
+  "catalog": {
+    "title": "Unsere Einladungsvorlagen",
+    "description": "Entdecken Sie unsere Sammlung von Premium-Vorlagen, die von professionellen Designern für alle Ihre besonderen Veranstaltungen entworfen wurden",
+    "search": "Vorlage suchen...",
+    "all": "Alle",
+    "wedding": "Hochzeit",
+    "birthday": "Geburtstag",
+    "professional": "Beruflich",
+    "christmas": "Weihnachten",
+    "baptism": "Taufe",
+    "party": "Party",
+    "found": "Vorlage(n) gefunden",
+    "filters": "Weitere Filter",
+    "preview": "Vorschau",
+    "customize": "Anpassen",
+    "viewAll": "Alle Vorlagen anzeigen"
+  },
+  "notifications": {
+    "themeApplied": "Design erfolgreich angewendet",
+    "languageApplied": "Sprache erfolgreich geändert"
+  }
+}

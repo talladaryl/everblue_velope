@@ -1,0 +1,68 @@
+{
+  "common": {
+    "theme": "Theme",
+    "language": "Language",
+    "light": "Light",
+    "dark": "Dark",
+    "english": "English",
+    "french": "Français",
+    "italian": "Italiano",
+    "german": "Deutsch"
+  },
+  "header": {
+    "home": "Home",
+    "designs": "Designs",
+    "pricing": "Pricing",
+    "help": "Help",
+    "login": "Login",
+    "signup": "Create my invitation",
+    "mySpace": "My Space"
+  },
+  "hero": {
+    "badge": "Premium invitation platform",
+    "title": "Create",
+    "titleHighlight": "exceptional invitations",
+    "description": "Transform your events with personalized invitations designed by experts. Simple, fast and professional.",
+    "startFree": "Start for free",
+    "viewModels": "View templates",
+    "modelsCount": "500+",
+    "modelsLabel": "Premium Templates",
+    "clientsCount": "25k+",
+    "clientsLabel": "Satisfied Clients",
+    "rating": "4.9",
+    "ratingLabel": "Client Reviews"
+  },
+  "features": {
+    "title": "Why choose Everblue?",
+    "description": "Discover the features that make our platform the ideal solution for your special events",
+    "design": "Customizable Design",
+    "designDesc": "Modify every detail to create a unique invitation",
+    "speed": "Fast Creation",
+    "speedDesc": "Generate professional invitations in just a few minutes",
+    "download": "Unlimited Download",
+    "downloadDesc": "Access all your designs in high quality",
+    "share": "Easy Sharing",
+    "shareDesc": "Send your invitations by email or social media"
+  },
+  "catalog": {
+    "title": "Our invitation templates",
+    "description": "Discover our collection of premium templates designed by professional designers for all your special events",
+    "search": "Search a template...",
+    "all": "All",
+    "wedding": "Wedding",
+    "birthday": "Birthday",
+    "professional": "Professional",
+    "christmas": "Christmas",
+    "baptism": "Baptism",
+    "party": "Party",
+    "found": "template(s) found",
+    "filters": "More filters",
+    "preview": "Preview",
+    "customize": "Customize",
+    "viewAll": "View all templates"
+  },
+  "notifications": {
+    "themeApplied": "Theme applied successfully",
+    "languageApplied": "Language changed successfully"
+  }
+}

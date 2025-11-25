@@ -3,8 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Layout from "./pages/Layout";
-import Index from "./pages/Index";
+import Index from "./pages/index";
 import Pricing from "./pages/Pricing";
 import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
@@ -17,27 +19,31 @@ import Inbox from "./pages/Inbox";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route index element={<Index />} />
-          <Route path="pricing" element={<Pricing />} />
-          <Route path="/" element={<Layout />}>
-            <Route path="designs" element={<HomePage />} />
-            <Route path="builder" element={<Builder />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="events" element={<Events />} />
-            <Route path="invitations" element={<Invitations />} />
-            <Route path="inbox" element={<Inbox />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider>
+    <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route index element={<Index />} />
+              <Route path="pricing" element={<Pricing />} />
+              <Route path="/" element={<Layout />}>
+                <Route path="designs" element={<HomePage />} />
+                <Route path="builder" element={<Builder />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="events" element={<Events />} />
+                <Route path="invitations" element={<Invitations />} />
+                <Route path="inbox" element={<Inbox />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </LanguageProvider>
+  </ThemeProvider>
 );
 
 export default App;

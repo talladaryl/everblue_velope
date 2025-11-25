@@ -1,0 +1,68 @@
+{
+  "common": {
+    "theme": "Thème",
+    "language": "Langue",
+    "light": "Clair",
+    "dark": "Sombre",
+    "english": "English",
+    "french": "Français",
+    "italian": "Italiano",
+    "german": "Deutsch"
+  },
+  "header": {
+    "home": "Accueil",
+    "designs": "Designs",
+    "pricing": "Tarifs",
+    "help": "Aide",
+    "login": "Connexion",
+    "signup": "Créer mon invitation",
+    "mySpace": "Mon Espace"
+  },
+  "hero": {
+    "badge": "Plateforme premium d'invitations",
+    "title": "Créez des",
+    "titleHighlight": "invitations exceptionnelles",
+    "description": "Transformez vos événements avec des invitations personnalisées conçues par des experts. Simple, rapide et professionnel.",
+    "startFree": "Commencer gratuitement",
+    "viewModels": "Voir les modèles",
+    "modelsCount": "500+",
+    "modelsLabel": "Modèles Premium",
+    "clientsCount": "25k+",
+    "clientsLabel": "Clients satisfaits",
+    "rating": "4.9",
+    "ratingLabel": "Avis clients"
+  },
+  "features": {
+    "title": "Pourquoi choisir Everblue ?",
+    "description": "Découvrez les fonctionnalités qui font de notre plateforme la solution idéale pour vos événements spéciaux",
+    "design": "Design Personnalisable",
+    "designDesc": "Modifiez chaque détail pour créer une invitation unique",
+    "speed": "Création Rapide",
+    "speedDesc": "Générez des invitations professionnelles en quelques minutes",
+    "download": "Téléchargement Illimité",
+    "downloadDesc": "Accédez à tous vos designs en haute qualité",
+    "share": "Partage Facile",
+    "shareDesc": "Envoyez vos invitations par email ou réseaux sociaux"
+  },
+  "catalog": {
+    "title": "Nos modèles d'invitations",
+    "description": "Découvrez notre collection de modèles premium conçus par des designers professionnels pour tous vos événements spéciaux",
+    "search": "Rechercher un modèle...",
+    "all": "Tous",
+    "wedding": "Mariage",
+    "birthday": "Anniversaire",
+    "professional": "Professionnel",
+    "christmas": "Noël",
+    "baptism": "Baptême",
+    "party": "Soirée",
+    "found": "modèle(s) trouvé(s)",
+    "filters": "Plus de filtres",
+    "preview": "Aperçu",
+    "customize": "Personnaliser",
+    "viewAll": "Voir tous les modèles"
+  },
+  "notifications": {
+    "themeApplied": "Thème appliqué avec succès",
+    "languageApplied": "Langue changée avec succès"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "common": {
+    "theme": "Tema",
+    "language": "Lingua",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "english": "English",
+    "french": "Français",
+    "italian": "Italiano",
+    "german": "Deutsch"
+  },
+  "header": {
+    "home": "Home",
+    "designs": "Design",
+    "pricing": "Prezzi",
+    "help": "Aiuto",
+    "login": "Accedi",
+    "signup": "Crea il mio invito",
+    "mySpace": "Il Mio Spazio"
+  },
+  "hero": {
+    "badge": "Piattaforma premium di inviti",
+    "title": "Crea",
+    "titleHighlight": "inviti straordinari",
+    "description": "Trasforma i tuoi eventi con inviti personalizzati progettati da esperti. Semplice, veloce e professionale.",
+    "startFree": "Inizia gratuitamente",
+    "viewModels": "Visualizza modelli",
+    "modelsCount": "500+",
+    "modelsLabel": "Modelli Premium",
+    "clientsCount": "25k+",
+    "clientsLabel": "Clienti Soddisfatti",
+    "rating": "4.9",
+    "ratingLabel": "Recensioni Clienti"
+  },
+  "features": {
+    "title": "Perché scegliere Everblue?",
+    "description": "Scopri le funzionalità che rendono la nostra piattaforma la soluzione ideale per i tuoi eventi speciali",
+    "design": "Design Personalizzabile",
+    "designDesc": "Modifica ogni dettaglio per creare un invito unico",
+    "speed": "Creazione Veloce",
+    "speedDesc": "Genera inviti professionali in pochi minuti",
+    "download": "Download Illimitato",
+    "downloadDesc": "Accedi a tutti i tuoi design in alta qualità",
+    "share": "Condivisione Facile",
+    "shareDesc": "Invia i tuoi inviti via email o social media"
+  },
+  "catalog": {
+    "title": "I nostri modelli di inviti",
+    "description": "Scopri la nostra collezione di modelli premium progettati da designer professionisti per tutti i tuoi eventi speciali",
+    "search": "Cerca un modello...",
+    "all": "Tutti",
+    "wedding": "Matrimonio",
+    "birthday": "Compleanno",
+    "professional": "Professionale",
+    "christmas": "Natale",
+    "baptism": "Battesimo",
+    "party": "Festa",
+    "found": "modello(i) trovato(i)",
+    "filters": "Altri filtri",
+    "preview": "Anteprima",
+    "customize": "Personalizza",
+    "viewAll": "Visualizza tutti i modelli"
+  },
+  "notifications": {
+    "themeApplied": "Tema applicato con successo",
+    "languageApplied": "Lingua cambiata con successo"
+  }
+}

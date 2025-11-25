@@ -52,13 +52,13 @@ import { saveTemplate, generateThumbnail, getTemplates } from "@/utils/storage";
 import { PAPER_THEMES } from "@/constants/paperThemes";
 import { TEXT_VARIABLES } from "@/constants/textVariables";
 import ImagePickerModal from "@/components/ImagePickerModal";
-import TextVariablesPanel from "@/components/TextVariablesPanel";
+import { TextVariablesPanel } from "@/components/TextVariablesPanel";
 import { PaperTheme, TextVariable } from "@/types";
 
 import StepDesign from "./builder/StepDesign";
 import StepDetails from "./builder/StepDetails";
-import StepPreview from "./builder/StepPreview";
-import StepSend from "./builder/StepSend";
+import StepPreviewImproved from "./builder/StepPreviewImproved";
+import StepSendImproved from "./builder/StepSendImproved";
 
 // Types
 interface EditorItemBase {
@@ -98,7 +98,7 @@ interface Guest {
   date?: string;
   time?: string;
 }
-interface Template {
+interface BuilderTemplate {
   id: string;
   name: string;
   description?: string;
@@ -131,7 +131,7 @@ const initialText = (): TextItem => ({
   fontFamily: "system-ui, sans-serif",
 });
 
-const defaultTemplates: Template[] = [
+const defaultTemplates: BuilderTemplate[] = [
   {
     id: "default-1",
     name: "Moderne",
@@ -171,7 +171,7 @@ export default function Builder() {
 
   const [items, setItems] = useState<EditorItem[]>([initialText()]);
   const [selectedId, setSelectedId] = useState<string | null>(items[0].id);
-  const [templates, setTemplates] = useState<Template[]>(defaultTemplates);
+  const [templates, setTemplates] = useState<BuilderTemplate[]>(defaultTemplates);
 
   // Drag state
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -256,7 +256,7 @@ export default function Builder() {
       palette.push(defaults[palette.length]);
     }
 
-    const newTemplate: Template = {
+    const newTemplate: BuilderTemplate = {
       id: nanoid(),
       name,
       description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
@@ -266,17 +266,24 @@ export default function Builder() {
       createdAt: new Date(),
       palette,
       isCustom: true,
-    } as unknown as Template;
+    } as unknown as BuilderTemplate;
 
     // Optionnel: générer une miniature (si utile) — generateThumbnail peut renvoyer une dataURL
     try {
-      const thumbnail = await generateThumbnail?.({
-        items: newTemplate.items,
-        bgColor: newTemplate.bgColor,
-      })?.catch?.(() => undefined);
-      if (thumbnail) {
-        // si votre type Template attend une propriété thumbnail, vous pouvez l'ajouter :
-        // (newTemplate as any).thumbnail = thumbnail;
+      if (generateThumbnail) {
+        try {
+          const thumbnail = await generateThumbnail({
+            items: newTemplate.items,
+            bgColor: newTemplate.bgColor,
+          } as any);
+          if (thumbnail) {
+            // si votre type Template attend une propriété thumbnail, vous pouvez l'ajouter :
+            // (newTemplate as any).thumbnail = thumbnail;
+          }
+        } catch (err) {
+          // Ignorer les erreurs de génération de miniature
+          console.error("Erreur génération miniature:", err);
+        }
       }
     } catch {
       // ignore thumbnail errors
@@ -312,7 +319,7 @@ export default function Builder() {
         palette.push(defaults[palette.length]);
       }
 
-      const newTemplate: Template = {
+      const newTemplate: BuilderTemplate = {
         id: nanoid(),
         name,
         description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
@@ -322,7 +329,7 @@ export default function Builder() {
         createdAt: new Date(),
         palette,
         isCustom: true,
-      } as unknown as Template;
+      } as unknown as BuilderTemplate;
 
       // Sauvegarder le template
       await saveTemplate(newTemplate);
@@ -343,7 +350,7 @@ export default function Builder() {
     }
   };
 
-  const loadTemplate = (template: Template) => {
+  const loadTemplate = (template: BuilderTemplate) => {
     // if template has explicit bgImage, use it
     if (template.bgImage) {
       setBgImage(template.bgImage);
@@ -504,7 +511,7 @@ export default function Builder() {
 
   // Nouvelle fonction pour appliquer un thème de papier (peut être image ou couleur)
   const applyPaperTheme = (theme: PaperTheme) => {
-    if (theme.type === "image" && theme.value) {
+    if (theme.value && theme.value.startsWith("url(")) {
       // si le thème contient une image url/data, on l'applique comme bgImage
       setBgImage(theme.value);
     } else {
@@ -714,8 +721,8 @@ export default function Builder() {
       <main className="container py-6">
         {step === 0 && <StepDesign ctx={ctx} />}
         {step === 1 && <StepDetails ctx={ctx} />}
-        {step === 2 && <StepPreview ctx={ctx} />}
-        {step === 3 && <StepSend ctx={ctx} />}
+        {step === 2 && <StepPreviewImproved ctx={ctx} />}
+        {step === 3 && <StepSendImproved ctx={ctx} />}
       </main>
 
       {/* ImagePicker Modal */}

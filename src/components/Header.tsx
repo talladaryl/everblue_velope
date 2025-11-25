@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Crown, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { SettingsMenu } from "@/components/SettingsMenu";
 
 interface HeaderProps {
   onOpenLogin: () => void;
@@ -61,6 +62,7 @@ export const Header = ({ onOpenLogin, user }: HeaderProps) => {
 
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6 space-x-4">
+              <SettingsMenu />
               {user ? (
                 <div className="flex items-center space-x-3">
                   <span className="text-gray-700">Bonjour, {user.name}</span>
@@ -90,7 +92,8 @@ export const Header = ({ onOpenLogin, user }: HeaderProps) => {
             </div>
           </div>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <SettingsMenu />
             <Button
               variant="ghost"
               size="sm"
