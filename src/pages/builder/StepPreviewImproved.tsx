@@ -24,7 +24,6 @@ import {
   CheckCircle,
   ArrowRight,
   Layout,
-  Sparkles,
   Smartphone,
   Monitor,
   Tablet,
@@ -217,14 +216,12 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-enter">
-      {/* En-tête amélioré */}
+      {/* En-tête simplifié */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-2xl shadow-lg">
-          <Sparkles className="h-6 w-6" />
-          <h2 className="text-3xl font-bold">Prévisualisation de l'invitation</h2>
-          <Sparkles className="h-6 w-6" />
-        </div>
-        <p className="text-gray-600 text-lg">
+        <h2 className="text-3xl font-bold text-gray-900">
+          Prévisualisation de l'invitation
+        </h2>
+        <p className="text-gray-600">
           Vérifiez comment votre invitation s'affichera pour chaque invité
         </p>
       </div>
@@ -234,9 +231,9 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
         {/* Sidebar des contrôles */}
         <div className="xl:col-span-1 space-y-6">
           {/* Carte de sélection */}
-          <Card className="bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl rounded-3xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-gray-800">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <Layout className="h-5 w-5 text-blue-600" />
                 Configuration
               </CardTitle>
@@ -247,21 +244,18 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <CardContent className="space-y-6">
               {/* Sélection de l'invité */}
               <div className="space-y-3">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    {guestIndex + 1} / {guests.length}
-                  </span>
-                  Invité sélectionné
+                <label className="text-sm font-semibold text-gray-700">
+                  Invité ({guestIndex + 1} / {guests.length})
                 </label>
                 <Select value={guest.id} onValueChange={setPreviewGuestId}>
-                  <SelectTrigger className="rounded-xl border-2 border-gray-200 focus:border-blue-500 transition-all">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-0 shadow-xl">
+                  <SelectContent>
                     {guests.map((g: any, index: number) => (
-                      <SelectItem key={g.id} value={g.id} className="rounded-lg hover:bg-blue-50 transition-colors">
+                      <SelectItem key={g.id} value={g.id}>
                         <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xs font-bold">
+                          <div className="w-6 h-6 bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-bold">
                             {index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -281,12 +275,12 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                   Modèle de design
                 </label>
                 <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger className="rounded-xl border-2 border-gray-200 focus:border-blue-500 transition-all">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-0 shadow-xl max-h-60">
+                  <SelectContent>
                     {AVAILABLE_MODELS.map((model) => (
-                      <SelectItem key={model.id} value={model.id} className="rounded-lg hover:bg-blue-50 transition-colors">
+                      <SelectItem key={model.id} value={model.id}>
                         <div className="flex flex-col">
                           <span className="font-medium text-gray-900">{model.name}</span>
                           <span className="text-xs text-gray-500">{model.description}</span>
@@ -303,7 +297,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                   <label className="text-sm font-semibold text-gray-700">
                     Aperçu sur
                   </label>
-                  <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+                  <div className="flex gap-2 p-1 bg-gray-100">
                     {[
                       { id: "mobile", icon: Smartphone, label: "Mobile" },
                       { id: "tablet", icon: Tablet, label: "Tablette" },
@@ -315,9 +309,9 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                         <button
                           key={device.id}
                           onClick={() => setActiveDevice(device.id)}
-                          className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-lg transition-all ${
+                          className={`flex-1 flex flex-col items-center gap-1 p-3 ${
                             isActive 
-                              ? "bg-white text-blue-600 shadow-sm" 
+                              ? "bg-white text-blue-600" 
                               : "text-gray-500 hover:text-gray-700"
                           }`}
                         >
@@ -333,8 +327,8 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
           </Card>
 
           {/* Carte d'information de l'invité */}
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl rounded-3xl">
-            <CardHeader className="pb-4">
+          <Card className="bg-blue-50">
+            <CardHeader>
               <CardTitle className="text-blue-900 flex items-center gap-2">
                 <Eye className="h-5 w-5" />
                 Informations de l'invité
@@ -343,7 +337,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 bg-blue-600 flex items-center justify-center text-white font-bold">
                     {guest.name?.charAt(0) || "?"}
                   </div>
                   <div>
@@ -355,19 +349,19 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                 <div className="grid gap-2">
                   {guest.location && (
                     <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-blue-500"></div>
                       <span><strong>Lieu:</strong> {guest.location}</span>
                     </div>
                   )}
                   {guest.date && (
                     <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-blue-500"></div>
                       <span><strong>Date:</strong> {new Date(guest.date).toLocaleDateString("fr-FR")}</span>
                     </div>
                   )}
                   {guest.time && (
                     <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-blue-500"></div>
                       <span><strong>Heure:</strong> {guest.time}</span>
                     </div>
                   )}
@@ -381,8 +375,8 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
         <div className="xl:col-span-3 space-y-6">
           {/* Alertes de validation */}
           {!validation.valid && (
-            <Alert className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-2xl shadow-lg">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
+            <Alert className="bg-orange-50 border-orange-200">
+              <AlertCircle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
                 <strong>Attention:</strong> {validation.errors.join(" ")}
               </AlertDescription>
@@ -390,24 +384,21 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
           )}
 
           {validation.valid && (
-            <Alert className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl shadow-lg">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 <strong>Parfait!</strong> Toutes les variables ont été remplacées avec succès pour cet invité.
               </AlertDescription>
             </Alert>
           )}
 
-          {/* Aperçu du modèle avec design moderne */}
+          {/* Aperçu du modèle avec design épuré */}
           {selectedModel !== "default" && (
-            <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
-              <CardHeader className="bg-gradient-to-r from-gray-900 to-gray-800 text-white pb-4">
+            <Card>
+              <CardHeader className="bg-gray-900 text-white">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3">
-                    <Sparkles className="h-6 w-6 text-yellow-400" />
-                    Aperçu en direct
-                  </CardTitle>
-                  <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                  <CardTitle>Aperçu en direct</CardTitle>
+                  <Badge variant="secondary" className="bg-white/20 text-white">
                     {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name}
                   </Badge>
                 </div>
@@ -415,19 +406,19 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                   Visualisation sur {activeDevice === 'mobile' ? 'mobile' : activeDevice === 'tablet' ? 'tablette' : 'desktop'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-8">
+              <CardContent className="p-6">
                 <div className="flex justify-center">
-                  <div className={`${deviceClasses[activeDevice]} transition-all duration-500 ease-in-out`}>
+                  <div className={`${deviceClasses[activeDevice]}`}>
                     <div className="relative w-full h-full">
-                      {/* Cadre de l'appareil */}
-                      <div className={`absolute inset-0 border-2 border-gray-300 rounded-3xl shadow-2xl bg-white overflow-hidden transition-all ${
-                        activeDevice === 'mobile' ? 'rounded-[2rem]' : 
-                        activeDevice === 'tablet' ? 'rounded-[1.5rem]' : 'rounded-xl'
+                      {/* Cadre de l'appareil - sans bordures arrondies */}
+                      <div className={`absolute inset-0 border border-gray-300 bg-white overflow-hidden ${
+                        activeDevice === 'mobile' ? '' : 
+                        activeDevice === 'tablet' ? '' : ''
                       }`}>
                         {/* Barre de statut pour mobile/tablette */}
                         {(activeDevice === 'mobile' || activeDevice === 'tablet') && (
                           <div className="h-6 bg-gray-900 flex items-center justify-center relative">
-                            <div className="w-16 h-1 bg-gray-600 rounded-full"></div>
+                            <div className="w-16 h-1 bg-gray-600"></div>
                             <div className="absolute left-4 text-white text-xs">
                               {activeDevice === 'mobile' ? '9:41' : ''}
                             </div>
@@ -449,18 +440,18 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             </Card>
           )}
 
-          {/* Navigation améliorée */}
+          {/* Navigation simplifiée */}
           <div className="flex flex-col md:flex-row justify-between gap-4 pt-6">
             <Button 
               variant="outline" 
               onClick={() => setStep(1)} 
-              className="w-full md:w-auto px-8 py-3 rounded-xl border-2 border-gray-300 hover:border-blue-500 transition-all shadow-lg hover:shadow-xl"
+              className="w-full md:w-auto px-8 py-3 border border-gray-300"
             >
               ← Retour aux détails
             </Button>
             <Button
               onClick={() => setStep(3)}
-              className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+              className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-3"
             >
               <span>Continuer vers l'envoi</span>
               <ArrowRight className="h-5 w-5" />
