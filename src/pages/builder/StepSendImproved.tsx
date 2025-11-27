@@ -19,13 +19,34 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  MessageSquare,
+  Smartphone,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useSaveTemplate } from "@/hooks/useSaveTemplate";
-import { useSendMailing } from "@/hooks/useSendMailing";
+import { useBulkSend } from "@/hooks/useBulkSend";
+import { SendStatusModal, type MessageStatus } from "@/components/SendStatusModal";
 import { toast } from "@/components/ui/sonner";
 
 interface StepSendProps {
   ctx: any;
+}
+
+interface Guest {
+  id?: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  date?: string;
+  time?: string;
+  valid?: boolean;
 }
 
 export default function StepSendImproved({ ctx }: StepSendProps) {
@@ -37,18 +58,36 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   } = ctx;
 
   const { saving, saveTemplate } = useSaveTemplate();
-  const { sending, sendMailing } = useSendMailing();
+  const { sending, bulkSendId, messages, sendBulk, checkStatus, cancelSend, retryFailed } =
+    useBulkSend();
 
   const [templateTitle, setTemplateTitle] = useState("Mon invitation");
   const [templateDescription, setTemplateDescription] = useState("");
   const [emailSubject, setEmailSubject] = useState("Vous êtes invité!");
   const [customMessage, setCustomMessage] = useState("");
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [sentSuccess, setSentSuccess] = useState(false);
+  const [sendMethod, setSendMethod] = useState<"email" | "mms" | "whatsapp">("email");
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusMessages, setStatusMessages] = useState<MessageStatus[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [sentCount, setSentCount] = useState(0);
+  const [failedCount, setFailedCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
 
   // Valider les données
-  const validGuests = Array.isArray(guests) ? guests.filter((g: any) => g && g.valid) : [];
+  const validGuests = Array.isArray(guests)
+    ? guests.filter((g: Guest) => {
+        if (!g || !g.valid) return false;
+        if (sendMethod === "email") return g.email && g.email.includes("@");
+        if (sendMethod === "mms" || sendMethod === "whatsapp") {
+          return g.phone && g.phone.replace(/\D/g, "").length >= 10;
+        }
+        return false;
+      })
+    : [];
+
   const canSend = validGuests.length > 0;
+  const maxRecipientsExceeded = validGuests.length > 500;
 
   // Générer le contenu HTML de la carte
   const generateCardHTML = (): string => {
@@ -79,11 +118,14 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
 
     try {
       await saveTemplate({
-        title: templateTitle,
-        description: templateDescription,
-        content: JSON.stringify(items),
-        html: generateCardHTML(),
-        variables: extractVariables(),
+        name: templateTitle,
+        category: "custom",
+        structure: {
+          items,
+          bgColor,
+          description: templateDescription,
+          variables: extractVariables(),
+        },
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
@@ -109,42 +151,130 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     return Array.from(variables);
   };
 
-  // Envoyer les emails
-  const handleSendEmails = async () => {
+  // Convertir les messages du hook en MessageStatus
+  const convertToMessageStatus = (msgs: any[], channel: string): MessageStatus[] => {
+    return msgs.map((msg, idx) => ({
+      id: msg.id || `msg-${idx}`,
+      recipient: msg.recipient || msg.email || msg.phone || "",
+      name: msg.name || "",
+      channel: channel as any,
+      status: msg.status || "pending",
+      error: msg.error,
+      timestamp: msg.timestamp || new Date().toISOString(),
+      message_id: msg.message_id,
+    }));
+  };
+
+  // Envoyer en masse (email, SMS, MMS, WhatsApp)
+  const handleSendBulk = async () => {
     if (!canSend) {
       toast.error("Aucun invité valide à qui envoyer");
       return;
     }
 
-    if (!emailSubject.trim()) {
+    if (maxRecipientsExceeded) {
+      toast.error("Le nombre de destinataires ne peut pas dépasser 500");
+      return;
+    }
+
+    if (sendMethod === "email" && !emailSubject.trim()) {
       toast.error("Veuillez entrer un sujet pour l'email");
       return;
     }
 
+    if (!customMessage.trim()) {
+      toast.error("Veuillez entrer un message");
+      return;
+    }
+
     try {
-      const recipients = validGuests.map((guest: any) => ({
+      const recipients = validGuests.map((guest: Guest) => ({
         email: guest.email,
+        phone: guest.phone,
         name: guest.name,
         variables: {
           nom: guest.name,
-          email: guest.email,
+          email: guest.email || "",
+          phone: guest.phone || "",
           lieu: guest.location || "",
           date: guest.date || "",
           heure: guest.time || "",
         },
       }));
 
-      await sendMailing({
-        subject: emailSubject,
-        content: customMessage || "Vous êtes invité!",
-        html: generateCardHTML(),
-        recipients: recipients,
+      const response = await sendBulk({
+        channel: sendMethod,
+        subject: sendMethod === "email" ? emailSubject : undefined,
+        message: customMessage,
+        html: sendMethod === "email" ? generateCardHTML() : undefined,
+        recipients,
+        batch_size: 50,
       });
 
-      setSentSuccess(true);
-      setTimeout(() => setSentSuccess(false), 3000);
+      // Mettre à jour les statistiques
+      setTotalCount(response.total_recipients);
+      setSentCount(response.sent_count);
+      setFailedCount(response.failed_count);
+      setPendingCount(response.pending_count);
+
+      // Convertir et afficher les messages
+      if (response.messages) {
+        const converted = convertToMessageStatus(response.messages, sendMethod);
+        setStatusMessages(converted);
+      }
+
+      // Afficher le modal
+      setShowStatusModal(true);
     } catch (error) {
       console.error("Erreur envoi:", error);
+    }
+  };
+
+  // Mettre à jour le modal quand les messages changent
+  const handleCheckStatus = async (bulkId: string) => {
+    try {
+      const status = await checkStatus(bulkId);
+      
+      setTotalCount(status.progress.total);
+      setSentCount(status.progress.sent);
+      setFailedCount(status.progress.failed);
+      setPendingCount(status.progress.pending);
+
+      if (messages) {
+        const converted = convertToMessageStatus(messages, sendMethod);
+        setStatusMessages(converted);
+      }
+
+      return status;
+    } catch (error) {
+      console.error("Erreur lors de la vérification du statut:", error);
+      throw error;
+    }
+  };
+
+  const getChannelLabel = (channel: string): string => {
+    switch (channel) {
+      case "email":
+        return "Email";
+      case "mms":
+        return "MMS";
+      case "whatsapp":
+        return "WhatsApp";
+      default:
+        return channel;
+    }
+  };
+
+  const getChannelIcon = (channel: string) => {
+    switch (channel) {
+      case "email":
+        return <Mail className="h-4 w-4" />;
+      case "mms":
+        return <MessageSquare className="h-4 w-4" />;
+      case "whatsapp":
+        return <Smartphone className="h-4 w-4" />;
+      default:
+        return null;
     }
   };
 
@@ -164,7 +294,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité valide trouvé pour la personnalisation. Veuillez vérifier les emails de vos invités.
+            Aucun invité valide trouvé pour le canal {getChannelLabel(sendMethod)}. Veuillez vérifier les données de vos invités.
           </AlertDescription>
         </Alert>
       )}
@@ -196,8 +326,11 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               </p>
             </div>
             <div className="bg-orange-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Statut</p>
-              <Badge className="mt-2">Prêt à envoyer</Badge>
+              <p className="text-sm text-gray-600">Canal</p>
+              <Badge className="mt-2 gap-1">
+                {getChannelIcon(sendMethod)}
+                {getChannelLabel(sendMethod)}
+              </Badge>
             </div>
           </div>
         </CardContent>
@@ -225,7 +358,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
           )}
 
           <div>
-            <Label htmlFor="template-title">Titre du template</Label>
+            <Label htmlFor="template-title">Nom du template</Label>
             <Input
               id="template-title"
               value={templateTitle}
@@ -267,11 +400,11 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         </CardContent>
       </Card>
 
-      {/* Envoyer les emails */}
+      {/* Envoyer les invitations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+            <Send className="h-5 w-5" />
             Envoyer les invitations
           </CardTitle>
           <CardDescription>
@@ -279,48 +412,82 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {sentSuccess && (
-            <Alert className="bg-green-50 border-green-200">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                Invitations envoyées avec succès!
-              </AlertDescription>
-            </Alert>
-          )}
-
           {!canSend && (
             <Alert className="bg-red-50 border-red-200">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Aucun invité valide. Veuillez ajouter des invités avec des
-                emails valides.
+                Aucun invité valide. Veuillez ajouter des invités avec des données valides.
               </AlertDescription>
             </Alert>
           )}
 
+          {maxRecipientsExceeded && (
+            <Alert className="bg-red-50 border-red-200">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                Le nombre de destinataires dépasse 500. Veuillez réduire le nombre d'invités.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Sélection du canal */}
           <div>
-            <Label htmlFor="email-subject">Sujet de l'email</Label>
-            <Input
-              id="email-subject"
-              value={emailSubject}
-              onChange={(e) => setEmailSubject(e.target.value)}
-              placeholder="Ex: Vous êtes invité à notre mariage!"
-              className="mt-2"
-            />
+            <Label htmlFor="send-method">Canal d'envoi</Label>
+            <Select value={sendMethod} onValueChange={(value: any) => setSendMethod(value)}>
+              <SelectTrigger id="send-method" className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="email">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </div>
+                </SelectItem>
+                <SelectItem value="mms">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    MMS
+                  </div>
+                </SelectItem>
+                <SelectItem value="whatsapp">
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="h-4 w-4" />
+                    WhatsApp
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
+          {/* Sujet pour email */}
+          {sendMethod === "email" && (
+            <div>
+              <Label htmlFor="email-subject">Sujet de l'email</Label>
+              <Input
+                id="email-subject"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Ex: Vous êtes invité à notre mariage!"
+                className="mt-2"
+              />
+            </div>
+          )}
+
+          {/* Message */}
           <div>
-            <Label htmlFor="custom-message">Message personnalisé (optionnel)</Label>
+            <Label htmlFor="custom-message">Message</Label>
             <Textarea
               id="custom-message"
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
-              placeholder="Ajoutez un message personnel à la carte..."
+              placeholder={`Entrez votre message pour ${getChannelLabel(sendMethod)}...`}
               className="mt-2"
               rows={4}
             />
           </div>
 
+          {/* Variables disponibles */}
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-blue-900 mb-2">
               Variables disponibles:
@@ -338,9 +505,10 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
             </div>
           </div>
 
+          {/* Bouton d'envoi */}
           <Button
-            onClick={handleSendEmails}
-            disabled={sending || !canSend}
+            onClick={handleSendBulk}
+            disabled={sending || !canSend || maxRecipientsExceeded}
             className="w-full bg-green-600 hover:bg-green-700"
           >
             {sending ? (
@@ -352,28 +520,42 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               <>
                 <Send className="h-4 w-4 mr-2" />
                 Envoyer à {validGuests.length} invité
-                {validGuests.length > 1 ? "s" : ""}
+                {validGuests.length > 1 ? "s" : ""} via {getChannelLabel(sendMethod)}
               </>
             )}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Aperçu du contenu */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Aperçu du contenu</CardTitle>
-          <CardDescription>
-            Voici comment votre invitation apparaîtra
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div
-            className="p-6 rounded-lg border border-gray-200 bg-white"
-            dangerouslySetInnerHTML={{ __html: generateCardHTML() }}
-          />
-        </CardContent>
-      </Card>
+      {/* Aperçu du contenu pour email */}
+      {sendMethod === "email" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Aperçu du contenu</CardTitle>
+            <CardDescription>
+              Voici comment votre invitation apparaîtra
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className="p-6 rounded-lg border border-gray-200 bg-white"
+              dangerouslySetInnerHTML={{ __html: generateCardHTML() }}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Modal de statut */}
+      <SendStatusModal
+        open={showStatusModal}
+        onOpenChange={setShowStatusModal}
+        messages={statusMessages}
+        channel={sendMethod}
+        totalCount={totalCount}
+        sentCount={sentCount}
+        failedCount={failedCount}
+        pendingCount={pendingCount}
+      />
 
       {/* Navigation */}
       <div className="flex justify-between gap-4">

@@ -2,23 +2,19 @@ import api from "@/api/axios";
 
 export interface Template {
   id: number;
-  title: string;
-  description: string;
-  content: string;
-  html?: string;
-  preview_image?: string;
+  name: string;
+  category?: string;
+  preview_url?: string;
+  structure: Record<string, any>;
   created_at: string;
   updated_at: string;
-  variables?: string[];
 }
 
 export interface CreateTemplatePayload {
-  title: string;
-  description: string;
-  content: string;
-  html?: string;
-  preview_image?: string;
-  variables?: string[];
+  name: string;
+  category?: string;
+  preview_url?: string;
+  structure: Record<string, any>;
 }
 
 export const templateService = {
@@ -26,7 +22,7 @@ export const templateService = {
   getTemplates: async (): Promise<Template[]> => {
     try {
       const response = await api.get("/templates");
-      return response.data.data || response.data;
+      return response.data.data || response.data || [];
     } catch (error) {
       console.error("Erreur lors du chargement des templates:", error);
       throw error;
@@ -47,7 +43,17 @@ export const templateService = {
   // Créer un nouveau template
   createTemplate: async (payload: CreateTemplatePayload): Promise<Template> => {
     try {
-      const response = await api.post("/templates", payload);
+      // Assurer que structure est un objet JSON valide
+      const data = {
+        name: payload.name,
+        category: payload.category || null,
+        preview_url: payload.preview_url || null,
+        structure: typeof payload.structure === "string" 
+          ? JSON.parse(payload.structure) 
+          : payload.structure,
+      };
+
+      const response = await api.post("/templates", data);
       return response.data.data || response.data;
     } catch (error) {
       console.error("Erreur lors de la création du template:", error);
@@ -61,7 +67,18 @@ export const templateService = {
     payload: Partial<CreateTemplatePayload>
   ): Promise<Template> => {
     try {
-      const response = await api.put(`/templates/${id}`, payload);
+      const data: Record<string, any> = {};
+      
+      if (payload.name) data.name = payload.name;
+      if (payload.category) data.category = payload.category;
+      if (payload.preview_url) data.preview_url = payload.preview_url;
+      if (payload.structure) {
+        data.structure = typeof payload.structure === "string" 
+          ? JSON.parse(payload.structure) 
+          : payload.structure;
+      }
+
+      const response = await api.put(`/templates/${id}`, data);
       return response.data.data || response.data;
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du template ${id}:`, error);

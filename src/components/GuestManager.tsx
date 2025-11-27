@@ -35,6 +35,7 @@ interface Guest {
   location?: string;
   date?: string;
   time?: string;
+  phone: int;
   valid: boolean;
   message?: string;
 }
@@ -59,6 +60,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
     location: "",
     date: "",
     time: "",
+    phone: "",
   });
 
   const validGuests = guests.filter((g) => g.valid);
@@ -87,6 +89,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
       location: newGuest.location || "",
       date: newGuest.date || "",
       time: newGuest.time || "",
+      phone: newGuest.phone, 
       valid: true,
     };
 
@@ -97,6 +100,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
       location: "",
       date: "",
       time: "",
+      phone: "",
     });
     toast.success("Invité ajouté");
   };
@@ -138,6 +142,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             location: row.location || row.lieu || "",
             date: row.date || "",
             time: row.time || row.heure || "",
+            phone: row.phone || row.phone || "",
             valid: isValidEmail(row.email || row.mail || ""),
           }))
           .filter((g: Guest) => g.name && g.email);
@@ -157,7 +162,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
   };
 
   const downloadTemplate = () => {
-    const template = "name,email,location,date,time\nJean Dupont,jean@example.com,Paris,2025-06-15,14:00\n";
+    const template = "name,email,location,date,time,phone\nDaryl arsel,daryl@gmail.com,yaoundé,2025-06-15,14:00,658940985\n";
     const element = document.createElement("a");
     element.setAttribute(
       "href",
@@ -266,6 +271,19 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                 className="mt-2"
               />
             </div>
+
+            <div>
+              <Label htmlFor="guest-name">Téléphone</Label>
+              <Input
+                id="guest-name"
+                value={newGuest.phone || ""}
+                onChange={(e) =>
+                  setNewGuest({ ...newGuest, phone: e.target.value })
+                }
+                placeholder="+1XXXXXXXXXXX"
+                className="mt-2"
+              />
+            </div>
           </div>
           <Button onClick={addGuest} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
@@ -365,6 +383,12 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {/* <Phone className="h-4 w-4 text-gray-400" /> */}
+                          {guest.phone}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {guest.valid ? (

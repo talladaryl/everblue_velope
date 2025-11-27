@@ -518,9 +518,34 @@ export default function HomePage() {
     const loadTemplates = async () => {
       try {
         setLoading(true);
-        const maybe = await getTemplates();
-        const saved = Array.isArray(maybe) ? (maybe as Template[]) : [];
-        setCustomTemplates(saved);
+        // Récupérer les templates depuis l'API
+        const { templateService } = await import("@/api/services/templateService");
+        const apiTemplates = await templateService.getTemplates();
+        
+        // Convertir les templates API au format attendu
+        const convertedTemplates = (apiTemplates || []).map((template: any) => ({
+          id: template.id.toString(),
+          name: template.name,
+          // description: template.name,
+          category: template.category || "all",
+          colors: ["#667eea", "#764ba2"],
+          palette: ["#667eea", "#764ba2"],
+          preview: "simple",
+          bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          items: typeof template.structure === "string" 
+            ? JSON.parse(template.structure) 
+            : template.structure || [],
+          envelope: {
+            bgColor: "#667eea",
+            items: [],
+          },
+          createdAt: new Date(template.created_at),
+          isCustom: true,
+          popularity: 85,
+          hasEnvelope: false,
+        }));
+        
+        setCustomTemplates(convertedTemplates);
       } catch (error) {
         console.error("Erreur chargement templates:", error);
         setCustomTemplates([]);
@@ -531,9 +556,12 @@ export default function HomePage() {
     loadTemplates();
   }, []);
 
-  // Combiner tous les designs
+  // Combiner tous les designs (designs par défaut + templates de l'API)
   const allDesigns = React.useMemo(() => {
-    const defaultDesigns = Object.values(DEFAULT_DESIGNS_BY_CATEGORY).flat();
+    const defaultDesigns = Object.values(DEFAULT_DESIGNS_BY_CATEGORY).flat().map((design: any) => ({
+      ...design,
+      palette: design.palette || design.colors || [],
+    }));
     return [...defaultDesigns, ...customTemplates];
   }, [customTemplates]);
 
