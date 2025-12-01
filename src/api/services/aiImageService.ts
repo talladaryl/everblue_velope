@@ -2,37 +2,38 @@ import api from "@/api/axios";
 
 export interface GenerateImagePayload {
   prompt: string;
-  style?: string;
   size?: "256x256" | "512x512" | "1024x1024";
   quality?: "standard" | "hd";
+  n?: number;
+}
+
+export interface GeneratedImage {
+  id: string;
+  url: string;
+  prompt: string;
+  created_at: string;
 }
 
 export interface GenerateImageResponse {
-  id: string;
-  url: string;
-  prompt: string;
-  created_at: string;
-  size: string;
-  style?: string;
-}
-
-export interface ImageHistory {
-  id: string;
-  url: string;
-  prompt: string;
-  created_at: string;
+  images: GeneratedImage[];
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+  };
 }
 
 export const aiImageService = {
-  // Générer une image via l'API
+  // Générer une image via OpenAI
   generateImage: async (payload: GenerateImagePayload): Promise<GenerateImageResponse> => {
     try {
-      const response = await api.post("/aiimage/generate-image", {
+      const data = {
         prompt: payload.prompt,
-        style: payload.style || "realistic",
-        size: payload.size || "512x512",
+        size: payload.size || "1024x1024",
         quality: payload.quality || "standard",
-      });
+        n: payload.n || 1,
+      };
+
+      const response = await api.post("/aiimage/generate-image", data);
       return response.data.data || response.data;
     } catch (error) {
       console.error("Erreur lors de la génération d'image:", error);
@@ -40,35 +41,20 @@ export const aiImageService = {
     }
   },
 
-  // Récupérer l'historique des images générées
-  getImageHistory: async (limit: number = 20): Promise<ImageHistory[]> => {
+  // Générer plusieurs images
+  generateMultipleImages: async (
+    prompt: string,
+    count: number = 3,
+    size: "256x256" | "512x512" | "1024x1024" = "1024x1024"
+  ): Promise<GenerateImageResponse> => {
     try {
-      const response = await api.get(`/aiimage/history?limit=${limit}`);
-      return response.data.data || response.data || [];
-    } catch (error) {
-      console.error("Erreur lors du chargement de l'historique:", error);
-      throw error;
-    }
-  },
-
-  // Supprimer une image générée
-  deleteImage: async (imageId: string): Promise<void> => {
-    try {
-      await api.delete(`/aiimage/${imageId}`);
-    } catch (error) {
-      console.error("Erreur lors de la suppression de l'image:", error);
-      throw error;
-    }
-  },
-
-  // Utiliser une image générée dans le design
-  useImageInDesign: async (imageUrl: string, imageId: string): Promise<void> => {
-    try {
-      await api.post(`/aiimage/${imageId}/use-in-design`, {
-        url: imageUrl,
+      return await aiImageService.generateImage({
+        prompt,
+        size,
+        n: count,
       });
     } catch (error) {
-      console.error("Erreur lors de l'utilisation de l'image:", error);
+      console.error("Erreur lors de la génération d'images multiples:", error);
       throw error;
     }
   },

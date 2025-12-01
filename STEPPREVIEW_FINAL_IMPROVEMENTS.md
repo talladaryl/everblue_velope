@@ -7,29 +7,36 @@ Refonte complète de StepPreviewImproved pour une meilleure expérience utilisat
 ## ✅ Améliorations Apportées
 
 ### 1. Sélection de Modèle via Dropdown
+
 **Avant**:
+
 - ❌ Grille de boutons (13 modèles)
 - ❌ Interface encombrée
 - ❌ Difficile à naviguer
 
 **Après**:
+
 - ✅ Select dropdown pour les modèles
 - ✅ Interface épurée
 - ✅ Facile à naviguer
 - ✅ Côte à côte avec la sélection d'invité
 
 ### 2. Substitution Correcte des Variables
+
 **Avant**:
+
 - ❌ Variables non remplacées
 - ❌ Pas de fallback
 
 **Après**:
+
 - ✅ Remplacement automatique des variables
 - ✅ Support de tous les formats ({{name}}, {{lieu}}, etc.)
 - ✅ Fallback manuel si replaceVariables n'existe pas
 - ✅ Alias français supportés (lieu, heure)
 
 **Variables remplacées**:
+
 ```
 {{name}} → Nom complet
 {{first_name}} → Prénom
@@ -41,13 +48,16 @@ Refonte complète de StepPreviewImproved pour une meilleure expérience utilisat
 ```
 
 ### 3. Interface Simplifiée
+
 **Avant**:
+
 - ❌ Grille de modèles
 - ❌ Section "Aperçu simple"
 - ❌ Section "Variables utilisées"
 - ❌ Boutons de navigation Précédent/Suivant
 
 **Après**:
+
 - ✅ Sélecteurs côte à côte (invité + modèle)
 - ✅ Une seule section d'aperçu
 - ✅ Aperçu du modèle sélectionné
@@ -56,25 +66,30 @@ Refonte complète de StepPreviewImproved pour une meilleure expérience utilisat
 ### 4. Flux Utilisateur Amélioré
 
 **Étape 1**: Sélectionner un invité
+
 - Dropdown avec liste des invités
 - Affichage des informations (nom, email, lieu, date)
 
 **Étape 2**: Sélectionner un modèle
+
 - Dropdown avec liste des modèles
 - Description de chaque modèle
 
 **Étape 3**: Voir l'aperçu
+
 - Aperçu du modèle sélectionné
 - Variables remplacées automatiquement
 - Données de l'invité sélectionné
 
 **Étape 4**: Continuer
+
 - Bouton "Continuer vers l'envoi"
 - Aller à l'étape d'envoi
 
 ## 🎯 Composants Utilisés
 
 ### Sélecteurs
+
 ```typescript
 // Sélection d'invité
 <Select value={guest.id} onValueChange={setPreviewGuestId}>
@@ -106,6 +121,7 @@ Refonte complète de StepPreviewImproved pour une meilleure expérience utilisat
 ```
 
 ### Aperçu
+
 ```typescript
 {selectedModel === "default" ? (
   // Aperçu simple
@@ -121,17 +137,20 @@ Refonte complète de StepPreviewImproved pour une meilleure expérience utilisat
 ## 📱 Responsive Design
 
 ### Mobile (< 768px)
+
 - ✅ Sélecteurs empilés verticalement
 - ✅ Grille 1 colonne
 - ✅ Texte réduit
 - ✅ Aperçu adapté
 
 ### Tablet (768px - 1024px)
+
 - ✅ Sélecteurs côte à côte
 - ✅ Grille 2 colonnes
 - ✅ Texte normal
 
 ### Desktop (> 1024px)
+
 - ✅ Sélecteurs côte à côte
 - ✅ Grille 2 colonnes
 - ✅ Texte normal
@@ -140,12 +159,14 @@ Refonte complète de StepPreviewImproved pour une meilleure expérience utilisat
 ## 🔧 Implémentation Technique
 
 ### État
+
 ```typescript
 const [selectedModel, setSelectedModel] = useState("default");
 const [previewItems, setPreviewItems] = useState<any[]>([]);
 ```
 
 ### Substitution des Variables
+
 ```typescript
 useEffect(() => {
   if (guest && items) {
@@ -157,8 +178,11 @@ useEffect(() => {
         } else {
           // Fallback manuel
           text = it.text
-            .replace(/\{\{name\}\}/g, guest.name || "")
-            .replace(/\{\{first_name\}\}/g, guest.name?.split(" ")[0] || "")
+            .replace(/\{\{name\}\}/g, guest.full_name || "")
+            .replace(
+              /\{\{first_name\}\}/g,
+              guest.full_name?.split(" ")[0] || ""
+            )
             .replace(/\{\{email\}\}/g, guest.email || "")
             .replace(/\{\{location\}\}/g, guest.location || "")
             .replace(/\{\{lieu\}\}/g, guest.location || "")
@@ -176,6 +200,7 @@ useEffect(() => {
 ```
 
 ### Rendu du Modèle
+
 ```typescript
 const renderModelPreview = () => {
   const commonProps = {
@@ -216,12 +241,14 @@ const renderModelPreview = () => {
 ## 🧪 Tests Recommandés
 
 ### Sélection
+
 1. Sélectionner différents invités
 2. Vérifier que les données changent
 3. Sélectionner différents modèles
 4. Vérifier que l'aperçu change
 
 ### Substitution des Variables
+
 1. Vérifier que {{name}} est remplacé
 2. Vérifier que {{email}} est remplacé
 3. Vérifier que {{lieu}} est remplacé
@@ -229,12 +256,14 @@ const renderModelPreview = () => {
 5. Vérifier que {{time}} est remplacé
 
 ### Responsive
+
 1. Tester sur mobile
 2. Tester sur tablet
 3. Tester sur desktop
 4. Vérifier l'alignement des sélecteurs
 
 ### Navigation
+
 1. Naviguer entre les invités
 2. Naviguer entre les modèles
 3. Vérifier que l'aperçu se met à jour
@@ -243,12 +272,14 @@ const renderModelPreview = () => {
 ## 🎉 Résultats
 
 ### Avant
+
 - ❌ Grille de modèles encombrante
 - ❌ Variables non remplacées
 - ❌ Interface complexe
 - ❌ Sections inutiles
 
 ### Après
+
 - ✅ Sélecteurs dropdown simples
 - ✅ Variables remplacées correctement
 - ✅ Interface épurée
@@ -261,10 +292,12 @@ const renderModelPreview = () => {
 ## 🚀 Prochaines Étapes
 
 1. **Optimisation des Modèles**
+
    - Améliorer les rendus des modèles
    - Ajouter plus de modèles
 
 2. **Sauvegarde du Modèle Préféré**
+
    - Sauvegarder le modèle sélectionné
    - Restaurer au prochain chargement
 
@@ -282,6 +315,7 @@ const renderModelPreview = () => {
 ## 🎉 Conclusion
 
 StepPreviewImproved est maintenant:
+
 - ✅ Complètement fonctionnel
 - ✅ Interface épurée et claire
 - ✅ Variables remplacées correctement

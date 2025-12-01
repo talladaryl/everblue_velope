@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,20 +11,81 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Users } from "lucide-react";
 import { GuestManager } from "@/components/GuestManager";
+import { nanoid } from "nanoid";
 
 export default function StepDetails({ ctx }: { ctx: any }) {
   const {
-    guests,
-    setGuests,
     setStep,
     previewGuestId,
     setPreviewGuestId,
+    guests,
+    setGuests,
   } = ctx;
 
-  const validCount = guests.filter((g: any) => g.valid).length;
+  const [loading, setLoading] = useState(false);
+
+  const validCount = guests && guests.length > 0 
+    ? guests.filter((g: any) => g.email || g.phone).length 
+    : 0;
+
+  const handleGuestAdd = async (guestData: any) => {
+    try {
+      setLoading(true);
+      const newGuest = {
+        id: nanoid(),
+        name: guestData.name,
+        full_name: guestData.name,
+        email: guestData.email || "",
+        phone: guestData.phone || "",
+        valid: (guestData.email || guestData.phone) ? true : false,
+        plus_one_allowed: guestData.plus_one_allowed || false,
+      };
+      setGuests([...(guests || []), newGuest]);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'invité:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestUpdate = async (guestId: any, guestData: any) => {
+    try {
+      setLoading(true);
+      setGuests(
+        (guests || []).map((g: any) =>
+          g.id === guestId
+            ? {
+                ...g,
+                name: guestData.name,
+                full_name: guestData.name,
+                email: guestData.email || "",
+                phone: guestData.phone || "",
+                valid: (guestData.email || guestData.phone) ? true : false,
+                plus_one_allowed: guestData.plus_one_allowed || false,
+              }
+            : g
+        )
+      );
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'invité:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestDelete = async (guestId: any) => {
+    try {
+      setLoading(true);
+      setGuests((guests || []).filter((g: any) => g.id !== guestId));
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'invité:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleContinue = () => {
-    if (guests.length && !previewGuestId) {
+    if (guests && guests.length > 0 && !previewGuestId) {
       setPreviewGuestId(guests[0].id);
     }
     setStep(2);
@@ -48,7 +109,7 @@ export default function StepDetails({ ctx }: { ctx: any }) {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-sm text-gray-600">Total</p>
-            <p className="text-3xl font-bold text-gray-900">{guests.length}</p>
+            <p className="text-3xl font-bold text-gray-900">{guests?.length || 0}</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-600">Valides</p>
@@ -60,7 +121,7 @@ export default function StepDetails({ ctx }: { ctx: any }) {
       </div>
 
       {/* Alertes */}
-      {guests.length === 0 && (
+      {(!guests || guests.length === 0) && (
         <Alert className="bg-blue-50 border-blue-200">
           <AlertCircle className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
@@ -69,11 +130,11 @@ export default function StepDetails({ ctx }: { ctx: any }) {
         </Alert>
       )}
 
-      {guests.length > 0 && validCount === 0 && (
+      {guests && guests.length > 0 && validCount === 0 && (
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité valide. Veuillez corriger les emails invalides.
+            Aucun invité valide. Veuillez corriger les emails ou téléphones invalides.
           </AlertDescription>
         </Alert>
       )}
@@ -88,7 +149,12 @@ export default function StepDetails({ ctx }: { ctx: any }) {
       )}
 
       {/* Gestionnaire d'invités */}
-      <GuestManager guests={guests} onGuestsChange={setGuests} />
+      <GuestManager 
+        guests={guests || []} 
+        onGuestAdd={handleGuestAdd}
+        onGuestUpdate={handleGuestUpdate}
+        onGuestDelete={handleGuestDelete}
+      />
 
       {/* Navigation */}
       <div className="flex justify-between gap-4 pt-6 border-t">
@@ -97,7 +163,7 @@ export default function StepDetails({ ctx }: { ctx: any }) {
         </Button>
         <Button
           onClick={handleContinue}
-          disabled={!guests.length || validCount === 0}
+          disabled={!guests || guests.length === 0 || validCount === 0}
           className="px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
         >
           Continuer vers la prévisualisation →

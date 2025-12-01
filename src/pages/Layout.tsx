@@ -20,7 +20,7 @@ const items = [
   { to: "/messages", label: "Messages", icon: Mail },
   { to: "/events", label: "Événements", icon: Calendar },
   { to: "/inbox", label: "Invitations reçues", icon: Users },
-  { to: "/mobile", label: "Application mobile", icon: Smartphone },
+  { to: "/organizations", label: "Organisations", icon: Smartphone },
   { to: "/help", label: "Centre d'aide", icon: HelpCircle },
 ];
 
@@ -33,7 +33,7 @@ export default function LayoutWrapper() {
       return false;
     }
   });
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [OrganisationOpen, setOrganisationOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -139,11 +139,11 @@ export default function LayoutWrapper() {
           </div>
         </aside>
 
-        {/* Mobile header */}
+        {/* Organisation header */}
         <div className="md:hidden w-full fixed top-0 left-0 z-40 bg-white/95 border-b border-gray-200/60">
           <div className="flex items-center justify-between px-3 py-2">
             <button
-              onClick={() => setMobileOpen(true)}
+              onClick={() => setOrganisationOpen(true)}
               className="p-2 rounded hover:bg-muted"
             >
               <Menu className="h-5 w-5" />
@@ -153,18 +153,18 @@ export default function LayoutWrapper() {
           </div>
         </div>
 
-        {/* Mobile drawer */}
-        {mobileOpen && (
+        {/* Organisation drawer */}
+        {OrganisationOpen && (
           <div className="md:hidden fixed inset-0 z-50">
             <div
               className="absolute inset-0 bg-black/40"
-              onClick={() => setMobileOpen(false)}
+              onClick={() => setOrganisationOpen(false)}
             />
             <div className="absolute left-0 top-0 bottom-0 w-72 bg-white/95 p-4 shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <div className="font-bold">Everblue</div>
                 <button
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => setOrganisationOpen(false)}
                   className="p-1 rounded hover:bg-muted"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -179,7 +179,7 @@ export default function LayoutWrapper() {
                       key={it.to}
                       onClick={() => {
                         navigate(it.to);
-                        setMobileOpen(false);
+                        setOrganisationOpen(false);
                       }}
                       className="flex items-center gap-3 w-full text-left py-2 px-2 rounded hover:bg-gray-100"
                     >

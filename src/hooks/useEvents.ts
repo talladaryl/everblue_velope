@@ -11,6 +11,8 @@ interface UseEventsReturn {
   updateEvent: (id: number, payload: UpdateEventPayload) => Promise<Event>;
   deleteEvent: (id: number) => Promise<void>;
   updateEventStatus: (id: number, status: EventStatus) => Promise<Event>;
+  archiveEvent: (id: number) => Promise<Event>;
+  unarchiveEvent: (id: number) => Promise<Event>;
 }
 
 export const useEvents = (): UseEventsReturn => {
@@ -116,6 +118,44 @@ export const useEvents = (): UseEventsReturn => {
     []
   );
 
+  const archiveEventHandler = useCallback(async (id: number): Promise<Event> => {
+    try {
+      const archivedEvent = await eventService.archiveEvent(id);
+      setEvents((prev) =>
+        prev.map((e) => (e.id === id ? archivedEvent : e))
+      );
+      toast.success("Événement archivé avec succès!");
+      return archivedEvent;
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Erreur lors de l'archivage";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
+    }
+  }, []);
+
+  const unarchiveEventHandler = useCallback(async (id: number): Promise<Event> => {
+    try {
+      const unarchivedEvent = await eventService.unarchiveEvent(id);
+      setEvents((prev) =>
+        prev.map((e) => (e.id === id ? unarchivedEvent : e))
+      );
+      toast.success("Événement désarchivé avec succès!");
+      return unarchivedEvent;
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Erreur lors du désarchivage";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
+    }
+  }, []);
+
   // Charger les événements au montage
   useEffect(() => {
     fetchEvents();
@@ -130,5 +170,7 @@ export const useEvents = (): UseEventsReturn => {
     updateEvent: updateEventHandler,
     deleteEvent: deleteEventHandler,
     updateEventStatus: updateEventStatusHandler,
+    archiveEvent: archiveEventHandler,
+    unarchiveEvent: unarchiveEventHandler,
   };
 };

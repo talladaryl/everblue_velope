@@ -15,7 +15,12 @@ import {
   ArrowRight,
   Save,
   Download,
+  CheckCircle,
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SaveTemplateModal } from "@/components/SaveTemplateModal";
+import { useSaveTemplate } from "@/hooks/useSaveTemplate";
+import { toast } from "@/components/ui/sonner";
 
 // Sous-composants
 import { EditCard } from "./design-steps/EditCard";
@@ -25,7 +30,10 @@ export default function StepDesign({ ctx }: { ctx: any }) {
   const [currentSubStep, setCurrentSubStep] = useState<"card" | "envelope">(
     "card"
   );
-  const { setStep } = ctx;
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [savedSuccess, setSavedSuccess] = useState(false);
+  const { saving, saveTemplate } = useSaveTemplate();
+  const { setStep, items = [], bgColor = "#ffffff" } = ctx;
 
   // expose setSubStep so child can switch sub-step via ctx.setSubStep(...)
   const enhancedCtx = {
@@ -33,65 +41,84 @@ export default function StepDesign({ ctx }: { ctx: any }) {
     setSubStep: (s: "card" | "envelope") => setCurrentSubStep(s),
   };
 
-  // Error boundary to avoid full white screen and surface runtime errors
-  class ErrorBoundary extends React.Component<
-    any,
-    { hasError: boolean; error?: any }
-  > {
-    constructor(props: any) {
-      super(props);
-      this.state = { hasError: false, error: undefined };
-    }
-    static getDerivedStateFromError(error: any) {
-      return { hasError: true, error };
-    }
-    componentDidCatch(error: any, info: any) {
-      // log to console / telemetry
-      console.error("StepDesign sub-step error:", error, info);
-    }
-    render() {
-      if (this.state.hasError) {
-        return (
-          <div className="p-4 bg-destructive/5 rounded">
-            <div className="font-medium text-destructive">
-              Erreur dans l'éditeur
-            </div>
-            <div className="text-sm text-muted-foreground mt-2">
-              Une erreur est survenue lors du rendu de cette section de
-              l'éditeur.
-            </div>
-          </div>
-        );
-      }
-      return this.props.children;
-    }
-  }
+  // Extraire les variables du contenu
+  const extractVariables = (): string[] => {
+    const variables = new Set<string>();
+    const regex = /\{\{(\w+)\}\}/g;
 
-  const renderSubStep = () => {
-    switch (currentSubStep) {
-      case "card":
-        return <EditCard ctx={enhancedCtx} />;
-      case "envelope":
-        return <EditEnvelope ctx={enhancedCtx} />;
-      default:
-        return <EditCard ctx={enhancedCtx} />;
+    items.forEach((item: any) => {
+      if (item.type === "text" && item.text) {
+        let match: RegExpExecArray | null;
+        while ((match = regex.exec(item.text)) !== null) {
+          variables.add(match[1]);
+        }
+      }
+    });
+
+    return Array.from(variables);
+  };
+
+  // Gérer la sauvegarde du template
+  const handleSaveTemplate = async (payload: any) => {
+    try {
+      await saveTemplate({
+        name: payload.name,
+        category: payload.category,
+        structure: {
+          items,
+          bgColor,
+          description: payload.description,
+          variables: extractVariables(),
+        },
+      });
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (error) {
+      console.error("Erreur sauvegarde:", error);
     }
   };
 
-  const getNextStep = () => {
+  const renderSubStep = () => {
+    try {
+      switch (currentSubStep) {
+        case "card":
+          return <EditCard ctx={enhancedCtx} />;
+        case "envelope":
+          return <EditEnvelope ctx={enhancedCtx} />;
+        default:
+          return <EditCard ctx={enhancedCtx} />;
+      }
+    } catch (error) {
+      console.error("Erreur lors du rendu du sous-composant:", error);
+      return (
+        <div className="p-4 bg-red-50 rounded border border-red-200">
+          <div className="font-medium text-red-900">Erreur dans l'éditeur</div>
+          <div className="text-sm text-red-700 mt-2">
+            Une erreur est survenue lors du rendu de cette section de l'éditeur.
+          </div>
+        </div>
+      );
+    }
+  };
+
+  const getNextStep = (): "card" | "envelope" => {
     switch (currentSubStep) {
       case "card":
         return "envelope";
       case "envelope":
         return "card";
+      default:
+        return "card";
     }
   };
 
-  const getPrevStep = () => {
+  const getPrevStep = (): "card" | "envelope" => {
     switch (currentSubStep) {
       case "card":
         return "card";
       case "envelope":
+        return "card";
+      default:
         return "card";
     }
   };
@@ -194,14 +221,66 @@ export default function StepDesign({ ctx }: { ctx: any }) {
         </div>
       </div>
 
-      {/* Contenu de l'étape (protégé par ErrorBoundary pour éviter page blanche) */}
-      <ErrorBoundary>{renderSubStep()}</ErrorBoundary>
+      {/* Contenu de l'étape */}
+      <div>{renderSubStep()}</div>
+
+      {/* Section Sauvegarder le template - Affichée sous la workspace */}
+      {currentSubStep === "envelope" && (
+        <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Save className="h-5 w-5 text-blue-600" />
+              Sauvegarder ce design
+            </CardTitle>
+            <CardDescription>
+              Conservez ce template pour une utilisation future
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {savedSuccess && (
+              <Alert className="bg-green-50 border-green-200">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  Template sauvegardé avec succès!
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded-lg border border-blue-100">
+                <p className="text-sm font-medium text-gray-700 mb-2">Éléments</p>
+                <p className="text-2xl font-bold text-blue-600">{items.length}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-blue-100">
+                <p className="text-sm font-medium text-gray-700 mb-2">Variables</p>
+                <p className="text-2xl font-bold text-purple-600">{extractVariables().length}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-blue-100">
+                <p className="text-sm font-medium text-gray-700 mb-2">Statut</p>
+                <p className="text-sm font-semibold text-green-600">Prêt à sauvegarder</p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setShowSaveModal(true)}
+              disabled={saving || items.length === 0}
+              className="w-full bg-blue-600 hover:bg-blue-700 gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? "Sauvegarde en cours..." : "Sauvegarder le template"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Navigation */}
       <div className="flex justify-between">
         <Button
           variant="outline"
-          onClick={() => setCurrentSubStep(getPrevStep())}
+          onClick={() => {
+            const prev = getPrevStep();
+            setCurrentSubStep(prev);
+          }}
           disabled={currentSubStep === "card"}
           className="flex items-center gap-2"
         >
@@ -211,7 +290,10 @@ export default function StepDesign({ ctx }: { ctx: any }) {
 
         {currentSubStep !== "envelope" ? (
           <Button
-            onClick={() => setCurrentSubStep(getNextStep())}
+            onClick={() => {
+              const next = getNextStep();
+              setCurrentSubStep(next);
+            }}
             className="flex items-center gap-2"
           >
             Suivant
@@ -219,10 +301,6 @@ export default function StepDesign({ ctx }: { ctx: any }) {
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Save className="h-4 w-4" />
-              Sauvegarder
-            </Button>
             <Button variant="outline" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Exporter
@@ -233,6 +311,19 @@ export default function StepDesign({ ctx }: { ctx: any }) {
           </div>
         )}
       </div>
+
+      {/* Modal de sauvegarde */}
+      <SaveTemplateModal
+        open={showSaveModal}
+        onOpenChange={setShowSaveModal}
+        onSave={handleSaveTemplate}
+        loading={saving}
+        structure={{
+          items,
+          bgColor,
+          variables: extractVariables(),
+        }}
+      />
     </div>
   );
 }

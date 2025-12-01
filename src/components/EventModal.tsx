@@ -11,7 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, AlertCircle } from "lucide-react";
+import { useOrganizations } from "@/hooks/useOrganizations";
 import type { Event, CreateEventPayload } from "@/api/services/eventService";
 
 interface EventModalProps {
@@ -29,10 +37,12 @@ export function EventModal({
   onSave,
   loading = false,
 }: EventModalProps) {
+  const { organizations } = useOrganizations();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [location, setLocation] = useState("");
+  const [organizationId, setOrganizationId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,11 +51,13 @@ export function EventModal({
       setDescription(event.description || "");
       setEventDate(event.event_date ? event.event_date.slice(0, 16) : "");
       setLocation(event.location || "");
+      setOrganizationId(event.organization_id?.toString() || "");
     } else {
       setTitle("");
       setDescription("");
       setEventDate("");
       setLocation("");
+      setOrganizationId("");
     }
     setError(null);
   }, [event, open]);
@@ -65,6 +77,7 @@ export function EventModal({
         description: description.trim() || undefined,
         event_date: eventDate || undefined,
         location: location.trim() || undefined,
+        organization_id: organizationId ? parseInt(organizationId) : undefined,
       });
       onOpenChange(false);
     } catch (err: any) {
@@ -137,6 +150,22 @@ export function EventModal({
               placeholder="Ex: Salle des fêtes, Paris"
               className="mt-2"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="organization">Organisation</Label>
+            <Select value={organizationId} onValueChange={setOrganizationId}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Sélectionner une organisation" />
+              </SelectTrigger>
+              <SelectContent>
+                {organizations.map((org) => (
+                  <SelectItem key={org.id} value={org.id.toString()}>
+                    {org.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

@@ -90,13 +90,16 @@ type EditorItem = TextItem | ImageItem;
 interface Guest {
   id: string;
   name: string;
+  full_name?: string;
   email: string;
+  phone?: string;
   valid: boolean;
   message?: string;
   // nouveaux champs demandés
   location?: string;
   date?: string;
   time?: string;
+  plus_one_allowed?: boolean;
 }
 interface BuilderTemplate {
   id: string;
@@ -171,7 +174,8 @@ export default function Builder() {
 
   const [items, setItems] = useState<EditorItem[]>([initialText()]);
   const [selectedId, setSelectedId] = useState<string | null>(items[0].id);
-  const [templates, setTemplates] = useState<BuilderTemplate[]>(defaultTemplates);
+  const [templates, setTemplates] =
+    useState<BuilderTemplate[]>(defaultTemplates);
 
   // Drag state
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -540,21 +544,22 @@ export default function Builder() {
   };
 
   // helper: replace variable tokens in text using guest object (ajout lieu/date/heure)
-  const replaceVariables = (text: string, guest?: Guest) => {
+  const replaceVariables = (text: string, guest?: any) => {
     if (!guest) return text;
     return text.replace(
       /{{\s*([\w]+)\s*}}|{\s*([\w]+)\s*}|%([\w]+)%/g,
       (_m, g1, g2, g3) => {
         const key = (g1 || g2 || g3 || "").toLowerCase();
         if (!key) return "";
-        if (["name", "nom", "fullname"].includes(key)) return guest.name || "";
+        if (["name", "nom", "fullname", "full_name"].includes(key))
+          return guest.full_name || guest.name || "";
         if (["email", "mail"].includes(key)) return guest.email || "";
         if (["location", "lieu", "adresse"].includes(key))
           return guest.location || "";
         if (["date"].includes(key)) return guest.date || "";
         if (["time", "heure", "horaire"].includes(key)) return guest.time || "";
+        if (["phone", "telephone", "tel"].includes(key)) return guest.phone || "";
         // fallback to any property on guest
-        // @ts-ignore
         return guest[key] ?? "";
       }
     );

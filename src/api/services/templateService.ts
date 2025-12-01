@@ -17,12 +17,14 @@ export interface CreateTemplatePayload {
   structure: Record<string, any>;
 }
 
+const extract = (res: any) => res.data?.data || res.data;
+
 export const templateService = {
   // Récupérer tous les templates
   getTemplates: async (): Promise<Template[]> => {
     try {
       const response = await api.get("/templates");
-      return response.data.data || response.data || [];
+      return extract(response) || [];
     } catch (error) {
       console.error("Erreur lors du chargement des templates:", error);
       throw error;
@@ -32,8 +34,7 @@ export const templateService = {
   // Récupérer un template spécifique
   getTemplate: async (id: number): Promise<Template> => {
     try {
-      const response = await api.get(`/templates/${id}`);
-      return response.data.data || response.data;
+      return extract(await api.get(`/templates/${id}`));
     } catch (error) {
       console.error(`Erreur lors du chargement du template ${id}:`, error);
       throw error;
@@ -43,18 +44,17 @@ export const templateService = {
   // Créer un nouveau template
   createTemplate: async (payload: CreateTemplatePayload): Promise<Template> => {
     try {
-      // Assurer que structure est un objet JSON valide
       const data = {
         name: payload.name,
         category: payload.category || null,
         preview_url: payload.preview_url || null,
-        structure: typeof payload.structure === "string" 
-          ? JSON.parse(payload.structure) 
-          : payload.structure,
+        structure:
+          typeof payload.structure === "string"
+            ? JSON.parse(payload.structure)
+            : payload.structure,
       };
 
-      const response = await api.post("/templates", data);
-      return response.data.data || response.data;
+      return extract(await api.post("/templates", data));
     } catch (error) {
       console.error("Erreur lors de la création du template:", error);
       throw error;
@@ -68,18 +68,19 @@ export const templateService = {
   ): Promise<Template> => {
     try {
       const data: Record<string, any> = {};
-      
-      if (payload.name) data.name = payload.name;
-      if (payload.category) data.category = payload.category;
-      if (payload.preview_url) data.preview_url = payload.preview_url;
-      if (payload.structure) {
-        data.structure = typeof payload.structure === "string" 
-          ? JSON.parse(payload.structure) 
-          : payload.structure;
+
+      if (payload.name !== undefined) data.name = payload.name;
+      if (payload.category !== undefined) data.category = payload.category;
+      if (payload.preview_url !== undefined)
+        data.preview_url = payload.preview_url;
+      if (payload.structure !== undefined) {
+        data.structure =
+          typeof payload.structure === "string"
+            ? JSON.parse(payload.structure)
+            : payload.structure;
       }
 
-      const response = await api.put(`/templates/${id}`, data);
-      return response.data.data || response.data;
+      return extract(await api.put(`/templates/${id}`, data));
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du template ${id}:`, error);
       throw error;

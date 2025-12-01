@@ -63,7 +63,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
     setIsLoading(true);
     try {
       // Utiliser votre route /api/auth/me (vous avez listé cette route)
-      const userResponse = await api.get("/api/auth/me");
+      const userResponse = await api.get("/auth/me");
 
       onLogin(userResponse.data);
       setIs2FA(false); // Réinitialiser l'état 2FA

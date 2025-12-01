@@ -3,13 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  X,
-  Smartphone,
-  Monitor,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
+import { X, Smartphone, Monitor, AlertCircle, CheckCircle } from "lucide-react";
 import { prepareTemplateForRendering } from "@/utils/variableSubstitution";
 
 interface ResponsivePreviewProps {
@@ -46,10 +40,11 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
   }, []);
 
   // Préparer le template avec les données de l'invité
-  const { items: replacedItems, valid, variables } = prepareTemplateForRendering(
-    items,
-    guest
-  );
+  const {
+    items: replacedItems,
+    valid,
+    variables,
+  } = prepareTemplateForRendering(items, guest);
 
   // Déterminer le style de fond
   const backgroundStyle: React.CSSProperties = {
@@ -66,7 +61,7 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
   };
 
   const dimensions = previewDimensions[viewMode];
-  
+
   // Calculer l'échelle adaptée à l'écran
   const maxWidth = isMobileScreen ? window.innerWidth - 40 : 800;
   const scale = Math.min(1, maxWidth / dimensions.width);
@@ -80,7 +75,8 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
             <CardTitle>{title}</CardTitle>
             {showGuestInfo && (
               <p className="text-sm text-gray-600 mt-1">
-                Invité: <span className="font-semibold">{guest.name}</span> ({guest.email})
+                Invité: <span className="font-semibold">{guest.full_name}</span>{" "}
+                ({guest.email})
               </p>
             )}
           </div>
@@ -100,7 +96,8 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
             <Alert className="bg-yellow-50 border-yellow-200">
               <AlertCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-yellow-800">
-                Certaines variables n'ont pas pu être remplacées. Vérifiez les données de l'invité.
+                Certaines variables n'ont pas pu être remplacées. Vérifiez les
+                données de l'invité.
               </AlertDescription>
             </Alert>
           )}
@@ -250,7 +247,9 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
           {/* Informations sur les variables */}
           {Object.keys(variables).length > 0 && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-sm mb-3">Variables remplacées:</h4>
+              <h4 className="font-semibold text-sm mb-3">
+                Variables remplacées:
+              </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {Object.entries(variables).map(([key, value]) => (
                   <div key={key} className="text-xs md:text-sm break-words">
@@ -266,8 +265,8 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
 
           {/* Boutons d'action */}
           <div className="flex flex-col md:flex-row justify-end gap-2 pt-4 border-t">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onClose}
               className="w-full md:w-auto flex items-center justify-center gap-2"
             >

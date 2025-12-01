@@ -76,7 +76,7 @@ export const CreditCardPayment = ({
       }
 
       // Appeler votre API pour créer un PaymentIntent
-      const response = await fetch("/api/create-payment-intent", {
+      const response = await fetch("/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

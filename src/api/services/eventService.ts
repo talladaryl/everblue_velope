@@ -22,72 +22,112 @@ export interface CreateEventPayload {
   location?: string;
   template_id?: number;
   status?: EventStatus;
+  organization_id?: number;
 }
 
 export interface UpdateEventPayload extends Partial<CreateEventPayload> {}
 
+const extract = (res: any) => res.data?.data || res.data;
+
 export const eventService = {
-  // Récupérer tous les événements
   getEvents: async (): Promise<Event[]> => {
     try {
       const response = await api.get("/events");
-      return response.data.data || response.data || [];
+      return extract(response) || [];
     } catch (error) {
       console.error("Erreur lors du chargement des événements:", error);
       throw error;
     }
   },
 
-  // Récupérer un événement spécifique
   getEvent: async (id: number): Promise<Event> => {
     try {
-      const response = await api.get(`/events/${id}`);
-      return response.data.data || response.data;
+      return extract(await api.get(`/events/${id}`));
     } catch (error) {
       console.error(`Erreur lors du chargement de l'événement ${id}:`, error);
       throw error;
     }
   },
 
-  // Créer un nouvel événement
   createEvent: async (payload: CreateEventPayload): Promise<Event> => {
     try {
-      const response = await api.post("/events", payload);
-      return response.data.data || response.data;
+      return extract(await api.post("/events", payload));
     } catch (error) {
       console.error("Erreur lors de la création de l'événement:", error);
       throw error;
     }
   },
 
-  // Mettre à jour un événement
-  updateEvent: async (id: number, payload: UpdateEventPayload): Promise<Event> => {
+  updateEvent: async (
+    id: number,
+    payload: UpdateEventPayload
+  ): Promise<Event> => {
     try {
-      const response = await api.put(`/events/${id}`, payload);
-      return response.data.data || response.data;
+      return extract(await api.put(`/events/${id}`, payload));
     } catch (error) {
-      console.error(`Erreur lors de la mise à jour de l'événement ${id}:`, error);
+      console.error(
+        `Erreur lors de la mise à jour de l'événement ${id}:`,
+        error
+      );
       throw error;
     }
   },
 
-  // Supprimer un événement
   deleteEvent: async (id: number): Promise<void> => {
     try {
       await api.delete(`/events/${id}`);
     } catch (error) {
-      console.error(`Erreur lors de la suppression de l'événement ${id}:`, error);
+      console.error(
+        `Erreur lors de la suppression de l'événement ${id}:`,
+        error
+      );
       throw error;
     }
   },
 
-  // Changer le statut d'un événement
-  updateEventStatus: async (id: number, status: EventStatus): Promise<Event> => {
+  updateEventStatus: async (
+    id: number,
+    status: EventStatus
+  ): Promise<Event> => {
     try {
-      const response = await api.patch(`/events/${id}/status`, { status });
-      return response.data.data || response.data;
+      return extract(
+        await api.post(`/events/${id}/change-status`, { status })
+      );
     } catch (error) {
-      console.error(`Erreur lors de la mise à jour du statut de l'événement ${id}:`, error);
+      console.error(
+        `Erreur lors de la mise à jour du statut de l'événement ${id}:`,
+        error
+      );
+      throw error;
+    }
+  },
+
+  archiveEvent: async (id: number): Promise<Event> => {
+    try {
+      return extract(await api.post(`/events/${id}/archive`));
+    } catch (error) {
+      console.error(`Erreur lors de l'archivage de l'événement ${id}:`, error);
+      throw error;
+    }
+  },
+
+  unarchiveEvent: async (id: number): Promise<Event> => {
+    try {
+      return extract(await api.post(`/events/${id}/unarchive`));
+    } catch (error) {
+      console.error(`Erreur lors du désarchivage de l'événement ${id}:`, error);
+      throw error;
+    }
+  },
+
+  getArchivedEvents: async (): Promise<Event[]> => {
+    try {
+      return extract(await api.get("/events/archived/list")) || [];
+    } catch (error) {
+      console.error(
+        "Erreur lors du chargement des événements archivés:",
+        error
+      );
       throw error;
     }
   },

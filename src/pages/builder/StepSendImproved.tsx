@@ -31,7 +31,10 @@ import {
 } from "@/components/ui/select";
 import { useSaveTemplate } from "@/hooks/useSaveTemplate";
 import { useBulkSend } from "@/hooks/useBulkSend";
-import { SendStatusModal, type MessageStatus } from "@/components/SendStatusModal";
+import {
+  SendStatusModal,
+  type MessageStatus,
+} from "@/components/SendStatusModal";
 import { toast } from "@/components/ui/sonner";
 
 interface StepSendProps {
@@ -50,23 +53,27 @@ interface Guest {
 }
 
 export default function StepSendImproved({ ctx }: StepSendProps) {
-  const {
-    guests = [],
-    setStep,
-    items = [],
-    bgColor = "#ffffff",
-  } = ctx;
+  const { guests = [], setStep, items = [], bgColor = "#ffffff" } = ctx;
 
   const { saving, saveTemplate } = useSaveTemplate();
-  const { sending, bulkSendId, messages, sendBulk, checkStatus, cancelSend, retryFailed } =
-    useBulkSend();
+  const {
+    sending,
+    bulkSendId,
+    messages,
+    sendBulk,
+    checkStatus,
+    cancelSend,
+    retryFailed,
+  } = useBulkSend();
 
   const [templateTitle, setTemplateTitle] = useState("Mon invitation");
   const [templateDescription, setTemplateDescription] = useState("");
   const [emailSubject, setEmailSubject] = useState("Vous êtes invité!");
   const [customMessage, setCustomMessage] = useState("");
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [sendMethod, setSendMethod] = useState<"email" | "mms" | "whatsapp">("email");
+  const [sendMethod, setSendMethod] = useState<"email" | "mms" | "whatsapp">(
+    "email"
+  );
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusMessages, setStatusMessages] = useState<MessageStatus[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -152,7 +159,10 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   };
 
   // Convertir les messages du hook en MessageStatus
-  const convertToMessageStatus = (msgs: any[], channel: string): MessageStatus[] => {
+  const convertToMessageStatus = (
+    msgs: any[],
+    channel: string
+  ): MessageStatus[] => {
     return msgs.map((msg, idx) => ({
       id: msg.id || `msg-${idx}`,
       recipient: msg.recipient || msg.email || msg.phone || "",
@@ -191,9 +201,9 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
       const recipients = validGuests.map((guest: Guest) => ({
         email: guest.email,
         phone: guest.phone,
-        name: guest.name,
+        name: guest.full_name,
         variables: {
-          nom: guest.name,
+          nom: guest.full_name,
           email: guest.email || "",
           phone: guest.phone || "",
           lieu: guest.location || "",
@@ -234,7 +244,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   const handleCheckStatus = async (bulkId: string) => {
     try {
       const status = await checkStatus(bulkId);
-      
+
       setTotalCount(status.progress.total);
       setSentCount(status.progress.sent);
       setFailedCount(status.progress.failed);
@@ -285,7 +295,8 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité trouvé. Veuillez retourner à l'étape précédente pour ajouter des invités.
+            Aucun invité trouvé. Veuillez retourner à l'étape précédente pour
+            ajouter des invités.
           </AlertDescription>
         </Alert>
       )}
@@ -294,7 +305,9 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité valide trouvé pour le canal {getChannelLabel(sendMethod)}. Veuillez vérifier les données de vos invités.
+            Aucun invité valide trouvé pour le canal{" "}
+            {getChannelLabel(sendMethod)}. Veuillez vérifier les données de vos
+            invités.
           </AlertDescription>
         </Alert>
       )}
@@ -336,70 +349,6 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         </CardContent>
       </Card>
 
-      {/* Sauvegarder le template */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Save className="h-5 w-5" />
-            Sauvegarder le template
-          </CardTitle>
-          <CardDescription>
-            Conservez ce design pour une utilisation future
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {savedSuccess && (
-            <Alert className="bg-green-50 border-green-200">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                Template sauvegardé avec succès!
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div>
-            <Label htmlFor="template-title">Nom du template</Label>
-            <Input
-              id="template-title"
-              value={templateTitle}
-              onChange={(e) => setTemplateTitle(e.target.value)}
-              placeholder="Ex: Invitation Mariage 2025"
-              className="mt-2"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="template-desc">Description (optionnel)</Label>
-            <Textarea
-              id="template-desc"
-              value={templateDescription}
-              onChange={(e) => setTemplateDescription(e.target.value)}
-              placeholder="Décrivez ce template..."
-              className="mt-2"
-              rows={3}
-            />
-          </div>
-
-          <Button
-            onClick={handleSaveTemplate}
-            disabled={saving}
-            className="w-full"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Sauvegarde en cours...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Sauvegarder le template
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Envoyer les invitations */}
       <Card>
         <CardHeader>
@@ -416,7 +365,8 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
             <Alert className="bg-red-50 border-red-200">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Aucun invité valide. Veuillez ajouter des invités avec des données valides.
+                Aucun invité valide. Veuillez ajouter des invités avec des
+                données valides.
               </AlertDescription>
             </Alert>
           )}
@@ -425,7 +375,8 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
             <Alert className="bg-red-50 border-red-200">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Le nombre de destinataires dépasse 500. Veuillez réduire le nombre d'invités.
+                Le nombre de destinataires dépasse 500. Veuillez réduire le
+                nombre d'invités.
               </AlertDescription>
             </Alert>
           )}
@@ -433,7 +384,10 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
           {/* Sélection du canal */}
           <div>
             <Label htmlFor="send-method">Canal d'envoi</Label>
-            <Select value={sendMethod} onValueChange={(value: any) => setSendMethod(value)}>
+            <Select
+              value={sendMethod}
+              onValueChange={(value: any) => setSendMethod(value)}
+            >
               <SelectTrigger id="send-method" className="mt-2">
                 <SelectValue />
               </SelectTrigger>
@@ -481,7 +435,9 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               id="custom-message"
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
-              placeholder={`Entrez votre message pour ${getChannelLabel(sendMethod)}...`}
+              placeholder={`Entrez votre message pour ${getChannelLabel(
+                sendMethod
+              )}...`}
               className="mt-2"
               rows={4}
             />
@@ -520,7 +476,8 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               <>
                 <Send className="h-4 w-4 mr-2" />
                 Envoyer à {validGuests.length} invité
-                {validGuests.length > 1 ? "s" : ""} via {getChannelLabel(sendMethod)}
+                {validGuests.length > 1 ? "s" : ""} via{" "}
+                {getChannelLabel(sendMethod)}
               </>
             )}
           </Button>

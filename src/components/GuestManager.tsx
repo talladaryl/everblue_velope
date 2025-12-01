@@ -24,25 +24,17 @@ import {
   MapPin,
   Calendar,
   Clock,
+  Loader2,
 } from "lucide-react";
 import Papa from "papaparse";
 import { toast } from "@/components/ui/sonner";
-
-interface Guest {
-  id: string;
-  name: string;
-  email: string;
-  location?: string;
-  date?: string;
-  time?: string;
-  phone: int;
-  valid: boolean;
-  message?: string;
-}
+import type { Guest } from "@/api/services/guestService";
 
 interface GuestManagerProps {
-  guests: Guest[];
-  onGuestsChange: (guests: Guest[]) => void;
+  guests: any[];
+  onGuestAdd: (guestData: any) => Promise<void>;
+  onGuestUpdate: (guestId: any, guestData: any) => Promise<void>;
+  onGuestDelete: (guestId: any) => Promise<void>;
 }
 
 const isValidEmail = (email: string): boolean => {
@@ -50,110 +42,111 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
+const isValidPhone = (phone: string): boolean => {
+  return phone && phone.trim().length > 0;
+};
+
 export const GuestManager: React.FC<GuestManagerProps> = ({
   guests,
-  onGuestsChange,
+  onGuestAdd,
+  onGuestUpdate,
+  onGuestDelete,
 }) => {
-  const [newGuest, setNewGuest] = useState<Partial<Guest>>({
+  const [newGuest, setNewGuest] = useState({
     name: "",
     email: "",
-    location: "",
-    date: "",
-    time: "",
     phone: "",
+    plus_one_allowed: false,
   });
+  const [loading, setLoading] = useState(false);
 
-  const validGuests = guests.filter((g) => g.valid);
-  const invalidGuests = guests.filter((g) => !g.valid);
+  const validGuests = guests.filter((g) => g.email || g.phone);
+  const invalidGuests = guests.filter((g) => !g.email && !g.phone);
 
-  const addGuest = () => {
+  const addGuest = async () => {
     if (!newGuest.name?.trim()) {
       toast.error("Veuillez entrer un nom");
       return;
     }
 
-    if (!newGuest.email?.trim()) {
-      toast.error("Veuillez entrer un email");
+    if (!newGuest.email?.trim() && !newGuest.phone?.trim()) {
+      toast.error("Veuillez entrer un email ou un téléphone");
       return;
     }
 
-    if (!isValidEmail(newGuest.email)) {
+    if (newGuest.email && !isValidEmail(newGuest.email)) {
       toast.error("Email invalide");
       return;
     }
 
-    const guest: Guest = {
-      id: `guest-${Date.now()}`,
-      name: newGuest.name,
-      email: newGuest.email,
-      location: newGuest.location || "",
-      date: newGuest.date || "",
-      time: newGuest.time || "",
-      phone: newGuest.phone, 
-      valid: true,
-    };
-
-    onGuestsChange([...guests, guest]);
-    setNewGuest({
-      name: "",
-      email: "",
-      location: "",
-      date: "",
-      time: "",
-      phone: "",
-    });
-    toast.success("Invité ajouté");
+    try {
+      setLoading(true);
+      await onGuestAdd({
+        name: newGuest.name,
+        email: newGuest.email || undefined,
+        phone: newGuest.phone || undefined,
+        plus_one_allowed: newGuest.plus_one_allowed,
+      });
+      setNewGuest({
+        name: "",
+        email: "",
+        phone: "",
+        plus_one_allowed: false,
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeGuest = (id: string) => {
-    onGuestsChange(guests.filter((g) => g.id !== id));
-    toast.success("Invité supprimé");
+  const removeGuest = async (id: any) => {
+    try {
+      setLoading(true);
+      await onGuestDelete(id);
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateGuest = (id: string, updates: Partial<Guest>) => {
-    onGuestsChange(
-      guests.map((g) => {
-        if (g.id === id) {
-          const updated = { ...g, ...updates };
-          // Valider l'email si modifié
-          if (updates.email) {
-            updated.valid = isValidEmail(updates.email);
-          }
-          return updated;
-        }
-        return g;
-      })
-    );
-  };
-
-  const handleCSVUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCSVUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results: any) => {
-        const newGuests: Guest[] = results.data
+      complete: async (results: any) => {
+        const newGuests = results.data
           .map((row: any) => ({
-            id: `guest-${Date.now()}-${Math.random()}`,
-            name: row.name || row.nom || "",
-            email: row.email || row.mail || "",
-            location: row.location || row.lieu || "",
-            date: row.date || "",
-            time: row.time || row.heure || "",
-            phone: row.phone || row.phone || "",
-            valid: isValidEmail(row.email || row.mail || ""),
+            name: (row.name || row.nom || "").trim(),
+            email: (row.email || row.mail || "").trim(),
+            phone: (row.phone || row.telephone || "").trim(),
+            plus_one_allowed:
+              row.plus_one_allowed === "true" || row.plus_one_allowed === "1",
           }))
-          .filter((g: Guest) => g.name && g.email);
+          .filter((g: any) => g.name.length > 0 && (g.email.length > 0 || g.phone.length > 0));
 
         if (newGuests.length === 0) {
           toast.error("Aucun invité valide trouvé dans le fichier");
           return;
         }
 
-        onGuestsChange([...guests, ...newGuests]);
-        toast.success(`${newGuests.length} invité(s) importé(s)`);
+        try {
+          setLoading(true);
+          for (const guest of newGuests) {
+            await onGuestAdd(guest);
+          }
+          toast.success(`${newGuests.length} invité(s) importé(s)`);
+        } catch (error) {
+          console.error("Erreur lors de l'import:", error);
+        } finally {
+          setLoading(false);
+        }
       },
       error: () => {
         toast.error("Erreur lors de la lecture du fichier CSV");
@@ -162,7 +155,8 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
   };
 
   const downloadTemplate = () => {
-    const template = "name,email,location,date,time,phone\nDaryl arsel,daryl@gmail.com,yaoundé,2025-06-15,14:00,658940985\n";
+    const template =
+      "name,email,phone,plus_one_allowed\nDaryl Arsel,daryl@gmail.com,658940985,false\nJean Dupont,jean@gmail.com,658940986,true\n";
     const element = document.createElement("a");
     element.setAttribute(
       "href",
@@ -189,13 +183,17 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
           <CardContent className="p-4">
             <p className="text-sm text-green-600 font-medium">Valides</p>
-            <p className="text-3xl font-bold text-green-700">{validGuests.length}</p>
+            <p className="text-3xl font-bold text-green-700">
+              {validGuests.length}
+            </p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
           <CardContent className="p-4">
             <p className="text-sm text-red-600 font-medium">Invalides</p>
-            <p className="text-3xl font-bold text-red-700">{invalidGuests.length}</p>
+            <p className="text-3xl font-bold text-red-700">
+              {invalidGuests.length}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -211,15 +209,16 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="guest-name">Nom</Label>
+              <Label htmlFor="guest-name">Nom *</Label>
               <Input
                 id="guest-name"
-                value={newGuest.name || ""}
+                value={newGuest.name}
                 onChange={(e) =>
                   setNewGuest({ ...newGuest, name: e.target.value })
                 }
-                placeholder="Nom"
+                placeholder="Jean Dupont"
                 className="mt-2"
+                disabled={loading}
               />
             </div>
             <div>
@@ -227,67 +226,58 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               <Input
                 id="guest-email"
                 type="email"
-                value={newGuest.email || ""}
+                value={newGuest.email}
                 onChange={(e) =>
                   setNewGuest({ ...newGuest, email: e.target.value })
                 }
                 placeholder="jean@example.com"
                 className="mt-2"
+                disabled={loading}
               />
             </div>
             <div>
-              <Label htmlFor="guest-location">Lieu (optionnel)</Label>
+              <Label htmlFor="guest-phone">Téléphone</Label>
               <Input
-                id="guest-location"
-                value={newGuest.location || ""}
-                onChange={(e) =>
-                  setNewGuest({ ...newGuest, location: e.target.value })
-                }
-                placeholder="Ville"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="guest-date">Date (optionnel)</Label>
-              <Input
-                id="guest-date"
-                type="date"
-                value={newGuest.date || ""}
-                onChange={(e) =>
-                  setNewGuest({ ...newGuest, date: e.target.value })
-                }
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="guest-time">Heure (optionnel)</Label>
-              <Input
-                id="guest-time"
-                type="time"
-                value={newGuest.time || ""}
-                onChange={(e) =>
-                  setNewGuest({ ...newGuest, time: e.target.value })
-                }
-                className="mt-2"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="guest-name">Téléphone</Label>
-              <Input
-                id="guest-name"
-                value={newGuest.phone || ""}
+                id="guest-phone"
+                value={newGuest.phone}
                 onChange={(e) =>
                   setNewGuest({ ...newGuest, phone: e.target.value })
                 }
                 placeholder="+1XXXXXXXXXXX"
                 className="mt-2"
+                disabled={loading}
               />
             </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newGuest.plus_one_allowed}
+                  onChange={(e) =>
+                    setNewGuest({
+                      ...newGuest,
+                      plus_one_allowed: e.target.checked,
+                    })
+                  }
+                  disabled={loading}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Autoriser +1</span>
+              </label>
+            </div>
           </div>
-          <Button onClick={addGuest} className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter l'invité
+          <Button onClick={addGuest} className="w-full" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Ajout en cours...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter l'invité
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -337,84 +327,76 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                   <TableRow>
                     <TableHead>Nom</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Lieu</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Heure</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>+1 autorisé</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {guests.map((guest) => (
-                    <TableRow key={guest.id}>
-                      <TableCell className="font-medium">{guest.name}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-gray-400" />
-                          {guest.email}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {guest.location ? (
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-gray-400" />
-                            {guest.location}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {guest.date ? (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-gray-400" />
-                            {new Date(guest.date).toLocaleDateString("fr-FR")}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {guest.time ? (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-gray-400" />
-                            {guest.time}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {/* <Phone className="h-4 w-4 text-gray-400" /> */}
-                          {guest.phone}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {guest.valid ? (
-                          <Badge className="bg-green-100 text-green-800 flex items-center gap-1 w-fit">
-                            <CheckCircle className="h-3 w-3" />
-                            Valide
+                  {guests.map((guest) => {
+                    const isValid = guest.email || guest.phone;
+                    const displayName = guest.full_name || guest.name || "Sans nom";
+                    return (
+                      <TableRow key={guest.id}>
+                        <TableCell className="font-medium">
+                          {displayName}
+                        </TableCell>
+                        <TableCell>
+                          {guest.email ? (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-gray-400" />
+                              {guest.email}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {guest.phone ? (
+                            <div className="flex items-center gap-2">
+                              {guest.phone}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              guest.plus_one_allowed ? "default" : "secondary"
+                            }
+                          >
+                            {guest.plus_one_allowed ? "Oui" : "Non"}
                           </Badge>
-                        ) : (
-                          <Badge className="bg-red-100 text-red-800 flex items-center gap-1 w-fit">
-                            <AlertCircle className="h-3 w-3" />
-                            Invalide
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeGuest(guest.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          {isValid ? (
+                            <Badge className="bg-green-100 text-green-800 flex items-center gap-1 w-fit">
+                              <CheckCircle className="h-3 w-3" />
+                              Valide
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-red-100 text-red-800 flex items-center gap-1 w-fit">
+                              <AlertCircle className="h-3 w-3" />
+                              Invalide
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeGuest(guest.id)}
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -427,7 +409,8 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         <Alert className="bg-blue-50 border-blue-200">
           <AlertCircle className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
-            Aucun invité ajouté. Commencez par ajouter des invités ou importer un fichier CSV.
+            Aucun invité ajouté. Commencez par ajouter des invités ou importer
+            un fichier CSV.
           </AlertDescription>
         </Alert>
       )}

@@ -15,6 +15,7 @@ import Messages from "./pages/Messages";
 import Events from "./pages/Events";
 import Invitations from "./pages/Invitations";
 import Inbox from "./pages/Inbox";
+import Organizations from "./pages/Organizations";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="events" element={<Events />} />
                 <Route path="invitations" element={<Invitations />} />
                 <Route path="inbox" element={<Inbox />} />
+                <Route path="organizations" element={<Organizations />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

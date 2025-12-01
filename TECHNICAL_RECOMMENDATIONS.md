@@ -7,6 +7,7 @@ Ce document contient les recommandations techniques pour maintenir et améliorer
 ## 🏗️ Architecture Actuelle
 
 ### Structure des Dossiers
+
 ```
 src/
 ├── api/
@@ -43,23 +44,27 @@ src/
 ## 🎯 Principes de Conception
 
 ### 1. Séparation des Responsabilités
+
 - **Services**: Gestion des appels API
 - **Hooks**: Logique métier réutilisable
 - **Composants**: Présentation et interaction
 - **Contextes**: État global (thème, langue)
 
 ### 2. Réutilisabilité
+
 - Créer des composants génériques
 - Utiliser des props pour la configuration
 - Éviter le code dupliqué
 
 ### 3. Maintenabilité
+
 - Code propre et lisible
 - Commentaires pour les sections complexes
 - Types TypeScript stricts
 - Tests unitaires pour les logiques critiques
 
 ### 4. Performance
+
 - Lazy loading des images
 - Memoization des composants coûteux
 - Optimisation des re-renders
@@ -68,6 +73,7 @@ src/
 ## 🔐 Sécurité
 
 ### 1. Validation des Données
+
 ```typescript
 // ✅ BON: Valider les emails
 const isValidEmail = (email: string): boolean => {
@@ -76,13 +82,14 @@ const isValidEmail = (email: string): boolean => {
 };
 
 // ✅ BON: Valider les entrées utilisateur
-if (!newGuest.name?.trim()) {
+if (!newGuest.full_name?.trim()) {
   toast.error("Veuillez entrer un nom");
   return;
 }
 ```
 
 ### 2. Gestion des Erreurs
+
 ```typescript
 // ✅ BON: Capturer et gérer les erreurs
 try {
@@ -95,12 +102,14 @@ try {
 ```
 
 ### 3. Authentification
+
 - Utiliser des tokens JWT
 - Stocker les tokens de manière sécurisée
 - Implémenter le refresh token
 - Gérer l'expiration des sessions
 
 ### 4. CORS
+
 - Configurer CORS correctement sur le serveur
 - Utiliser des headers de sécurité
 - Valider les origines
@@ -108,23 +117,21 @@ try {
 ## 📈 Performance
 
 ### 1. Optimisation des Composants
+
 ```typescript
 // ✅ BON: Utiliser React.memo pour les composants coûteux
 export const TemplateCard = React.memo(({ template, onEdit }) => {
-  return (
-    <Card>
-      {/* ... */}
-    </Card>
-  );
+  return <Card>{/* ... */}</Card>;
 });
 
 // ✅ BON: Utiliser useMemo pour les calculs complexes
 const validGuests = useMemo(() => {
-  return guests.filter(g => g.valid);
+  return guests.filter((g) => g.valid);
 }, [guests]);
 ```
 
 ### 2. Optimisation des Images
+
 ```typescript
 // ✅ BON: Utiliser des images optimisées
 <img
@@ -136,6 +143,7 @@ const validGuests = useMemo(() => {
 ```
 
 ### 3. Pagination
+
 ```typescript
 // ✅ BON: Paginer les listes longues
 const [page, setPage] = useState(1);
@@ -149,26 +157,28 @@ const paginatedTemplates = templates.slice(
 ## 🧪 Tests
 
 ### 1. Tests Unitaires
+
 ```typescript
 // ✅ BON: Tester les fonctions pures
-describe('isValidEmail', () => {
-  it('should validate correct emails', () => {
-    expect(isValidEmail('test@example.com')).toBe(true);
+describe("isValidEmail", () => {
+  it("should validate correct emails", () => {
+    expect(isValidEmail("test@example.com")).toBe(true);
   });
 
-  it('should reject invalid emails', () => {
-    expect(isValidEmail('invalid')).toBe(false);
+  it("should reject invalid emails", () => {
+    expect(isValidEmail("invalid")).toBe(false);
   });
 });
 ```
 
 ### 2. Tests d'Intégration
+
 ```typescript
 // ✅ BON: Tester les hooks
-describe('useTemplates', () => {
-  it('should fetch templates on mount', async () => {
+describe("useTemplates", () => {
+  it("should fetch templates on mount", async () => {
     const { result } = renderHook(() => useTemplates());
-    
+
     await waitFor(() => {
       expect(result.current.templates).toHaveLength(3);
     });
@@ -177,11 +187,12 @@ describe('useTemplates', () => {
 ```
 
 ### 3. Tests E2E
+
 ```typescript
 // ✅ BON: Tester les flux utilisateur
-describe('Template Creation Flow', () => {
-  it('should create and send a template', () => {
-    cy.visit('/builder');
+describe("Template Creation Flow", () => {
+  it("should create and send a template", () => {
+    cy.visit("/builder");
     cy.get('[data-testid="add-text"]').click();
     cy.get('[data-testid="save-template"]').click();
     cy.get('[data-testid="send-button"]').click();
@@ -192,6 +203,7 @@ describe('Template Creation Flow', () => {
 ## 📚 Documentation
 
 ### 1. Commentaires de Code
+
 ```typescript
 // ✅ BON: Commenter les sections complexes
 /**
@@ -205,12 +217,14 @@ const extractVariables = (items: any[]): string[] => {
 ```
 
 ### 2. README
+
 - Inclure les instructions d'installation
 - Documenter les variables d'environnement
 - Expliquer l'architecture
 - Fournir des exemples d'utilisation
 
 ### 3. JSDoc
+
 ```typescript
 /**
  * Sauvegarde un template
@@ -218,7 +232,9 @@ const extractVariables = (items: any[]): string[] => {
  * @returns Promise<Template>
  * @throws Error si la sauvegarde échoue
  */
-export const saveTemplate = async (payload: CreateTemplatePayload): Promise<Template> => {
+export const saveTemplate = async (
+  payload: CreateTemplatePayload
+): Promise<Template> => {
   // ...
 };
 ```
@@ -226,6 +242,7 @@ export const saveTemplate = async (payload: CreateTemplatePayload): Promise<Temp
 ## 🚀 Déploiement
 
 ### 1. Variables d'Environnement
+
 ```env
 # .env
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
@@ -234,6 +251,7 @@ VITE_APP_VERSION=1.0.0
 ```
 
 ### 2. Build Optimisé
+
 ```bash
 # Production build
 npm run build
@@ -243,6 +261,7 @@ npm run build -- --analyze
 ```
 
 ### 3. Monitoring
+
 - Implémenter Sentry pour les erreurs
 - Ajouter Google Analytics
 - Monitorer les performances
@@ -251,6 +270,7 @@ npm run build -- --analyze
 ## 🔄 CI/CD
 
 ### 1. GitHub Actions
+
 ```yaml
 name: CI/CD
 
@@ -269,6 +289,7 @@ jobs:
 ```
 
 ### 2. Linting
+
 ```bash
 # ESLint
 npm run lint
@@ -278,6 +299,7 @@ npm run format
 ```
 
 ### 3. Type Checking
+
 ```bash
 # TypeScript
 npm run type-check
@@ -286,18 +308,21 @@ npm run type-check
 ## 📊 Métriques
 
 ### 1. Performance
+
 - Lighthouse score > 90
 - First Contentful Paint < 1.5s
 - Largest Contentful Paint < 2.5s
 - Cumulative Layout Shift < 0.1
 
 ### 2. Qualité du Code
+
 - Coverage > 80%
 - Pas d'erreurs TypeScript
 - Pas de warnings ESLint
 - Complexité cyclomatique < 10
 
 ### 3. Accessibilité
+
 - WCAG 2.1 AA
 - Tous les boutons accessibles au clavier
 - Contraste des couleurs > 4.5:1
@@ -306,18 +331,21 @@ npm run type-check
 ## 🔮 Améliorations Futures
 
 ### 1. Court Terme (1-2 mois)
+
 - [ ] Ajouter des tests unitaires
 - [ ] Implémenter Sentry
 - [ ] Optimiser les images
 - [ ] Ajouter la pagination
 
 ### 2. Moyen Terme (3-6 mois)
+
 - [ ] Collaboration en temps réel
 - [ ] Undo/Redo dans l'éditeur
 - [ ] Historique des modifications
 - [ ] Modèles de templates avancés
 
 ### 3. Long Terme (6-12 mois)
+
 - [ ] Mobile app (React Native)
 - [ ] API GraphQL
 - [ ] Webhooks
@@ -326,24 +354,28 @@ npm run type-check
 ## 🛠️ Outils Recommandés
 
 ### 1. Développement
+
 - **VS Code**: Éditeur de code
 - **Prettier**: Formatage du code
 - **ESLint**: Linting
 - **TypeScript**: Type checking
 
 ### 2. Testing
+
 - **Vitest**: Tests unitaires
 - **React Testing Library**: Tests de composants
 - **Cypress**: Tests E2E
 - **Sentry**: Error tracking
 
 ### 3. Monitoring
+
 - **Datadog**: Monitoring
 - **LogRocket**: Session replay
 - **Hotjar**: Heatmaps
 - **Google Analytics**: Analytics
 
 ### 4. DevOps
+
 - **Docker**: Containerization
 - **GitHub Actions**: CI/CD
 - **Vercel**: Hosting
@@ -352,17 +384,20 @@ npm run type-check
 ## 📖 Ressources
 
 ### Documentation
+
 - [React Documentation](https://react.dev)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [React Router](https://reactrouter.com)
 
 ### Tutoriels
+
 - [React Patterns](https://reactpatterns.com)
 - [Advanced React](https://advancedreact.com)
 - [Testing React](https://testingjavascript.com)
 
 ### Communauté
+
 - [React Discord](https://discord.gg/react)
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/reactjs)
 - [Dev.to](https://dev.to/t/react)
@@ -370,18 +405,21 @@ npm run type-check
 ## 🎓 Bonnes Pratiques
 
 ### 1. Code Review
+
 - Vérifier la qualité du code
 - Tester les changements
 - Documenter les décisions
 - Partager les connaissances
 
 ### 2. Versioning
+
 - Utiliser Semantic Versioning
 - Maintenir un CHANGELOG
 - Tagger les releases
 - Documenter les breaking changes
 
 ### 3. Communication
+
 - Documenter les décisions architecturales
 - Partager les apprentissages
 - Faire des retrospectives
@@ -390,6 +428,7 @@ npm run type-check
 ## 🎯 Conclusion
 
 En suivant ces recommandations, le projet Everblue restera:
+
 - ✅ Maintenable et scalable
 - ✅ Performant et sécurisé
 - ✅ Bien documenté et testé

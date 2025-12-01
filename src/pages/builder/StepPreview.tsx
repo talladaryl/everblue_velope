@@ -45,8 +45,11 @@ export default function StepPreview({ ctx }: { ctx: any }) {
   const [selectedModel, setSelectedModel] = useState("default");
   const [previewItems, setPreviewItems] = useState<any[]>([]);
 
-  // Trouver l'invité sélectionné
-  const guest = guests.find((g: any) => g.id === previewGuestId) ?? guests[0];
+  // Trouver l'invité sélectionné - avec fallback si pas de guests
+  const guest = guests && guests.length > 0 
+    ? (guests.find((g: any) => g.id === previewGuestId) ?? guests[0])
+    : null;
+  
   const previewBg = bgImage ? `url(${bgImage})` : bgColor;
 
   // Mettre à jour les items avec les variables remplacées
@@ -101,7 +104,7 @@ export default function StepPreview({ ctx }: { ctx: any }) {
       case "model12":
         return <PreviewModel12 {...commonProps} />;
       default:
-        // return <EnvelopePreview {...commonProps} />;
+      // return <EnvelopePreview {...commonProps} />;
     }
   };
 
@@ -130,11 +133,17 @@ export default function StepPreview({ ctx }: { ctx: any }) {
                     <SelectValue placeholder="Sélectionner un invité" />
                   </SelectTrigger>
                   <SelectContent>
-                    {guests.map((g: any) => (
-                      <SelectItem key={g.id} value={g.id}>
-                        {g.name} — {g.email}
+                    {guests && guests.length > 0 ? (
+                      guests.map((g: any) => (
+                        <SelectItem key={g.id} value={String(g.id)}>
+                          {g.full_name || g.name} — {g.email}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>
+                        Aucun invité disponible
                       </SelectItem>
-                    ))} 
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -148,26 +157,31 @@ export default function StepPreview({ ctx }: { ctx: any }) {
             </div>
 
             {/* Informations sur l'invité sélectionné */}
-            {guest && (
+            {guest ? (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <h4 className="font-medium text-blue-900 mb-2">
                   Données utilisées pour le remplacement :
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                   <div>
-                    <strong>Nom :</strong> {guest.name || "Non défini"}
+                    <strong>Nom :</strong> {guest.full_name || guest.name || "Non défini"}
                   </div>
                   <div>
                     <strong>Email :</strong> {guest.email || "Non défini"}
                   </div>
                   <div>
-                    <strong>Lieu :</strong> {guest.location || "Non défini"}
+                    <strong>Téléphone :</strong> {guest.phone || "Non défini"}
                   </div>
                   <div>
-                    <strong>Date/Heure :</strong> {guest.date || "Non défini"}{" "}
-                    {guest.time || ""}
+                    <strong>+1 autorisé :</strong> {guest.plus_one_allowed ? "Oui" : "Non"}
                   </div>
                 </div>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-yellow-800 text-sm">
+                  Aucun invité disponible. Veuillez retourner à l'étape précédente pour ajouter des invités.
+                </p>
               </div>
             )}
 

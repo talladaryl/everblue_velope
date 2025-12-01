@@ -3,12 +3,16 @@
  */
 
 export interface GuestData {
-  id: string;
-  name: string;
-  email: string;
+  id?: string | number;
+  full_name?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
   location?: string;
   date?: string;
   time?: string;
+  event_id?: number;
+  plus_one_allowed?: boolean;
   [key: string]: any;
 }
 
@@ -49,12 +53,26 @@ export function extractVariablesFromItems(items: any[]): string[] {
 /**
  * Mappe les données de l'invité aux variables disponibles
  */
-export function mapGuestToVariables(guest: GuestData): Record<string, string> {
+export function mapGuestToVariables(guest?: GuestData): Record<string, string> {
+  if (!guest) {
+    return {
+      name: "",
+      first_name: "",
+      last_name: "",
+      email: "",
+      location: "",
+      lieu: "",
+      date: "",
+      time: "",
+      heure: "",
+    };
+  }
+
   return {
     // Noms
-    name: guest.name || "",
-    first_name: guest.name?.split(" ")[0] || "",
-    last_name: guest.name?.split(" ").slice(1).join(" ") || "",
+    name: guest.full_name || "",
+    first_name: guest.full_name?.split(" ")[0] || "",
+    last_name: guest.full_name?.split(" ").slice(1).join(" ") || "",
     // Contact
     email: guest.email || "",
     // Événement
@@ -71,7 +89,7 @@ export function mapGuestToVariables(guest: GuestData): Record<string, string> {
 /**
  * Remplace les variables dans une chaîne de caractères
  */
-export function replaceVariables(text: string, guest: GuestData): string {
+export function replaceVariables(text: string, guest?: GuestData): string {
   if (!text) return "";
 
   const variables = mapGuestToVariables(guest);
@@ -89,7 +107,7 @@ export function replaceVariables(text: string, guest: GuestData): string {
 /**
  * Remplace les variables dans un item
  */
-export function replaceVariablesInItem(item: any, guest: GuestData): any {
+export function replaceVariablesInItem(item: any, guest?: GuestData): any {
   const replaced = { ...item };
 
   if (item.type === "text" && item.text) {
@@ -102,7 +120,7 @@ export function replaceVariablesInItem(item: any, guest: GuestData): any {
 /**
  * Remplace les variables dans tous les items
  */
-export function replaceVariablesInItems(items: any[], guest: GuestData): any[] {
+export function replaceVariablesInItems(items: any[], guest?: GuestData): any[] {
   if (!Array.isArray(items)) return [];
 
   return items.map((item) => replaceVariablesInItem(item, guest));
@@ -113,7 +131,7 @@ export function replaceVariablesInItems(items: any[], guest: GuestData): any[] {
  */
 export function validateVariables(
   requiredVariables: string[],
-  guest: GuestData
+  guest?: GuestData
 ): { valid: boolean; missing: string[] } {
   const variables = mapGuestToVariables(guest);
   const missing = requiredVariables.filter((v) => !variables[v]);
@@ -127,10 +145,21 @@ export function validateVariables(
 /**
  * Génère un aperçu des variables pour un invité
  */
-export function generateVariablePreview(guest: GuestData): Record<string, string> {
+export function generateVariablePreview(guest?: GuestData): Record<string, string> {
+  if (!guest) {
+    return {
+      "Nom complet": "Non défini",
+      "Prénom": "Non défini",
+      "Email": "Non défini",
+      "Lieu": "Non défini",
+      "Date": "Non défini",
+      "Heure": "Non défini",
+    };
+  }
+
   return {
-    "Nom complet": guest.name || "Non défini",
-    "Prénom": guest.name?.split(" ")[0] || "Non défini",
+    "Nom complet": guest.full_name || "Non défini",
+    "Prénom": guest.full_name?.split(" ")[0] || "Non défini",
     "Email": guest.email || "Non défini",
     "Lieu": guest.location || "Non défini",
     "Date": guest.date || "Non défini",
@@ -161,9 +190,18 @@ export function summarizeTemplateVariables(items: any[]): {
  */
 export function validateTemplateForGuest(
   items: any[],
-  guest: GuestData
+  guest?: GuestData
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
+  
+  // Si pas d'invité, on considère que c'est valide (aperçu vide)
+  if (!guest) {
+    return {
+      valid: true,
+      errors: [],
+    };
+  }
+
   const requiredVariables = extractVariablesFromItems(items);
 
   const validation = validateVariables(requiredVariables, guest);
@@ -184,7 +222,7 @@ export function validateTemplateForGuest(
  */
 export function prepareTemplateForRendering(
   items: any[],
-  guest: GuestData
+  guest?: GuestData
 ): { items: any[]; variables: Record<string, string>; valid: boolean } {
   const validation = validateTemplateForGuest(items, guest);
   const replacedItems = replaceVariablesInItems(items, guest);

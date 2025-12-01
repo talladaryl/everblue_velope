@@ -50,9 +50,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
 
   // Filtrer les invités valides pour l'affichage (calculé ici pour être sûr)
   // Utilise guest.isValid ET guest.id pour s'assurer que l'on peut stocker l'état
-  const validGuests = guests.filter(
-    (guest: any) => guest.isValid && guest.id
-  );
+  const validGuests = guests.filter((guest: any) => guest.isValid && guest.id);
 
   // Initialisation des messages personnalisés pour chaque invité valide
   useEffect(() => {
@@ -83,7 +81,8 @@ export default function StepSend({ ctx }: { ctx: any }) {
     try {
       const templateData = {
         name: currentTemplate.name || "Mon design personnalisé",
-        description: currentTemplate.description || "Design créé avec l'éditeur",
+        description:
+          currentTemplate.description || "Design créé avec l'éditeur",
         category: currentTemplate.category || "custom",
         colors: currentTemplate.colors || ["#000000", "#ffffff"],
         preview: currentTemplate.preview || "custom",
@@ -97,7 +96,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
         sendMode: sendMode,
       };
 
-      const response = await axios.post("/api/templates/save", templateData, {
+      const response = await axios.post("/templates/save", templateData, {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
@@ -109,7 +108,9 @@ export default function StepSend({ ctx }: { ctx: any }) {
         // Rediriger vers la homepage (à adapter à votre routing)
         // window.location.href = "/";
       } else {
-        throw new Error(response.data.message || "Erreur lors de la sauvegarde");
+        throw new Error(
+          response.data.message || "Erreur lors de la sauvegarde"
+        );
       }
     } catch (error) {
       console.error("Erreur sauvegarde:", error);
@@ -142,7 +143,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
         isTest: true,
       };
 
-      const response = await axios.post("/api/emails/send-test", emailData, {
+      const response = await axios.post("/emails/send-test", emailData, {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
@@ -200,7 +201,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
         sendMode: sendMode,
       };
 
-      const response = await axios.post("/api/emails/send-all", emailData, {
+      const response = await axios.post("/emails/send-all", emailData, {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
@@ -221,7 +222,6 @@ export default function StepSend({ ctx }: { ctx: any }) {
       setIsSending(false);
     }
   };
-
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-enter">
@@ -295,12 +295,15 @@ export default function StepSend({ ctx }: { ctx: any }) {
                 {/* *** LA VÉRIFICATION DU TABLEAU EST ICI *** */}
                 {validGuests.length > 0 ? (
                   validGuests.map((guest: any, index: number) => (
-                    <Card key={guest.id} className="shadow-sm border-indigo-200">
+                    <Card
+                      key={guest.id}
+                      className="shadow-sm border-indigo-200"
+                    >
                       <CardHeader className="py-3 px-4 bg-indigo-100 rounded-t-lg">
                         <CardTitle className="text-base flex items-center justify-between">
                           <span className="flex items-center gap-2">
                             <User className="h-4 w-4" />
-                            {guest.name || `Invité ${index + 1}`}
+                            {guest.full_name || `Invité ${index + 1}`}
                           </span>
                           <span className="text-sm font-normal text-indigo-600">
                             {guest.email}
@@ -310,7 +313,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
                       <CardContent className="pt-4 pb-2">
                         <Textarea
                           placeholder={`Message pour ${
-                            guest.name || "cet invité"
+                            guest.full_name || "cet invité"
                           }... (Max 500 chars)`}
                           value={personalizedMessages[guest.id] || ""}
                           onChange={(e) =>
@@ -320,9 +323,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
                           className="min-h-[80px] resize-none"
                         />
                         <div className="text-right text-xs text-muted-foreground mt-1">
-                          {
-                            (personalizedMessages[guest.id] || "").length
-                          }
+                          {(personalizedMessages[guest.id] || "").length}
                           /500
                         </div>
                       </CardContent>
@@ -439,7 +440,8 @@ export default function StepSend({ ctx }: { ctx: any }) {
           <div className="text-center text-sm text-muted-foreground pt-4">
             <p className="flex items-center justify-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              **{validCount}** invité(s) valide(s) prêt(s) à recevoir l'invitation.
+              **{validCount}** invité(s) valide(s) prêt(s) à recevoir
+              l'invitation.
             </p>
           </div>
         </CardContent>

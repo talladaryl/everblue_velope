@@ -9,7 +9,7 @@ export interface Recipient {
 export interface MailingPayload {
   event_id: number;
   subject: string;
-  channel?: "email" | "sms" | "link";
+  channel?: "email" | "sms" | "link" | "whatsapp";
   recipients: Recipient[];
   html?: string;
   scheduled_at?: string;
@@ -28,7 +28,7 @@ export interface Mailing {
 }
 
 export const mailingService = {
-  // Envoyer un mailing
+  // Envoyer un mailing en masse
   sendMailing: async (payload: MailingPayload): Promise<Mailing> => {
     try {
       const data = {
@@ -41,7 +41,14 @@ export const mailingService = {
         html: payload.html || null,
       };
 
-      const response = await api.post("/mailings", data);
+      // Utiliser l'endpoint approprié selon le canal
+      const endpoint = payload.channel === "email" 
+        ? "/mailings/bulk/email"
+        : payload.channel === "whatsapp"
+        ? "/mailings/bulk/whatsapp"
+        : "/mailings";
+
+      const response = await api.post(endpoint, data);
       return response.data.data || response.data;
     } catch (error) {
       console.error("Erreur lors de l'envoi du mailing:", error);
