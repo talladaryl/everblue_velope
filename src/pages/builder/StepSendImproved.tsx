@@ -44,6 +44,7 @@ interface StepSendProps {
 interface Guest {
   id?: string;
   name: string;
+  full_name?: string;
   email?: string;
   phone?: string;
   location?: string;
@@ -71,7 +72,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   const [emailSubject, setEmailSubject] = useState("Vous êtes invité!");
   const [customMessage, setCustomMessage] = useState("");
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [sendMethod, setSendMethod] = useState<"email" | "mms" | "whatsapp">(
+  const [sendMethod, setSendMethod] = useState<"email" | "sms" | "mms" | "whatsapp">(
     "email"
   );
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -198,19 +199,28 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     }
 
     try {
-      const recipients = validGuests.map((guest: Guest) => ({
-        email: guest.email,
-        phone: guest.phone,
-        name: guest.full_name,
-        variables: {
-          nom: guest.full_name,
-          email: guest.email || "",
-          phone: guest.phone || "",
-          lieu: guest.location || "",
-          date: guest.date || "",
-          heure: guest.time || "",
-        },
-      }));
+      const recipients = validGuests.map((guest: Guest) => {
+        const recipient: any = {
+          name: guest.full_name || guest.name || "Invité",
+          variables: {
+            nom: guest.full_name || guest.name || "",
+            email: guest.email || "",
+            phone: guest.phone || "",
+            lieu: guest.location || "",
+            date: guest.date || "",
+            heure: guest.time || "",
+          },
+        };
+
+        // Ajouter email ou phone selon le canal
+        if (sendMethod === "email" && guest.email) {
+          recipient.email = guest.email;
+        } else if ((sendMethod === "sms" || sendMethod === "mms" || sendMethod === "whatsapp") && guest.phone) {
+          recipient.phone = guest.phone;
+        }
+
+        return recipient;
+      });
 
       const response = await sendBulk({
         channel: sendMethod,
