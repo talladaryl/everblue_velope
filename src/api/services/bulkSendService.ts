@@ -9,11 +9,12 @@ export interface BulkSendRecipient {
 
 export interface BulkSendPayload {
   channel: "email" | "sms" | "mms" | "whatsapp";
-  subject?: string;
+  subject: string; // Obligatoire pour email, requis pour tous
   message: string;
   html?: string;
   media_url?: string;
   recipients: BulkSendRecipient[];
+  event_id: number; // Obligatoire
   template_id?: number;
   scheduled_at?: string;
   batch_size?: number; // Nombre d'envois par batch (défaut: 50)
@@ -59,6 +60,19 @@ export const bulkSendService = {
   // Envoyer en masse (email, SMS, MMS)
   sendBulk: async (payload: BulkSendPayload): Promise<BulkSendResponse> => {
     try {
+      // Valider les trois champs obligatoires
+      if (!payload.event_id) {
+        throw new Error("L'ID de l'événement est requis");
+      }
+
+      if (!payload.channel) {
+        throw new Error("Le canal d'envoi est requis");
+      }
+
+      if (!payload.subject || !payload.subject.trim()) {
+        throw new Error("Le sujet est requis");
+      }
+
       // Valider le nombre de destinataires
       if (payload.recipients.length > 500) {
         throw new Error("Le nombre de destinataires ne peut pas dépasser 500");
@@ -85,8 +99,9 @@ export const bulkSendService = {
       }
 
       const data = {
+        event_id: payload.event_id,
         channel: payload.channel,
-        subject: payload.subject || null,
+        subject: payload.subject,
         message: payload.message,
         html: payload.html || null,
         media_url: payload.media_url || null,

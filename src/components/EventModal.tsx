@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useOrganizations } from "@/hooks/useOrganizations";
+import { useTemplates } from "@/hooks/useTemplates";
 import type { Event, CreateEventPayload } from "@/api/services/eventService";
 
 interface EventModalProps {
@@ -38,11 +39,13 @@ export function EventModal({
   loading = false,
 }: EventModalProps) {
   const { organizations } = useOrganizations();
+  const { templates } = useTemplates();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [location, setLocation] = useState("");
   const [organizationId, setOrganizationId] = useState<string>("");
+  const [templateId, setTemplateId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,12 +55,14 @@ export function EventModal({
       setEventDate(event.event_date ? event.event_date.slice(0, 16) : "");
       setLocation(event.location || "");
       setOrganizationId(event.organization_id?.toString() || "");
+      setTemplateId(event.template_id?.toString() || "");
     } else {
       setTitle("");
       setDescription("");
       setEventDate("");
       setLocation("");
       setOrganizationId("");
+      setTemplateId("");
     }
     setError(null);
   }, [event, open]);
@@ -71,6 +76,11 @@ export function EventModal({
       return;
     }
 
+    if (!templateId) {
+      setError("Veuillez sélectionner un template");
+      return;
+    }
+
     try {
       await onSave({
         title: title.trim(),
@@ -78,6 +88,7 @@ export function EventModal({
         event_date: eventDate || undefined,
         location: location.trim() || undefined,
         organization_id: organizationId ? parseInt(organizationId) : undefined,
+        template_id: templateId ? parseInt(templateId) : undefined,
       });
       onOpenChange(false);
     } catch (err: any) {
@@ -162,6 +173,22 @@ export function EventModal({
                 {organizations.map((org) => (
                   <SelectItem key={org.id} value={org.id.toString()}>
                     {org.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="template">Template *</Label>
+            <Select value={templateId} onValueChange={setTemplateId}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Sélectionner un template" />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map((template) => (
+                  <SelectItem key={template.id} value={template.id.toString()}>
+                    {template.name}
                   </SelectItem>
                 ))}
               </SelectContent>

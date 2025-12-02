@@ -201,6 +201,12 @@ export default function Builder() {
 
   // For preview: which guest to preview with
   const [previewGuestId, setPreviewGuestId] = useState<string | null>(null);
+  
+  // Template et Event tracking
+  const [templateId, setTemplateId] = useState<number | null>(null);
+  const [eventId, setEventId] = useState<number | null>(null);
+  const [previewModel, setPreviewModel] = useState<string>("default");
+  
   // preview step is handled via `step === 2`
   const selected = useMemo(
     () => items.find((i) => i.id === selectedId) || null,
@@ -692,6 +698,13 @@ export default function Builder() {
     sendMode,
     setSendMode,
     removeSelected,
+    // Template et Event tracking
+    templateId,
+    setTemplateId,
+    eventId,
+    setEventId,
+    previewModel,
+    setPreviewModel,
   };
 
   return (

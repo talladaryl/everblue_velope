@@ -40,9 +40,11 @@ export default function StepPreview({ ctx }: { ctx: any }) {
     bgImage,
     bgColor,
     replaceVariables,
+    previewModel,
+    setPreviewModel,
   } = ctx;
 
-  const [selectedModel, setSelectedModel] = useState("default");
+  const [selectedModel, setSelectedModel] = useState(previewModel || "default");
   const [previewItems, setPreviewItems] = useState<any[]>([]);
 
   // Trouver l'invité sélectionné - avec fallback si pas de guests
@@ -187,7 +189,13 @@ export default function StepPreview({ ctx }: { ctx: any }) {
 
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium">Modèle de preview :</label>
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <Select 
+                value={selectedModel} 
+                onValueChange={(value) => {
+                  setSelectedModel(value);
+                  setPreviewModel(value);
+                }}
+              >
                 <SelectTrigger className="w-64">
                   <SelectValue placeholder="Choisir un modèle" />
                 </SelectTrigger>
