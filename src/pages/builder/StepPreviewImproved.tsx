@@ -34,20 +34,40 @@ import {
   extractVariablesFromItems,
   validateTemplateForGuest,
 } from "@/utils/variableSubstitution";
+// Importez les modèles originaux
 import {
-  PreviewModel1,
-  PreviewModel2,
-  PreviewModel3,
-  PreviewModel4,
-  PreviewModel5,
-  PreviewModel6,
-  PreviewModel7,
-  PreviewModel8,
-  PreviewModel9,
-  PreviewModel10,
-  PreviewModel11,
-  PreviewModel12,
+  PreviewModel1 as OriginalModel1,
+  PreviewModel2 as OriginalModel2,
+  PreviewModel3 as OriginalModel3,
+  PreviewModel4 as OriginalModel4,
+  PreviewModel5 as OriginalModel5,
+  PreviewModel6 as OriginalModel6,
+  PreviewModel7 as OriginalModel7,
+  PreviewModel8 as OriginalModel8,
+  PreviewModel9 as OriginalModel9,
+  PreviewModel10 as OriginalModel10,
+  PreviewModel11 as OriginalModel11,
+  PreviewModel12 as OriginalModel12,
 } from "./modelPreviews";
+
+// Importez le correcteur
+import { withCardFix } from "@/components/withCardFix";
+
+// Enveloppez CHAQUE modèle
+const PreviewModel1 = withCardFix(OriginalModel1);
+const PreviewModel2 = withCardFix(OriginalModel2);
+const PreviewModel3 = withCardFix(OriginalModel3);
+const PreviewModel4 = withCardFix(OriginalModel4);
+const PreviewModel5 = withCardFix(OriginalModel5);
+const PreviewModel6 = withCardFix(OriginalModel6);
+const PreviewModel7 = withCardFix(OriginalModel7);
+const PreviewModel8 = withCardFix(OriginalModel8);
+const PreviewModel9 = withCardFix(OriginalModel9);
+const PreviewModel10 = withCardFix(OriginalModel10);
+const PreviewModel11 = withCardFix(OriginalModel11);
+const PreviewModel12 = withCardFix(OriginalModel12);
+// Constantes pour le style du papier
+const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
 const AVAILABLE_MODELS = [
   { id: "default", name: "Aperçu Simple", description: "Affichage basique" },
@@ -75,11 +95,15 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
     bgImage,
     bgColor = "#ffffff",
     replaceVariables,
+    selectedModelId = "default",
+    setSelectedModelId,
   } = ctx;
 
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [currentGuestIndex, setCurrentGuestIndex] = useState(0);
-  const [selectedModel, setSelectedModel] = useState("default");
+  // Utiliser le state du contexte pour le modèle sélectionné
+  const selectedModel = selectedModelId;
+  const setSelectedModel = setSelectedModelId || ((v: string) => {});
   const [previewItems, setPreviewItems] = useState<any[]>([]);
   const [activeDevice, setActiveDevice] = useState("desktop"); // "mobile", "tablet", "desktop"
 
@@ -137,15 +161,24 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
     }
   }, [items, guest]);
 
-  const previewBg = bgImage ? `url(${bgImage})` : bgColor;
-
-  // Fonction pour rendre le modèle sélectionné
   const renderModelPreview = () => {
+    // Props communes pour tous les modèles - style identique à EditCard
     const commonProps = {
       items: previewItems,
-      bgColor: previewBg,
+      bgColor: bgColor,
+      bgImage: bgImage,
       onClose: () => setShowFullPreview(false),
       guest: guest,
+    };
+
+    // Dimensions selon l'appareil sélectionné
+    const getModelScale = () => {
+      switch (activeDevice) {
+        case "mobile": return 0.5;
+        case "tablet": return 0.7;
+        case "desktop": return 0.9;
+        default: return 0.8;
+      }
     };
 
     switch (selectedModel) {
@@ -174,7 +207,14 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
       case "model12":
         return <PreviewModel12 {...commonProps} />;
       default:
-        return null;
+        return (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center text-gray-500">
+              <Eye className="h-12 w-12 mx-auto mb-4 opacity-40" />
+              <p className="text-lg font-medium">Sélectionnez un modèle</p>
+            </div>
+          </div>
+        );
     }
   };
 
@@ -200,6 +240,79 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
     mobile: "w-80 h-[600px] mx-auto",
     tablet: "w-[768px] h-[1024px] mx-auto",
     desktop: "w-full max-w-4xl h-[600px] mx-auto",
+  };
+
+  // Composant FIXE qui remplace TOUS les modèles problématiques
+  const FixedPreviewModel = ({ items, paperStyle, textStyle }: any) => {
+    return (
+      <div style={paperStyle} className="w-full h-full">
+        {/* Affiche tous les items exactement comme dans EditCard */}
+        {items.map((it: any) => {
+          const isText = it.type === "text";
+          const isImage = it.type === "image";
+
+          const itemStyle: React.CSSProperties = {
+            position: "absolute",
+            left: `${it.x}px`,
+            top: `${it.y}px`,
+            transform: `
+            rotate(${it.rotation || 0}deg)
+            scaleX(${it.flipX ? -1 : 1})
+            scaleY(${it.flipY ? -1 : 1})
+          `,
+            opacity: (it.opacity || 100) / 100,
+          };
+
+          if (isText) {
+            return (
+              <div
+                key={it.id}
+                style={{
+                  ...itemStyle,
+                  color: it.color || "#000000",
+                  fontSize: `${it.fontSize || 16}px`,
+                  fontFamily: it.fontFamily || "Arial",
+                  fontWeight: it.fontWeight || "normal",
+                  textAlign: it.textAlign || "left",
+                  textShadow: it.textShadow || "none",
+                  lineHeight: 1.4,
+                  backgroundColor: "transparent", // IMPORTANT: pas de fond blanc
+                  border: "none", // IMPORTANT: pas de bordure
+                  padding: "0", // IMPORTANT: pas de padding
+                  margin: "0", // IMPORTANT: pas de margin
+                  ...textStyle,
+                }}
+                className="outline-none"
+              >
+                {it.text || "Texte"}
+              </div>
+            );
+          }
+
+          if (isImage) {
+            return (
+              <img
+                key={it.id}
+                src={it.src}
+                alt=""
+                style={{
+                  ...itemStyle,
+                  width: it.width || "150px",
+                  height: it.height || "150px",
+                  objectFit: "cover",
+                  borderRadius: it.borderRadius
+                    ? `${it.borderRadius}px`
+                    : "0px", // Bords carrés par défaut
+                }}
+                className="absolute"
+              />
+            );
+          }
+
+          return null;
+        })}
+      </div>
+    );
   };
 
   if (!guest) {
@@ -419,10 +532,10 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             </Alert>
           )}
 
-          {/* Aperçu du modèle avec design épuré */}
+          {/* Aperçu du modèle avec design épuré - SANS fond blanc */}
           {selectedModel !== "default" && (
-            <Card>
-              <CardHeader className="bg-gray-900 text-white">
+            <Card className="border-0 shadow-none bg-transparent">
+              <CardHeader className="bg-gray-900 text-white rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <CardTitle>Aperçu en direct</CardTitle>
                   <Badge variant="secondary" className="bg-white/20 text-white">
@@ -438,45 +551,22 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                     : "desktop"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="flex justify-center">
-                  <div className={`${deviceClasses[activeDevice]}`}>
-                    <div className="relative w-full h-full">
-                      {/* Cadre de l'appareil - sans bordures arrondies */}
-                      <div
-                        className={`absolute inset-0 border border-gray-300 bg-white overflow-hidden ${
-                          activeDevice === "mobile"
-                            ? ""
-                            : activeDevice === "tablet"
-                            ? ""
-                            : ""
-                        }`}
-                      >
-                        {/* Barre de statut pour mobile/tablette */}
-                        {(activeDevice === "mobile" ||
-                          activeDevice === "tablet") && (
-                          <div className="h-6 bg-gray-900 flex items-center justify-center relative">
-                            <div className="w-16 h-1 bg-gray-600"></div>
-                            <div className="absolute left-4 text-white text-xs">
-                              {activeDevice === "mobile" ? "9:41" : ""}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Contenu de l'aperçu */}
-                        <div
-                          className={`w-full h-full bg-white overflow-auto ${
-                            activeDevice === "mobile"
-                              ? "h-[calc(100%-24px)]"
-                              : activeDevice === "tablet"
-                              ? "h-[calc(100%-24px)]"
-                              : "h-full"
-                          }`}
-                        >
-                          {renderModelPreview()}
-                        </div>
-                      </div>
-                    </div>
+              <CardContent 
+                className="p-6"
+                style={{ backgroundColor: "transparent" }}
+              >
+                <div className="flex justify-center items-center">
+                  {/* Conteneur principal - UNIQUEMENT la carte, pas de fond */}
+                  <div 
+                    className="flex items-center justify-center"
+                    style={{
+                      width: activeDevice === "mobile" ? "320px" : activeDevice === "tablet" ? "600px" : "100%",
+                      maxWidth: activeDevice === "desktop" ? "800px" : undefined,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    {/* Rendu direct du modèle - SANS conteneur blanc */}
+                    {renderModelPreview()}
                   </div>
                 </div>
               </CardContent>

@@ -8,7 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Layout from "./pages/Layout";
 import Index from "./pages/index";
 import Pricing from "./pages/Pricing";
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/Home/HomePage";
 import NotFound from "./pages/NotFound";
 import Builder from "./pages/Builder";
 import Messages from "./pages/Messages";

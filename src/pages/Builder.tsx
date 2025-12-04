@@ -1,3 +1,4 @@
+// pages/Builder.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,9 @@ import {
   Trash2,
   Palette,
   Home,
-  Image as ImageIcon, // renamed to avoid colliding with window.Image
+  Image as ImageIcon,
   Type,
+  Send,
 } from "lucide-react";
 import Papa from "papaparse";
 import { nanoid } from "nanoid";
@@ -59,6 +61,10 @@ import StepDesign from "./builder/StepDesign";
 import StepDetails from "./builder/StepDetails";
 import StepPreviewImproved from "./builder/StepPreviewImproved";
 import StepSendImproved from "./builder/StepSendImproved";
+
+// Importation du modal de sauvegarde
+import { SaveTemplateModal } from "@/components/SaveTemplateModal";
+import { useSaveTemplate } from "@/hooks/useSaveTemplate";
 
 // Types
 interface EditorItemBase {
@@ -81,7 +87,6 @@ interface ImageItem extends EditorItemBase {
   src: string;
   width: number;
   height: number;
-  // optional flag if needed by modal
   isBackground?: boolean;
 }
 
@@ -95,7 +100,6 @@ interface Guest {
   phone?: string;
   valid: boolean;
   message?: string;
-  // nouveaux champs demandés
   location?: string;
   date?: string;
   time?: string;
@@ -106,7 +110,7 @@ interface BuilderTemplate {
   name: string;
   description?: string;
   bgColor: string;
-  bgImage?: string | null; // <- added
+  bgImage?: string | null;
   items: EditorItem[];
   createdAt: Date;
   palette?: string[];
@@ -162,14 +166,13 @@ const defaultTemplates: BuilderTemplate[] = [
   },
 ];
 
-export default function Builder() {
+function Builder() {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState<Step>(0);
 
   // Canvas state
   const [bgColor, setBgColor] = useState<string>("#F3F4F6");
-  // NEW: background image dataURL (if an image is set as background)
   const [bgImage, setBgImage] = useState<string | null>(null);
 
   const [items, setItems] = useState<EditorItem[]>([initialText()]);
@@ -197,21 +200,78 @@ export default function Builder() {
   // Nouveaux états demandés
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [showTextVariables, setShowTextVariables] = useState(false);
-  const [variableFilter, setVariableFilter] = useState(""); // small helper for variables panel visibility
+  const [variableFilter, setVariableFilter] = useState("");
 
   // For preview: which guest to preview with
   const [previewGuestId, setPreviewGuestId] = useState<string | null>(null);
-  
+
   // Template et Event tracking
   const [templateId, setTemplateId] = useState<number | null>(null);
   const [eventId, setEventId] = useState<number | null>(null);
   const [previewModel, setPreviewModel] = useState<string>("default");
   
-  // preview step is handled via `step === 2`
+  // Modèle de prévisualisation sélectionné (pour l'envoi)
+  const [selectedModelId, setSelectedModelId] = useState<string>("default");
+
+  // État pour la sauvegarde - GÉRÉ DIRECTEMENT ICI
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Hook de sauvegarde
+  const { saving, saveTemplate } = useSaveTemplate();
+
   const selected = useMemo(
     () => items.find((i) => i.id === selectedId) || null,
     [items, selectedId]
   );
+
+  // Extraire les variables du contenu (utile pour la sauvegarde)
+  const extractVariables = (): string[] => {
+    const variables = new Set<string>();
+    const regex = /\{\{(\w+)\}\}/g;
+
+    items.forEach((item: any) => {
+      if (item.type === "text" && item.text) {
+        let match: RegExpExecArray | null;
+        while ((match = regex.exec(item.text)) !== null) {
+          variables.add(match[1]);
+        }
+      }
+    });
+
+    return Array.from(variables);
+  };
+
+  // Gérer la sauvegarde du template
+  const handleSaveTemplate = async (payload: any) => {
+    try {
+      await saveTemplate({
+        name: payload.name,
+        category: payload.category,
+        structure: {
+          items,
+          bgColor,
+          bgImage,
+          selectedModelId,
+          description: payload.description,
+          variables: extractVariables(),
+        },
+      });
+      setSavedSuccess(true);
+      toast("Template sauvegardé", {
+        description: `"${payload.name}" a été sauvegardé avec succès.`,
+      });
+      setTimeout(() => {
+        setSavedSuccess(false);
+        setShowSaveModal(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Erreur sauvegarde:", error);
+      toast("Erreur", {
+        description: "Impossible de sauvegarder le template.",
+      });
+    }
+  };
 
   // Drag handlers
   const onMouseDown = (e: React.MouseEvent, id: string) => {
@@ -249,18 +309,16 @@ export default function Builder() {
     dragRef.current = null;
   };
 
-  // Template actions
-  const handleSaveTemplate = async () => {
+  // Template actions (ancienne méthode - gardée pour compatibilité)
+  const handleSaveTemplateOld = async () => {
     const name = prompt("Nom du modèle:");
     if (!name) return;
 
-    // Extraire la palette de couleurs des éléments (jusqu'à 3 couleurs)
     const palette = items
       .filter((item) => item.type === "text")
       .slice(0, 3)
       .map((item) => (item as TextItem).color);
 
-    // Compléter avec des couleurs par défaut si nécessaire
     const defaults = ["#3B82F6", "#10B981", "#8B5CF6"];
     while (palette.length < 3) {
       palette.push(defaults[palette.length]);
@@ -271,14 +329,13 @@ export default function Builder() {
       name,
       description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
       bgColor,
-      bgImage: bgImage ?? null, // persist background image
+      bgImage: bgImage ?? null,
       items: JSON.parse(JSON.stringify(items)),
       createdAt: new Date(),
       palette,
       isCustom: true,
     } as unknown as BuilderTemplate;
 
-    // Optionnel: générer une miniature (si utile) — generateThumbnail peut renvoyer une dataURL
     try {
       if (generateThumbnail) {
         try {
@@ -287,11 +344,9 @@ export default function Builder() {
             bgColor: newTemplate.bgColor,
           } as any);
           if (thumbnail) {
-            // si votre type Template attend une propriété thumbnail, vous pouvez l'ajouter :
-            // (newTemplate as any).thumbnail = thumbnail;
+            // optionnel
           }
         } catch (err) {
-          // Ignorer les erreurs de génération de miniature
           console.error("Erreur génération miniature:", err);
         }
       }
@@ -301,7 +356,6 @@ export default function Builder() {
 
     try {
       await saveTemplate(newTemplate);
-      // mettre à jour l'état local pour feedback immédiat
       setTemplates((prev) => [...prev, newTemplate]);
       toast("Modèle sauvegardé", {
         description: `"${name}" a été ajouté à vos modèles.`,
@@ -311,19 +365,16 @@ export default function Builder() {
     }
   };
 
-  // NOUVELLE FONCTION : Sauvegarde et redirection vers l'accueil
   const handleSaveAndGoHome = async () => {
     const name = prompt("Nom du modèle:");
     if (!name) return;
 
     try {
-      // Extraire la palette de couleurs des éléments
       const palette = items
         .filter((item) => item.type === "text")
         .slice(0, 3)
         .map((item) => (item as TextItem).color);
 
-      // Compléter avec des couleurs par défaut si nécessaire
       const defaults = ["#3B82F6", "#10B981", "#8B5CF6"];
       while (palette.length < 3) {
         palette.push(defaults[palette.length]);
@@ -341,14 +392,12 @@ export default function Builder() {
         isCustom: true,
       } as unknown as BuilderTemplate;
 
-      // Sauvegarder le template
       await saveTemplate(newTemplate);
 
       toast("Modèle sauvegardé", {
         description: `"${name}" a été ajouté à vos modèles. Redirection vers l'accueil...`,
       });
 
-      // Redirection vers l'accueil après 1.5 secondes
       setTimeout(() => {
         navigate("/");
       }, 1500);
@@ -361,7 +410,6 @@ export default function Builder() {
   };
 
   const loadTemplate = (template: BuilderTemplate) => {
-    // if template has explicit bgImage, use it
     if (template.bgImage) {
       setBgImage(template.bgImage);
     } else {
@@ -371,22 +419,56 @@ export default function Builder() {
       typeof template.bgColor === "string" &&
       template.bgColor.startsWith("url(")
     ) {
-      // extrait le contenu entre url(...)
       const match = template.bgColor.match(/^url\((.*)\)$/);
       if (match) {
         const url = match[1].replace(/^['"]|['"]$/g, "");
         setBgImage(url);
       } else {
         setBgColor(template.bgColor);
-        // keep previously set bgImage (if any) or clear
       }
     } else {
       setBgColor(template.bgColor);
-      // bgImage already set above if present
     }
     setItems(JSON.parse(JSON.stringify(template.items || [])));
     setSelectedId(template.items?.[0]?.id || null);
     toast("Modèle chargé", { description: `"${template.name}" appliqué.` });
+  };
+
+  // Charger un template depuis l'API (avec structure complète)
+  const loadTemplateFromAPI = (apiTemplate: any) => {
+    const structure = typeof apiTemplate.structure === "string" 
+      ? JSON.parse(apiTemplate.structure) 
+      : apiTemplate.structure || {};
+    
+    // Charger les items
+    if (structure.items && Array.isArray(structure.items)) {
+      setItems(JSON.parse(JSON.stringify(structure.items)));
+      setSelectedId(structure.items[0]?.id || null);
+    }
+    
+    // Charger bgColor
+    if (structure.bgColor) {
+      setBgColor(structure.bgColor);
+    }
+    
+    // Charger bgImage
+    if (structure.bgImage) {
+      setBgImage(structure.bgImage);
+    } else {
+      setBgImage(null);
+    }
+    
+    // Charger selectedModelId
+    if (structure.selectedModelId) {
+      setSelectedModelId(structure.selectedModelId);
+    }
+    
+    // Stocker l'ID du template pour les mises à jour
+    if (apiTemplate.id) {
+      setTemplateId(apiTemplate.id);
+    }
+    
+    toast("Modèle chargé", { description: `"${apiTemplate.name}" appliqué.` });
   };
 
   const deleteTemplate = (templateId: string) => {
@@ -401,15 +483,12 @@ export default function Builder() {
     setSelectedId(t.id);
   };
 
-  // Modifiée pour supporter le background image et l'image normale
   const addImage = (file: File, isBackground: boolean = false) => {
     const reader = new FileReader();
     reader.onload = () => {
-      // use global Image constructor (not the icon)
       const imgEl = new window.Image();
       imgEl.onload = () => {
         if (isBackground) {
-          // set image as background
           setBgImage(String(reader.result));
         } else {
           const item: ImageItem = {
@@ -437,7 +516,6 @@ export default function Builder() {
     reader.readAsDataURL(file);
   };
 
-  // Replace image src for an existing image item
   const replaceImage = (file: File, id: string) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -504,7 +582,6 @@ export default function Builder() {
     });
   };
 
-  // when adding manual guest include new fields
   const addGuest = () =>
     setGuests((g) => [
       ...g,
@@ -519,10 +596,8 @@ export default function Builder() {
       },
     ]);
 
-  // Nouvelle fonction pour appliquer un thème de papier (peut être image ou couleur)
   const applyPaperTheme = (theme: PaperTheme) => {
     if (theme.value && theme.value.startsWith("url(")) {
-      // si le thème contient une image url/data, on l'applique comme bgImage
       setBgImage(theme.value);
     } else {
       setBgColor(theme.value);
@@ -530,7 +605,6 @@ export default function Builder() {
     }
   };
 
-  // Nouvelle fonction pour insérer des variables dans le texte
   const handleInsertVariable = (variable: string) => {
     if (selected && selected.type === "text") {
       const textItem = selected as TextItem;
@@ -549,7 +623,6 @@ export default function Builder() {
     }
   };
 
-  // helper: replace variable tokens in text using guest object (ajout lieu/date/heure)
   const replaceVariables = (text: string, guest?: any) => {
     if (!guest) return text;
     return text.replace(
@@ -564,27 +637,39 @@ export default function Builder() {
           return guest.location || "";
         if (["date"].includes(key)) return guest.date || "";
         if (["time", "heure", "horaire"].includes(key)) return guest.time || "";
-        if (["phone", "telephone", "tel"].includes(key)) return guest.phone || "";
-        // fallback to any property on guest
+        if (["phone", "telephone", "tel"].includes(key))
+          return guest.phone || "";
         return guest[key] ?? "";
       }
     );
   };
 
   useEffect(() => {
-    // si URL contient ?template=ID on charge le template (search dans default + saved)
     const params = new URLSearchParams(location.search);
     const tid = params.get("template");
     if (!tid) return;
     (async () => {
       try {
-        // chercher dans templates par défaut
+        // Vérifier si c'est un template par défaut
         const foundDefault = defaultTemplates.find((t) => t.id === tid);
         if (foundDefault) {
           loadTemplate(foundDefault);
           return;
         }
-        // chercher dans saved templates via utilitaire
+        
+        // Vérifier si c'est un ID numérique (template API)
+        const numericId = parseInt(tid, 10);
+        if (!isNaN(numericId)) {
+          // Charger depuis l'API
+          const { templateService } = await import("@/api/services/templateService");
+          const apiTemplate = await templateService.getTemplate(numericId);
+          if (apiTemplate) {
+            loadTemplateFromAPI(apiTemplate);
+            return;
+          }
+        }
+        
+        // Fallback: chercher dans le stockage local
         const saved = (await Promise.resolve(getTemplates())) || [];
         const foundSaved = Array.isArray(saved)
           ? saved.find((t: any) => t.id === tid)
@@ -598,67 +683,68 @@ export default function Builder() {
     })();
   }, [location.search]);
 
-  // Render helpers
-  // Steps navigation - Version améliorée avec design moderne
-  const StepNav = () => {
-    const labels = ["Design", "Détails", "Prévisualisation", "Envoi"];
-    return (
-      <div className="relative">
-        {/* Ligne de progression */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 hidden md:block">
-          <div
-            className="h-full bg-blue-600 transition-all duration-300"
-            style={{
-              width: `${((step + 1) / labels.length) * 100}%`,
-            }}
-          />
-        </div>
+// Nouveau StepNav compact, professionnel et CENTRÉ
+const StepNav = () => {
+  const labels = ["Design", "Détails", "Prévisualisation", "Envoi"];
+  const icons = [
+    <Palette className="h-3.5 w-3.5" />,
+    <Type className="h-3.5 w-3.5" />,
+    <Eye className="h-3.5 w-3.5" />,
+    <Send className="h-3.5 w-3.5" />,
+  ];
 
-        {/* Étapes cliquables */}
-        <nav
-          aria-label="Étapes"
-          className="relative flex justify-between gap-2 md:gap-4"
-        >
-          {labels.map((label, i) => (
-            <button
-              key={label}
-              onClick={() => setStep(i as Step)}
-              className={`group flex flex-col items-center gap-1 md:gap-2 transition-all ${
-                step === i
-                  ? "scale-105"
-                  : "hover:scale-105 opacity-70 hover:opacity-100"
-              }`}
-              aria-current={step === i ? "step" : undefined}
-            >
-              <div
-                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm transition-all ${
-                  step === i
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
-                    : step > i
-                    ? "bg-green-500 text-white"
-                    : "bg-white border-2 border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600"
-                }`}
-              >
-                {step > i ? "✓" : i + 1}
+  return (
+    <nav className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 mx-auto w-fit">
+      {labels.map((label, i) => {
+        const isActive = step === i;
+        const isCompleted = step > i;
+
+        return (
+          <button
+            key={label}
+            onClick={() => setStep(i as Step)}
+            className={`
+              relative flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 rounded text-xs font-medium transition-all
+              min-w-[70px] sm:min-w-[95px]
+              ${
+                isActive
+                  ? "bg-gray-900 text-white shadow-sm"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              }
+            `}
+            aria-current={isActive ? "step" : undefined}
+            title={label}
+          >
+            {/* Indicateur de progression */}
+            {isCompleted && !isActive && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-[8px] text-white">✓</span>
               </div>
-              <span
-                className={`text-xs md:text-sm font-medium transition-all ${
-                  step === i
-                    ? "text-blue-600"
-                    : "text-gray-600 group-hover:text-blue-600"
-                }`}
-              >
-                {label}
-              </span>
-            </button>
-          ))}
-        </nav>
-      </div>
-    );
-  };
+            )}
+
+            {/* Contenu */}
+            <div
+              className={`
+              ${
+                isActive
+                  ? "text-white"
+                  : isCompleted
+                  ? "text-green-600"
+                  : "text-gray-500"
+              }
+            `}
+            >
+              {icons[i]}
+            </div>
+            <span className="hidden sm:inline font-medium">{label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+};
 
   const ctx = {
-    // core state & handlers used by steps
     step,
     setStep,
     canvasRef,
@@ -682,7 +768,7 @@ export default function Builder() {
     setTemplates,
     loadTemplate,
     deleteTemplate,
-    handleSaveTemplate,
+    handleSaveTemplate: handleSaveTemplateOld, // ancienne méthode
     handleSaveAndGoHome,
     guests,
     setGuests,
@@ -698,41 +784,60 @@ export default function Builder() {
     sendMode,
     setSendMode,
     removeSelected,
-    // Template et Event tracking
     templateId,
     setTemplateId,
     eventId,
     setEventId,
     previewModel,
     setPreviewModel,
+    selectedModelId,
+    setSelectedModelId,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <header className="border-b bg-white/80 backdrop-blur-sm p-4 shadow-sm">
-        <div className="container flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Bouton Retour à l'accueil */}
+    <div className="min-h-screen bg-gray-50">
+      <header className="border-b bg-white px-4 py-3">
+        <div className="container flex items-center justify-between gap-4">
+          {/* Retour + Titre réduit */}
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => navigate("/")}
-              className="flex items-center gap-2"
+              className="h-7 w-7"
+              title="Retour"
             >
               <Home className="h-4 w-4" />
-              Accueil
             </Button>
-
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Builder d'invitations
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Créez des invitations élégantes en quelques clics
-              </p>
-            </div>
+            <span className="text-sm text-gray-300 hidden sm:inline">|</span>
+            <h1 className="text-sm font-medium text-gray-700 hidden sm:inline">
+              Éditeur
+            </h1>
           </div>
-          <StepNav />
+
+          {/* Navigation compacte */}
+          <div className="flex-1 max-w-2xl">
+            <StepNav />
+          </div>
+
+          {/* Actions contextuelles - Bouton de sauvegarde seulement à l'étape Design */}
+          <div className="flex items-center gap-2">
+            {step === 0 && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowSaveModal(true)}
+                className="h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700"
+                title="Sauvegarder le modèle"
+                disabled={saving}
+              >
+                <Save className="h-3 w-3 mr-1" />
+                <span className="hidden sm:inline">
+                  {saving ? "Sauvegarde..." : "Sauvegarder"}
+                </span>
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -749,7 +854,6 @@ export default function Builder() {
           isOpen={showImagePicker}
           onClose={() => setShowImagePicker(false)}
           onSelectImage={(file: File) => {
-            // ajoute comme image normale
             addImage(file, false);
             setShowImagePicker(false);
           }}
@@ -765,14 +869,20 @@ export default function Builder() {
         />
       )}
 
-      {/* Text variables panel */}
-      {/* {showTextVariables && (
-        <TextVariablesPanel
-          isOpen={showTextVariables}
-          onClose={() => setShowTextVariables(false)}
-          onInsertVariable={handleInsertVariable}
-        />
-      )} */}
+      {/* Modal de sauvegarde - GÉRÉ DIRECTEMENT DANS BUILDER */}
+      <SaveTemplateModal
+        open={showSaveModal}
+        onOpenChange={setShowSaveModal}
+        onSave={handleSaveTemplate}
+        loading={saving}
+        structure={{
+          items,
+          bgColor,
+          variables: extractVariables(),
+        }}
+      />
     </div>
   );
 }
+
+export default Builder;

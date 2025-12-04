@@ -1,4 +1,3 @@
-// design-steps/EditCard.tsx
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,6 @@ import {
   RotateCw,
   FlipHorizontal,
   FlipVertical,
-  Shadow,
   Filter,
   Video,
   Play,
@@ -41,6 +39,7 @@ import {
 } from "lucide-react";
 import { TextVariablesPanel } from "./components/TextVariablesPanel";
 import { useGroqChat } from "@/hooks/useGroqChat";
+import { PROFESSIONAL_TEMPLATES, BORDER_STYLES, IMAGES } from "@/constants/designConstants";
 
 // Templates unifiés
 const UNIFIED_TEMPLATES = [
@@ -347,28 +346,113 @@ export function EditCard({ ctx }: { ctx: any }) {
   };
 
   // Style de papier professionnel amélioré
+  // Style de papier premium Greenvelope
+  const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
+
   const paperStyle = {
-    backgroundColor: bgColor,
+    backgroundColor: bgImage ? "transparent" : (bgColor || "#FAF8F4"),
     backgroundImage: bgImage
-      ? `url(${bgImage})`
-      : bgColor.includes("gradient")
-      ? bgColor
-      : "none",
-    backgroundSize: "cover",
+    ? `url(${bgImage}), ${PAPER_TEXTURE}`
+    : bgColor.includes("gradient")
+    ? `${bgColor}, ${PAPER_TEXTURE}`
+    : `${bgColor || "#FAF8F4"}, ${PAPER_TEXTURE}`,
+    backgroundBlendMode: bgImage ? "overlay, multiply" : "normal, multiply",
+    backgroundSize: bgImage ? "cover, auto" : "cover, auto",
     width: "95%",
     maxWidth: "600px",
     height: "400px",
     margin: "0 auto",
     boxShadow: `
-      inset 0 0 40px rgba(0,0,0,0.08),
-      0 12px 40px rgba(0,0,0,0.15),
-      0 0 0 1px rgba(0,0,0,0.08)
-    `,
-    border: "1px solid rgba(0,0,0,0.1)",
-    borderRadius: "16px",
+    /* Ombres externes pour profondeur */
+    0 20px 60px rgba(0, 0, 0, 0.08),
+    0 5px 20px rgba(0, 0, 0, 0.04),
+    0 1px 5px rgba(0, 0, 0, 0.02),
+    
+    /* Ombres internes pour effet bordure et texture */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    inset 0 0 60px rgba(0, 0, 0, 0.02),
+    inset 0 0 20px rgba(0, 0, 0, 0.01),
+    
+    /* Effet d'épaisseur du carton */
+    0 0 0 1px #E8E4DC,
+    0 0 0 2px rgba(255, 255, 255, 0.8),
+    
+    /* Légère ombre portée raffinée */
+    0 4px 12px rgba(0, 0, 0, 0.05)
+  `,
+    border: "none", // Pas de border traditionnelle
+    borderRadius: "0px", // Bords carrés comme demandé
     position: "relative" as const,
     overflow: "hidden",
     transition: "all 0.3s ease",
+
+    /* Effets visuels supplémentaires */
+    backdropFilter: "blur(0.3px)",
+
+    /* Pseudo-élément pour effet de grain plus sophistiqué */
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: `
+      repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.03) 0px,
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.01) 0px,
+        rgba(0, 0, 0, 0.01) 1px,
+        transparent 1px,
+        transparent 3px
+      )
+    `,
+      pointerEvents: "none",
+      zIndex: 1,
+      mixBlendMode: "overlay",
+      opacity: 0.3,
+    },
+
+    /* Effet de bord "coupé net" avec léger dégradé */
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      border: "2px solid transparent",
+      background: `
+      linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.1) 15%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.1) 85%,
+        rgba(255, 255, 255, 0.2) 100%
+      ) border-box,
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.1) 15%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.1) 85%,
+        rgba(255, 255, 255, 0.2) 100%
+      ) border-box
+    `,
+      mask: "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+      WebkitMask:
+        "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+      maskComposite: "exclude",
+      WebkitMaskComposite: "destination-out",
+      pointerEvents: "none",
+    },
   };
 
   return (
@@ -404,7 +488,7 @@ export function EditCard({ ctx }: { ctx: any }) {
               onMouseUp={onMouseUp}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className="relative rounded-2xl border-2 border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white overflow-hidden mx-auto transition-all duration-300 hover:border-gray-300 hover:shadow-xl"
+              className="relative overflow-hidden mx-auto transition-all duration-300 paper-premium"
               style={paperStyle}
             >
               {items.map((it: any) => (
@@ -461,14 +545,17 @@ export function EditCard({ ctx }: { ctx: any }) {
                           console.error("Erreur édition texte:", error);
                         }
                       }}
-                      className="outline-none min-w-[80px] bg-white/90 backdrop-blur-md rounded-xl px-4 py-3 shadow-xl border border-white/60 transition-all duration-200 hover:bg-white hover:shadow-2xl"
+                      className="outline-none min-w-[80px] bg-transparent px-4 py-3 transition-all duration-200"
                       style={{
                         color: it.color || "#000000",
-                        fontSize: it.fontSize || "16px",
+                        fontSize: `${it.fontSize || 16}px`,
                         fontFamily: it.fontFamily || "Arial",
                         fontWeight: it.fontWeight || "normal",
                         textAlign: it.textAlign || "left",
                         textShadow: it.textShadow || "none",
+                        lineHeight: 1.4,
+                        wordBreak: "break-word",
+                        whiteSpace: "pre-wrap",
                       }}
                     >
                       {it.text || "Texte"}
@@ -725,11 +812,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                 </label>
               </TabsContent>
 
-             <TabsContent value="properties" 
-             className="p-4 m-0 flex-1 overflow-y-auto"
-             > 
+              <TabsContent
+                value="properties"
+                className="p-4 m-0 flex-1 overflow-y-auto"
+              >
                 {selected ? (
-                 <div className="h-[460px] overflow-y-auto">
+                  <div className="h-[460px] overflow-y-auto">
                     {/* En-tête des propriétés */}
                     <div className="border-b pb-3">
                       <h3 className="font-bold text-lg text-gray-900">
@@ -796,46 +884,276 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Police
+                              Police (60+ disponibles)
                             </Label>
                             <select
-                              value={selected.fontFamily || "Arial"}
+                              value={
+                                selected.fontFamily || "'Inter', sans-serif"
+                              }
                               onChange={(e) =>
                                 updateItemProperty("fontFamily", e.target.value)
                               }
                               className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                              style={{
+                                fontFamily:
+                                  selected.fontFamily || "'Inter', sans-serif",
+                              }}
                             >
-                              <optgroup label="Professionnelles">
+                              <optgroup label="🎭 Délirantes & Psychédéliques">
+                                <option value="'Monoton', cursive">
+                                  Monoton - Néon 80s
+                                </option>
+                                <option value="'Eater', cursive">
+                                  Eater - Zombie
+                                </option>
+                                <option value="'Creepster', cursive">
+                                  Creepster - Monstre
+                                </option>
+                                <option value="'Butcherman', cursive">
+                                  Butcherman - Horreur
+                                </option>
+                                <option value="'Metal Mania', cursive">
+                                  Metal Mania - Heavy Metal
+                                </option>
+                                <option value="'Fascinate Inline', cursive">
+                                  Fascinate - Art Déco
+                                </option>
+                                <option value="'Nosifer', cursive">
+                                  Nosifer - Sang
+                                </option>
+                                <option value="'Bungee Shade', cursive">
+                                  Bungee Shade - 3D
+                                </option>
+                                <option value="'Rubik Moonrocks', cursive">
+                                  Rubik Moonrocks - Spatial
+                                </option>
+                                <option value="'Rubik Wet Paint', cursive">
+                                  Rubik Wet Paint - Peinture
+                                </option>
+                                <option value="'Rubik Glitch', cursive">
+                                  Rubik Glitch - Glitch
+                                </option>
+                              </optgroup>
+                              <optgroup label="⚔️ Gothique & Médiéval">
+                                <option value="'UnifrakturMaguntia', cursive">
+                                  Fraktur - Gothique Allemand
+                                </option>
+                                <option value="'UnifrakturCook', cursive">
+                                  Fraktur Cook - Gothique
+                                </option>
+                                <option value="'MedievalSharp', cursive">
+                                  Medieval Sharp - Moyen-Âge
+                                </option>
+                                <option value="'Pirata One', cursive">
+                                  Pirata One - Pirate
+                                </option>
+                                <option value="'Almendra Display', cursive">
+                                  Almendra - Fantaisie
+                                </option>
+                                <option value="'Uncial Antiqua', cursive">
+                                  Uncial Antiqua - Ancien
+                                </option>
+                                <option value="'Cinzel', serif">
+                                  Cinzel - Romain
+                                </option>
+                                <option value="'Cinzel Decorative', cursive">
+                                  Cinzel Decorative - Orné
+                                </option>
+                              </optgroup>
+                              <optgroup label="💥 Cartoon & BD">
+                                <option value="'Bangers', cursive">
+                                  Bangers - Comics
+                                </option>
+                                <option value="'Bungee', cursive">
+                                  Bungee - Bold
+                                </option>
+                                <option value="'Bungee Inline', cursive">
+                                  Bungee Inline - Rayé
+                                </option>
+                                <option value="'Fredoka One', cursive">
+                                  Fredoka - Rond
+                                </option>
+                                <option value="'Luckiest Guy', cursive">
+                                  Luckiest Guy - Fun
+                                </option>
+                                <option value="'Permanent Marker', cursive">
+                                  Permanent Marker - Marqueur
+                                </option>
+                                <option value="'Rock Salt', cursive">
+                                  Rock Salt - Craie
+                                </option>
+                                <option value="'Caveat', cursive">
+                                  Caveat - Manuscrit
+                                </option>
+                                <option value="'Kalam', cursive">
+                                  Kalam - Écriture
+                                </option>
+                                <option value="'Patrick Hand', cursive">
+                                  Patrick Hand - Main
+                                </option>
+                              </optgroup>
+                              <optgroup label="🤠 Western & Vintage">
+                                <option value="'Rye', cursive">
+                                  Rye - Western
+                                </option>
+                                <option value="'Frijole', cursive">
+                                  Frijole - Mexicain
+                                </option>
+                                <option value="'Smokum', cursive">
+                                  Smokum - Cowboy
+                                </option>
+                              </optgroup>
+                              <optgroup label="🚀 Futuriste & Tech">
+                                <option value="'Orbitron', sans-serif">
+                                  Orbitron - Sci-Fi
+                                </option>
+                                <option value="'Audiowide', cursive">
+                                  Audiowide - Électro
+                                </option>
+                                <option value="'Rajdhani', sans-serif">
+                                  Rajdhani - Tech
+                                </option>
+                                <option value="'Exo 2', sans-serif">
+                                  Exo 2 - Futur
+                                </option>
+                                <option value="'Teko', sans-serif">
+                                  Teko - Sport
+                                </option>
+                                <option value="'Russo One', sans-serif">
+                                  Russo One - Militaire
+                                </option>
+                                <option value="'Black Ops One', cursive">
+                                  Black Ops - Armée
+                                </option>
+                                <option value="'Press Start 2P', cursive">
+                                  Press Start - Pixel
+                                </option>
+                                <option value="'VT323', monospace">
+                                  VT323 - Terminal
+                                </option>
+                                <option value="'Share Tech Mono', monospace">
+                                  Share Tech - Code
+                                </option>
+                              </optgroup>
+                              <optgroup label="✨ Calligraphie Élégante">
+                                <option value="'Great Vibes', cursive">
+                                  Great Vibes - Élégant
+                                </option>
+                                <option value="'Dancing Script', cursive">
+                                  Dancing Script - Dansant
+                                </option>
+                                <option value="'Pacifico', cursive">
+                                  Pacifico - Décontracté
+                                </option>
+                                <option value="'Lobster', cursive">
+                                  Lobster - Rétro
+                                </option>
+                                <option value="'Satisfy', cursive">
+                                  Satisfy - Fluide
+                                </option>
+                                <option value="'Sacramento', cursive">
+                                  Sacramento - Script
+                                </option>
+                                <option value="'Tangerine', cursive">
+                                  Tangerine - Fin
+                                </option>
+                                <option value="'Alex Brush', cursive">
+                                  Alex Brush - Pinceau
+                                </option>
+                                <option value="'Allura', cursive">
+                                  Allura - Romantique
+                                </option>
+                                <option value="'Pinyon Script', cursive">
+                                  Pinyon Script - Classique
+                                </option>
+                                <option value="'Italianno', cursive">
+                                  Italianno - Italien
+                                </option>
+                                <option value="'Marck Script', cursive">
+                                  Marck Script - Signature
+                                </option>
+                                <option value="'Niconne', cursive">
+                                  Niconne - Doux
+                                </option>
+                                <option value="'Petit Formal Script', cursive">
+                                  Petit Formal - Formel
+                                </option>
+                                <option value="'Herr Von Muellerhoff', cursive">
+                                  Herr Von - Aristocrate
+                                </option>
+                                <option value="'Mrs Saint Delafield', cursive">
+                                  Mrs Saint - Victorien
+                                </option>
+                                <option value="'Rouge Script', cursive">
+                                  Rouge Script - Français
+                                </option>
+                                <option value="'Sevillana', cursive">
+                                  Sevillana - Espagnol
+                                </option>
+                              </optgroup>
+                              <optgroup label="💼 Professionnelles">
                                 <option value="'Inter', sans-serif">
-                                  Inter
+                                  Inter - Moderne
                                 </option>
-                                <option value="'Roboto', sans-serif">
-                                  Roboto
-                                </option>
-                                <option value="'Helvetica', sans-serif">
-                                  Helvetica
-                                </option>
-                              </optgroup>
-                              <optgroup label="Élégantes">
-                                <option value="'Playfair Display', serif">
-                                  Playfair Display
-                                </option>
-                                <option value="'Cormorant Garamond', serif">
-                                  Cormorant
-                                </option>
-                                <option value="'Lora', serif">Lora</option>
-                              </optgroup>
-                              <optgroup label="Modernes">
                                 <option value="'Poppins', sans-serif">
-                                  Poppins
+                                  Poppins - Géométrique
                                 </option>
                                 <option value="'Montserrat', sans-serif">
-                                  Montserrat
+                                  Montserrat - Élégant
                                 </option>
                                 <option value="'Space Grotesk', sans-serif">
-                                  Space Grotesk
+                                  Space Grotesk - Tech
+                                </option>
+                                <option value="'Playfair Display', serif">
+                                  Playfair - Luxe
+                                </option>
+                                <option value="'Lora', serif">
+                                  Lora - Classique
+                                </option>
+                                <option value="'Cormorant Garamond', serif">
+                                  Cormorant - Raffiné
                                 </option>
                               </optgroup>
+                            </select>
+                          </div>
+
+                          {/* Ombre du texte */}
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">
+                              Ombre du texte
+                            </Label>
+                            <select
+                              value={selected.textShadow || "none"}
+                              onChange={(e) =>
+                                updateItemProperty("textShadow", e.target.value)
+                              }
+                              className="w-full h-10 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                            >
+                              <option value="none">Aucune</option>
+                              <option value="1px 1px 2px rgba(0,0,0,0.3)">
+                                Légère
+                              </option>
+                              <option value="2px 2px 4px rgba(0,0,0,0.4)">
+                                Moyenne
+                              </option>
+                              <option value="3px 3px 6px rgba(0,0,0,0.5)">
+                                Forte
+                              </option>
+                              <option value="4px 4px 8px rgba(0,0,0,0.6)">
+                                Très forte
+                              </option>
+                              <option value="0 0 10px rgba(255,255,255,0.8)">
+                                Lueur blanche
+                              </option>
+                              <option value="0 0 10px rgba(255,215,0,0.8)">
+                                Lueur dorée
+                              </option>
+                              <option value="2px 2px 0px #000000">
+                                Contour noir
+                              </option>
+                              <option value="3px 3px 0px #FFD700">
+                                Contour doré
+                              </option>
                             </select>
                           </div>
 
@@ -1607,17 +1925,18 @@ export function EditCard({ ctx }: { ctx: any }) {
         </div>
       )}
 
-      {/* Modal des modèles professionnels */}
+      {/* Modal des modèles professionnels - NOUVEAU */}
       {showBackgroundPicker && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden border border-gray-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
             <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900">
-                  Modèles Professionnels
+                  🎨 Modèles Professionnels
                 </h3>
                 <p className="text-gray-600 mt-1">
-                  Choisissez un design adapté à vos besoins
+                  20+ designs avec images, bordures variées et effet papier
+                  réaliste
                 </p>
               </div>
               <Button
@@ -1630,52 +1949,209 @@ export function EditCard({ ctx }: { ctx: any }) {
               </Button>
             </div>
 
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              {/* Filtres par catégorie */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {[
+                  "all",
+                  "birthday",
+                  "wedding",
+                  "baptism",
+                  "easter",
+                  "christmas",
+                  "elegant",
+                  "nature",
+                  "minimal",
+                ].map((cat) => (
+                  <button
+                    key={cat}
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 hover:bg-blue-100 hover:text-blue-700 transition-colors capitalize"
+                  >
+                    {cat === "all" ? "Tous" : cat}
+                  </button>
+                ))}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {UNIFIED_TEMPLATES.map((template) => (
+                {PROFESSIONAL_TEMPLATES.map((template) => (
                   <div
                     key={template.id}
-                    className="cursor-pointer group border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-blue-500 hover:shadow-2xl transition-all duration-300 bg-white"
+                    className="cursor-pointer group overflow-hidden hover:shadow-2xl transition-all duration-300"
+                    style={{
+                      borderStyle: template.borderStyle,
+                      borderColor: template.borderColor,
+                      borderWidth: `${template.borderWidth}px`,
+                      borderRadius: `${template.borderRadius}px`,
+                      boxShadow:
+                        template.boxShadow || "0 4px 20px rgba(0,0,0,0.1)",
+                    }}
                     onClick={() => {
-                      applyProfessionalTemplate(template);
+                      // Appliquer le modèle professionnel
+                      setBgColor(template.bgColor);
+                      if (
+                        template.image &&
+                        template.imagePosition === "background"
+                      ) {
+                        setBgImage(template.image);
+                      } else {
+                        setBgImage(null);
+                      }
+                      // Ajouter les items du template
+                      const newItems = template.items.map(
+                        (item: any, idx: number) => ({
+                          ...item,
+                          id: `pro-${template.id}-${idx}-${Date.now()}`,
+                        })
+                      );
+                      // Ajouter l'image si layout split
+                      if (
+                        template.image &&
+                        template.imagePosition !== "background"
+                      ) {
+                        newItems.push({
+                          id: `img-${template.id}-${Date.now()}`,
+                          type: "image",
+                          src: template.image,
+                          x: template.imagePosition === "left" ? 20 : 320,
+                          y: 20,
+                          width: 250,
+                          height: 360,
+                          borderRadius: template.borderRadius,
+                        });
+                      }
+                      setItems(newItems);
                       setShowBackgroundPicker(false);
                     }}
                   >
+                    {/* Aperçu du modèle */}
                     <div
-                      className="w-full h-40 relative group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-48 relative group-hover:scale-[1.02] transition-transform duration-300"
                       style={{
-                        background: template.bgColor,
+                        backgroundColor: template.bgColor,
+                        backgroundImage:
+                          template.image &&
+                          template.imagePosition === "background"
+                            ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${template.image})`
+                            : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }}
                     >
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div
-                          className="text-center px-4 py-3 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg m-4"
-                          style={{
-                            color: template.colors[0],
-                            fontFamily:
-                              template.style === "luxury"
-                                ? "'Playfair Display', serif"
-                                : "'Inter', sans-serif",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {template.message}
+                      {/* Layout split avec image */}
+                      {template.image &&
+                        template.imagePosition !== "background" && (
+                          <div className="absolute inset-0 flex">
+                            {template.imagePosition === "left" && (
+                              <>
+                                <div className="w-1/2 h-full">
+                                  <img
+                                    src={template.image}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="w-1/2 h-full flex items-center justify-center p-4">
+                                  <div className="text-center">
+                                    {template.items[0] && (
+                                      <p
+                                        style={{
+                                          fontFamily:
+                                            template.items[0].fontFamily,
+                                          color: template.items[0].color,
+                                          fontSize: "14px",
+                                          fontWeight:
+                                            template.items[0].fontWeight,
+                                          textShadow:
+                                            template.items[0].textShadow,
+                                        }}
+                                      >
+                                        {template.items[0].text}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                            {template.imagePosition === "right" && (
+                              <>
+                                <div className="w-1/2 h-full flex items-center justify-center p-4">
+                                  <div className="text-center">
+                                    {template.items[0] && (
+                                      <p
+                                        style={{
+                                          fontFamily:
+                                            template.items[0].fontFamily,
+                                          color: template.items[0].color,
+                                          fontSize: "14px",
+                                          fontWeight:
+                                            template.items[0].fontWeight,
+                                          textShadow:
+                                            template.items[0].textShadow,
+                                        }}
+                                      >
+                                        {template.items[0].text}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="w-1/2 h-full">
+                                  <img
+                                    src={template.image}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+
+                      {/* Layout sans image split */}
+                      {(!template.image ||
+                        template.imagePosition === "background") && (
+                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                          <div className="text-center">
+                            {template.items[0] && (
+                              <p
+                                style={{
+                                  fontFamily: template.items[0].fontFamily,
+                                  color: template.items[0].color,
+                                  fontSize: "16px",
+                                  fontWeight: template.items[0].fontWeight,
+                                  textShadow:
+                                    template.items[0].textShadow ||
+                                    template.textShadow,
+                                }}
+                              >
+                                {template.items[0].text}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
+
+                      {/* Badge catégorie */}
+                      <span className="absolute top-2 right-2 text-xs font-medium px-2 py-1 bg-white/90 text-gray-700 rounded-full capitalize shadow">
+                        {template.category}
+                      </span>
                     </div>
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <p className="text-lg font-bold text-gray-900">
-                          {template.name}
-                        </p>
-                        <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-700 rounded-full capitalize">
-                          {template.category}
-                        </span>
-                      </div>
+
+                    {/* Info du modèle */}
+                    <div className="p-4 bg-white">
+                      <p className="text-lg font-bold text-gray-900">
+                        {template.name}
+                      </p>
                       <p className="text-sm text-gray-600">
                         {template.description}
                       </p>
+                      <div className="flex gap-2 mt-2">
+                        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                          {template.layout}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                          {template.borderStyle}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}

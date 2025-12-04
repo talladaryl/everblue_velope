@@ -5,16 +5,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +16,6 @@ import {
   Save,
   Send,
   Mail,
-  MailOpen,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -35,10 +25,11 @@ import {
   User,
   Settings,
   Edit2,
-  X,
-  Check,
-  Globe,
-  MessageCircle,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Smartphone as PhoneIcon,
+  Mail as MailIcon,
 } from "lucide-react";
 import {
   Select,
@@ -49,7 +40,6 @@ import {
 } from "@/components/ui/select";
 import { useSaveTemplate } from "@/hooks/useSaveTemplate";
 import { useBulkSend } from "@/hooks/useBulkSend";
-import { useEvents } from "@/hooks/useEvents";
 import {
   SendStatusModal,
   type MessageStatus,
@@ -57,8 +47,8 @@ import {
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StepSendProps {
   ctx: any;
@@ -96,24 +86,24 @@ const MESSAGE_TEMPLATES = {
   },
 };
 
-// Liste des indicatifs téléphoniques par pays
-const COUNTRY_CODES = [
-  { code: "+33", country: "France", flag: "🇫🇷" },
-  { code: "+1", country: "USA/Canada", flag: "🇺🇸" },
-  { code: "+44", country: "UK", flag: "🇬🇧" },
-  { code: "+49", country: "Germany", flag: "🇩🇪" },
-  { code: "+34", country: "Spain", flag: "🇪🇸" },
-  { code: "+39", country: "Italy", flag: "🇮🇹" },
-  { code: "+237", country: "Cameroon", flag: "🇨🇲" },
-  { code: "+225", country: "Ivory Coast", flag: "🇨🇮" },
-  { code: "+229", country: "Benin", flag: "🇧🇯" },
-  { code: "+226", country: "Burkina Faso", flag: "🇧🇫" },
-  { code: "+242", country: "Congo", flag: "🇨🇬" },
-  { code: "+243", country: "DR Congo", flag: "🇨🇩" },
-  { code: "+221", country: "Senegal", flag: "🇸🇳" },
-  { code: "+228", country: "Togo", flag: "🇹🇬" },
-  { code: "+234", country: "Nigeria", flag: "🇳🇬" },
-];
+// Import de la fonction pour générer l'HTML du modèle
+import { generateModelHTML } from "@/utils/modelGenerator";
+
+// Import des composants de prévisualisation des modèles
+import {
+  PreviewModel1,
+  PreviewModel2,
+  PreviewModel3,
+  PreviewModel4,
+  PreviewModel5,
+  PreviewModel6,
+  PreviewModel7,
+  PreviewModel8,
+  PreviewModel9,
+  PreviewModel10,
+  PreviewModel11,
+  PreviewModel12,
+} from "./modelPreviews";
 
 export default function StepSendImproved({ ctx }: StepSendProps) {
   const {
@@ -121,8 +111,10 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     setStep,
     items = [],
     bgColor = "#ffffff",
+    bgImage,
     templateId,
-    setEventId,
+    selectedModelId = "default",
+    modelHTML = "",
   } = ctx;
 
   const { saving, saveTemplate } = useSaveTemplate();
@@ -135,7 +127,6 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     cancelSend,
     retryFailed,
   } = useBulkSend();
-  const { events } = useEvents();
 
   const [templateTitle, setTemplateTitle] = useState("Mon invitation");
   const [templateDescription, setTemplateDescription] = useState("");
@@ -146,8 +137,6 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     "email" | "sms" | "mms" | "whatsapp"
   >("email");
   const [showStatusModal, setShowStatusModal] = useState(false);
-  const [showEventModal, setShowEventModal] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [statusMessages, setStatusMessages] = useState<MessageStatus[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [sentCount, setSentCount] = useState(0);
@@ -163,10 +152,11 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   const [personalizedMessages, setPersonalizedMessages] = useState<
     Record<string, any>
   >({});
-  const [showPersonalizationDialog, setShowPersonalizationDialog] =
-    useState(false);
-  const [selectedGuestForEdit, setSelectedGuestForEdit] =
-    useState<Guest | null>(null);
+  const [expandedGuests, setExpandedGuests] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [selectedEventId, setSelectedEventId] = useState<string>("new");
+  const [previewContent, setPreviewContent] = useState<string>("");
 
   // Valider les données
   const validGuests = Array.isArray(guests)
@@ -209,6 +199,119 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     }
   }, [guests]);
 
+  // Générer l'aperçu du contenu
+  useEffect(() => {
+    const generatePreview = () => {
+      if (sendMode === "group") {
+        // Pour l'envoi groupé
+        if (groupMessage.channel === "email") {
+          // Générer l'HTML du modèle pour l'email
+          const previewGuest = validGuests[0] || {};
+          const html = generateModelHTML(
+            selectedModelId || "default",
+            items,
+            bgColor,
+            previewGuest
+          );
+          return html;
+        } else {
+          // Pour WhatsApp, afficher le texte brut
+          return `
+            <div style="font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #f0f2f5; min-height: 200px;">
+              <div style="max-width: 400px; margin: 0 auto; background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                  <div style="width: 40px; height: 40px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-weight: bold;">W</span>
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; color: #333;">WhatsApp Message</div>
+                    <div style="font-size: 12px; color: #666;">À envoyer à ${
+                      validGuests.filter((g) => g.channel === "whatsapp").length
+                    } contacts</div>
+                  </div>
+                </div>
+                <div style="background: #f0f2f5; padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">
+                  ${groupMessage.whatsapp.replace(/\n/g, "<br>")}
+                </div>
+                <div style="margin-top: 16px; font-size: 12px; color: #666; text-align: center;">
+                  Ce message sera envoyé via WhatsApp
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        // Pour l'envoi personnalisé, montrer un exemple
+        const customizedGuests = validGuests.filter(
+          (g) => personalizedMessages[g.id!]?.customized
+        );
+        if (customizedGuests.length > 0) {
+          const firstCustomized = customizedGuests[0];
+          const message =
+            personalizedMessages[firstCustomized.id!]?.message || "";
+
+          if (sendMethod === "email") {
+            const html = generateModelHTML(
+              selectedModelId || "default",
+              items,
+              bgColor,
+              firstCustomized
+            );
+            return html;
+          } else {
+            return `
+              <div style="font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #f0f2f5; min-height: 200px;">
+                <div style="max-width: 400px; margin: 0 auto; background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                      <span style="color: white; font-weight: bold;">${
+                        firstCustomized.name?.charAt(0) || "?"
+                      }</span>
+                    </div>
+                    <div>
+                      <div style="font-weight: 600; color: #333;">Message personnalisé</div>
+                      <div style="font-size: 12px; color: #666;">Pour ${
+                        firstCustomized.name
+                      }</div>
+                    </div>
+                  </div>
+                  <div style="background: #f0f2f5; padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">
+                    ${message.replace(/\n/g, "<br>")}
+                  </div>
+                  <div style="margin-top: 16px; font-size: 12px; color: #666; text-align: center;">
+                    ${customizedGuests.length} message${
+              customizedGuests.length > 1 ? "s" : ""
+            } personnalisé${customizedGuests.length > 1 ? "s" : ""} à envoyer
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        } else {
+          return `
+            <div style="font-family: system-ui, -apple-system, sans-serif; padding: 40px; text-align: center; color: #666; background: #f9fafb; border-radius: 12px;">
+              <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+              <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">Aucun message personnalisé</div>
+              <div style="font-size: 14px;">Activez la personnalisation pour voir l'aperçu</div>
+            </div>
+          `;
+        }
+      }
+    };
+
+    const preview = generatePreview();
+    setPreviewContent(preview);
+  }, [
+    sendMode,
+    groupMessage,
+    selectedModelId,
+    items,
+    bgColor,
+    validGuests,
+    personalizedMessages,
+    sendMethod,
+  ]);
+
   const canSend = validGuests.length > 0;
   const maxRecipientsExceeded = validGuests.length > 500;
 
@@ -225,49 +328,20 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         .length || 0,
   };
 
-  // Générer le contenu HTML de la carte
-  const generateCardHTML = (): string => {
-    let html = `<div style="background: ${bgColor}; padding: 20px; border-radius: 8px;">`;
-
-    items.forEach((item: any) => {
-      if (item.type === "text") {
-        html += `<p style="color: ${item.color}; font-size: ${item.fontSize}px; font-family: ${item.fontFamily}; font-weight: ${item.fontWeight}; text-align: ${item.textAlign};">${item.text}</p>`;
-      } else if (item.type === "image") {
-        html += `<img src="${item.src}" style="width: ${item.width}px; height: ${item.height}px; border-radius: ${item.borderRadius}px;" />`;
-      }
-    });
-
-    if (customMessage) {
-      html += `<p style="margin-top: 20px; font-style: italic; color: #666;">${customMessage}</p>`;
+  // Générer l'HTML du modèle sélectionné
+  const generateSelectedModelHTML = (): string => {
+    if (modelHTML && modelHTML.trim() !== "") {
+      return modelHTML;
     }
 
-    html += `</div>`;
-    return html;
-  };
-
-  // Sauvegarder le template
-  const handleSaveTemplate = async () => {
-    if (!templateTitle.trim()) {
-      toast.error("Veuillez entrer un titre pour le template");
-      return;
-    }
-
-    try {
-      await saveTemplate({
-        name: templateTitle,
-        category: "custom",
-        structure: {
-          items,
-          bgColor,
-          description: templateDescription,
-          variables: extractVariables(),
-        },
-      });
-      setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 3000);
-    } catch (error) {
-      console.error("Erreur sauvegarde:", error);
-    }
+    // Si aucun modèle sélectionné, générer un modèle par défaut
+    const defaultGuest = validGuests[0] || {};
+    return generateModelHTML(
+      selectedModelId || "default",
+      items,
+      bgColor,
+      defaultGuest
+    );
   };
 
   // Extraire les variables du contenu
@@ -304,24 +378,16 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     }));
   };
 
-  // Valider les trois champs obligatoires (event_id, channel, subject)
+  // Valider les champs obligatoires
   const validateRequiredFields = (): { valid: boolean; error?: string } => {
-    // 1. Vérifier event_id
-    if (!selectedEventId) {
-      return { valid: false, error: "Veuillez sélectionner un événement" };
-    }
-
-    // 2. Vérifier channel
+    // Vérifier channel
     if (!sendMethod) {
       return { valid: false, error: "Veuillez sélectionner un canal d'envoi" };
     }
 
-    // 3. Vérifier subject (obligatoire pour tous les canaux)
+    // Vérifier subject (obligatoire pour tous les canaux)
     const subject =
-      sendMode === "group"
-        ? groupMessage.subject
-        : personalizedMessages[selectedGuestForEdit?.id!]?.subject ||
-          "Vous êtes invité!";
+      sendMode === "group" ? groupMessage.subject : "Vous êtes invité!";
 
     if (!subject || !subject.trim()) {
       return { valid: false, error: "Le sujet est requis" };
@@ -349,6 +415,14 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     }));
   };
 
+  // Toggle l'expansion d'un invité
+  const toggleGuestExpansion = (guestId: string) => {
+    setExpandedGuests((prev) => ({
+      ...prev,
+      [guestId]: !prev[guestId],
+    }));
+  };
+
   // Appliquer un template
   const applyTemplate = (guestId: string, templateType: string) => {
     const guest = guests?.find((g: any) => g.id === guestId);
@@ -363,32 +437,30 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     updatePersonalizedMessage(guestId, { message });
   };
 
-  // Ouvrir le modal de personnalisation pour un invité
-  const openPersonalizationDialog = (guest: Guest) => {
-    setSelectedGuestForEdit(guest);
-    setShowPersonalizationDialog(true);
+  // Activer/désactiver la personnalisation pour un invité
+  const togglePersonalization = (guestId: string, checked: boolean) => {
+    const guest = guests?.find((g: any) => g.id === guestId);
+    if (!guest) return;
+
+    if (!checked) {
+      const template = MESSAGE_TEMPLATES[guest.channel || "email"].casual;
+      updatePersonalizedMessage(guestId, {
+        message: template.replace("{name}", guest.name),
+        customized: false,
+      });
+      setExpandedGuests((prev) => ({ ...prev, [guestId]: false }));
+    } else {
+      updatePersonalizedMessage(guestId, { customized: true });
+      setExpandedGuests((prev) => ({ ...prev, [guestId]: true }));
+    }
   };
 
-  // Envoyer en masse après sélection d'événement
-  const handleSendBulkWithEvent = async () => {
-    // Valider les trois champs obligatoires
+  // Envoyer en masse DIRECTEMENT - PAS DE MODALE ÉVÉNEMENT
+  const handleSendBulk = async () => {
+    // Validation finale avant envoi
     const validation = validateRequiredFields();
     if (!validation.valid) {
       toast.error(validation.error);
-      return;
-    }
-
-    const eventIdNum = parseInt(selectedEventId);
-    setEventId(eventIdNum);
-    setShowEventModal(false);
-    await performSendBulk(eventIdNum);
-  };
-
-  // Envoyer en masse (email, SMS, MMS, WhatsApp)
-  const performSendBulk = async (eventIdNum?: number) => {
-    // Validation finale avant envoi - Les trois champs obligatoires
-    if (!eventIdNum) {
-      toast.error("L'ID de l'événement est manquant");
       return;
     }
 
@@ -455,20 +527,25 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     try {
       // Construire le payload selon le mode
       const payload: any = {
-        event_id: eventIdNum,
         channel: sendMethod,
         subject: subject,
         recipients,
         batch_size: 50,
+        event_id: selectedEventId === "new" ? null : parseInt(selectedEventId),
+        template_id: templateId || null,
       };
 
       if (sendMode === "group") {
         payload.message = groupMessage[groupMessage.channel];
         if (groupMessage.channel === "email") {
-          payload.html = generateCardHTML();
+          payload.html = generateSelectedModelHTML();
         }
       } else {
         payload.personalized = true;
+        // Pour l'email personnalisé, inclure l'HTML
+        if (sendMethod === "email") {
+          payload.html = generateSelectedModelHTML();
+        }
       }
 
       const response = await sendBulk(payload);
@@ -485,53 +562,12 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         setStatusMessages(converted);
       }
 
-      // Afficher le modal
+      // Afficher le modal de statut
       setShowStatusModal(true);
     } catch (error) {
       console.error("Erreur envoi:", error);
       toast.error("Erreur lors de l'envoi");
     }
-  };
-
-  // Ouvrir le modal de sélection d'événement
-  const handleOpenEventModal = () => {
-    if (!canSend) {
-      toast.error("Aucun invité valide à qui envoyer");
-      return;
-    }
-
-    if (maxRecipientsExceeded) {
-      toast.error("Le nombre de destinataires ne peut pas dépasser 500");
-      return;
-    }
-
-    // Vérifier selon le mode
-    if (sendMode === "group") {
-      if (!groupMessage[groupMessage.channel].trim()) {
-        toast.error("Veuillez entrer un message");
-        return;
-      }
-    } else {
-      const customizedCount = Object.values(personalizedMessages).filter(
-        (m: any) => m.customized
-      ).length;
-      if (customizedCount === 0) {
-        toast.error("Aucun message personnalisé configuré");
-        return;
-      }
-    }
-
-    // Filtrer les événements associés au template
-    const associatedEvents = templateId
-      ? events.filter((e: any) => e.template_id === templateId)
-      : events;
-
-    if (associatedEvents.length === 0) {
-      toast.error("Aucun événement associé à ce template");
-      return;
-    }
-
-    setShowEventModal(true);
   };
 
   const getChannelLabel = (channel: string): string => {
@@ -556,6 +592,71 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
       case "whatsapp":
         return <Smartphone className="h-4 w-4" />;
       default:
+        return null;
+    }
+  };
+
+  // Fonction pour remplacer les variables dans les items
+  const replaceVariablesInItems = (itemsList: any[], guestData: any) => {
+    if (!itemsList || !guestData) return itemsList;
+    
+    return itemsList.map((item: any) => {
+      if (item.type === "text" && item.text) {
+        let text = item.text;
+        text = text.replace(/\{\{name\}\}/g, guestData.name || "");
+        text = text.replace(/\{\{first_name\}\}/g, guestData.name?.split(" ")[0] || "");
+        text = text.replace(/\{\{email\}\}/g, guestData.email || "");
+        text = text.replace(/\{\{location\}\}/g, guestData.location || "");
+        text = text.replace(/\{\{lieu\}\}/g, guestData.location || "");
+        text = text.replace(/\{\{date\}\}/g, guestData.date || "");
+        text = text.replace(/\{\{time\}\}/g, guestData.time || "");
+        text = text.replace(/\{\{heure\}\}/g, guestData.time || "");
+        return { ...item, text };
+      }
+      return item;
+    });
+  };
+
+  // Fonction pour rendre le modèle de prévisualisation sélectionné
+  const renderSelectedModelPreview = () => {
+    const previewGuest = validGuests[0] || { name: "Invité", email: "email@example.com" };
+    const processedItems = replaceVariablesInItems(items, previewGuest);
+    
+    const commonProps = {
+      items: processedItems,
+      bgColor: bgColor,
+      bgImage: bgImage,
+      onClose: () => {},
+      guest: previewGuest,
+    };
+
+    switch (selectedModelId) {
+      case "model1":
+        return <PreviewModel1 {...commonProps} />;
+      case "model2":
+        return <PreviewModel2 {...commonProps} />;
+      case "model3":
+        return <PreviewModel3 {...commonProps} />;
+      case "model4":
+        return <PreviewModel4 {...commonProps} />;
+      case "model5":
+        return <PreviewModel5 {...commonProps} />;
+      case "model6":
+        return <PreviewModel6 {...commonProps} />;
+      case "model7":
+        return <PreviewModel7 {...commonProps} />;
+      case "model8":
+        return <PreviewModel8 {...commonProps} />;
+      case "model9":
+        return <PreviewModel9 {...commonProps} />;
+      case "model10":
+        return <PreviewModel10 {...commonProps} />;
+      case "model11":
+        return <PreviewModel11 {...commonProps} />;
+      case "model12":
+        return <PreviewModel12 {...commonProps} />;
+      default:
+        // Pour le modèle par défaut, afficher le HTML généré
         return null;
     }
   };
@@ -692,7 +793,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                         htmlFor="group-whatsapp"
                         className="flex items-center gap-2 cursor-pointer"
                       >
-                        <MessageCircle className="h-4 w-4" />
+                        <MessageSquare className="h-4 w-4" />
                         WhatsApp ({stats.whatsapp} invités)
                       </Label>
                     </div>
@@ -734,7 +835,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                   {groupMessage.channel === "whatsapp" ? (
                     <MessageSquare className="h-4 w-4" />
                   ) : (
-                    <MailOpen className="h-4 w-4" />
+                    <Mail className="h-4 w-4" />
                   )}
                   Message groupé
                 </Label>
@@ -785,13 +886,14 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               </div>
             </TabsContent>
 
-            {/* Envoi personnalisé */}
+            {/* Envoi personnalisé - ÉDITION INLINE */}
             <TabsContent value="personalized" className="pt-4">
               <Alert>
                 <User className="h-4 w-4" />
                 <AlertTitle>Personnalisation par invité</AlertTitle>
                 <AlertDescription>
-                  Configurez un message spécifique pour chaque invité.
+                  Activez la personnalisation pour chaque invité, puis cliquez
+                  sur la flèche pour éditer le message.
                 </AlertDescription>
               </Alert>
 
@@ -803,89 +905,192 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                       {stats.personalized !== 1 ? "s" : ""} personnalisé
                       {stats.personalized !== 1 ? "s" : ""}
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Personnaliser tous les invités
-                        guests.forEach((guest: Guest) => {
-                          if (guest.valid) {
-                            updatePersonalizedMessage(guest.id!, {
-                              customized: true,
-                            });
-                          }
-                        });
-                      }}
-                    >
-                      Personnaliser tous
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Personnaliser tous les invités
+                          guests.forEach((guest: Guest) => {
+                            if (guest.valid) {
+                              togglePersonalization(guest.id!, true);
+                            }
+                          });
+                        }}
+                      >
+                        Personnaliser tous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Désactiver tous les invités
+                          guests.forEach((guest: Guest) => {
+                            if (guest.valid) {
+                              togglePersonalization(guest.id!, false);
+                            }
+                          });
+                        }}
+                      >
+                        Tout standard
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="border rounded-lg divide-y">
+                  <div className="space-y-3">
                     {validGuests.map((guest: Guest) => (
                       <div
                         key={guest.id}
-                        className="p-4 hover:bg-gray-50 flex items-center justify-between"
+                        className="border rounded-lg overflow-hidden hover:border-gray-400 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-medium">{guest.name}</h4>
-                              <Badge variant="outline" className="text-xs">
-                                {guest.channel === "whatsapp" ? (
-                                  <MessageCircle className="h-3 w-3 mr-1" />
-                                ) : (
-                                  <Mail className="h-3 w-3 mr-1" />
-                                )}
-                                {guest.channel}
-                              </Badge>
-                              {personalizedMessages[guest.id!]?.customized && (
-                                <Badge className="bg-purple-100 text-purple-800 text-xs">
-                                  Personnalisé
-                                </Badge>
-                              )}
+                        {/* En-tête de l'invité */}
+                        <div className="p-4 bg-gray-50 flex items-center justify-between hover:bg-gray-100">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-100 flex items-center justify-center text-blue-800 font-bold rounded-full">
+                              {guest.name?.charAt(0) || "?"}
                             </div>
-                            <p className="text-sm text-gray-500">
-                              {guest.channel === "whatsapp"
-                                ? guest.phone
-                                : guest.email}
-                            </p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium text-gray-900">
+                                  {guest.name}
+                                </h4>
+                                <Badge variant="outline" className="text-xs">
+                                  {guest.channel === "whatsapp" ? (
+                                    <MessageSquare className="h-3 w-3 mr-1" />
+                                  ) : (
+                                    <Mail className="h-3 w-3 mr-1" />
+                                  )}
+                                  {guest.channel}
+                                </Badge>
+                                {personalizedMessages[guest.id!]
+                                  ?.customized && (
+                                  <Badge className="bg-purple-100 text-purple-800 text-xs">
+                                    Personnalisé
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-500">
+                                {guest.channel === "whatsapp"
+                                  ? guest.phone
+                                  : guest.email}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <Switch
+                              checked={
+                                personalizedMessages[guest.id!]?.customized ||
+                                false
+                              }
+                              onCheckedChange={(checked) =>
+                                togglePersonalization(guest.id!, checked)
+                              }
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => toggleGuestExpansion(guest.id!)}
+                              disabled={
+                                !personalizedMessages[guest.id!]?.customized
+                              }
+                            >
+                              {expandedGuests[guest.id!] ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={
-                              personalizedMessages[guest.id!]?.customized ||
-                              false
-                            }
-                            onCheckedChange={(checked) => {
-                              if (!checked) {
-                                const template =
-                                  MESSAGE_TEMPLATES[guest.channel || "email"]
-                                    .casual;
-                                updatePersonalizedMessage(guest.id!, {
-                                  message: template.replace(
-                                    "{name}",
-                                    guest.name
-                                  ),
-                                  customized: false,
-                                });
-                              } else {
-                                updatePersonalizedMessage(guest.id!, {
-                                  customized: true,
-                                });
-                              }
-                            }}
-                          />
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => openPersonalizationDialog(guest)}
-                            title="Éditer le message"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+
+                        {/* Zone d'édition du message (visible quand expandée ET personnalisée) */}
+                        {expandedGuests[guest.id!] &&
+                          personalizedMessages[guest.id!]?.customized && (
+                            <div className="p-4 bg-white border-t">
+                              <div className="space-y-4">
+                                <div>
+                                  <Label
+                                    htmlFor={`subject-${guest.id}`}
+                                    className="text-sm font-medium"
+                                  >
+                                    Sujet du message
+                                  </Label>
+                                  <Input
+                                    id={`subject-${guest.id}`}
+                                    value={
+                                      personalizedMessages[guest.id!]
+                                        ?.subject || "Vous êtes invité!"
+                                    }
+                                    onChange={(e) =>
+                                      updatePersonalizedMessage(guest.id!, {
+                                        subject: e.target.value,
+                                      })
+                                    }
+                                    className="mt-1"
+                                    placeholder="Sujet du message"
+                                  />
+                                </div>
+
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <Label
+                                      htmlFor={`message-${guest.id}`}
+                                      className="text-sm font-medium"
+                                    >
+                                      Message personnalisé pour {guest.name}
+                                    </Label>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          applyTemplate(guest.id!, "casual")
+                                        }
+                                      >
+                                        Informel
+                                      </Button>
+                                      <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          applyTemplate(guest.id!, "formal")
+                                        }
+                                      >
+                                        Formel
+                                      </Button>
+                                      {guest.channel === "whatsapp" && (
+                                        <Button
+                                          size="xs"
+                                          variant="ghost"
+                                          onClick={() =>
+                                            applyTemplate(guest.id!, "reminder")
+                                          }
+                                        >
+                                          Rappel
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Textarea
+                                    id={`message-${guest.id}`}
+                                    value={
+                                      personalizedMessages[guest.id!]
+                                        ?.message || ""
+                                    }
+                                    onChange={(e) =>
+                                      updatePersonalizedMessage(guest.id!, {
+                                        message: e.target.value,
+                                        channel: guest.channel,
+                                      })
+                                    }
+                                    className="min-h-[120px] mt-1"
+                                    placeholder={`Écrivez votre message personnalisé pour ${guest.name}...`}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     ))}
                   </div>
@@ -903,7 +1108,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         </CardContent>
       </Card>
 
-      {/* Paramètres d'envoi */}
+      {/* Paramètres d'envoi - SELECT DIRECT POUR ÉVÉNEMENT */}
       <Card>
         <CardHeader>
           <CardTitle>Paramètres d'envoi</CardTitle>
@@ -912,7 +1117,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="send-method">Canal technique d'envoi</Label>
               <Select
@@ -920,7 +1125,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                 onValueChange={(value: any) => setSendMethod(value)}
               >
                 <SelectTrigger id="send-method" className="mt-2">
-                  <SelectValue />
+                  <SelectValue placeholder="Sélectionner un canal" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="email">
@@ -963,11 +1168,28 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                       subject: e.target.value,
                     });
                   }
-                  // Pour le mode personnalisé, le sujet est géré dans la personnalisation
                 }}
                 placeholder="Ex: Vous êtes invité à notre mariage!"
                 className="mt-2"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="event-id">Événement associé</Label>
+              <Select
+                value={selectedEventId}
+                onValueChange={setSelectedEventId}
+              >
+                <SelectTrigger id="event-id" className="mt-2">
+                  <SelectValue placeholder="Sélectionner un événement" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">Créer un nouvel événement</SelectItem>
+                  <SelectItem value="1">Événement 1</SelectItem>
+                  <SelectItem value="2">Événement 2</SelectItem>
+                  <SelectItem value="3">Événement 3</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -988,21 +1210,149 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               ))}
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Bouton d'envoi */}
+      {/* APERÇU AMÉLIORÉ DU MESSAGE QUI SERA ENVOYÉ */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Aperçu du message
+          </CardTitle>
+          <CardDescription>
+            Voici ce qui sera envoyé à vos invités
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* En-tête info */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+                  {sendMode === "group" ? (
+                    <Users className="h-5 w-5 text-blue-600" />
+                  ) : (
+                    <User className="h-5 w-5 text-purple-600" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {sendMode === "group"
+                      ? "Envoi groupé"
+                      : "Envoi personnalisé"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {sendMode === "group" ? (
+                      groupMessage.channel === "email" ? (
+                        <span className="flex items-center gap-1">
+                          <MailIcon className="h-3 w-3" /> Email à {stats.email}{" "}
+                          invités
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <PhoneIcon className="h-3 w-3" /> WhatsApp à{" "}
+                          {stats.whatsapp} invités
+                        </span>
+                      )
+                    ) : (
+                      <span>
+                        {stats.personalized} message
+                        {stats.personalized !== 1 ? "s" : ""} personnalisé
+                        {stats.personalized !== 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <Badge variant="outline" className="capitalize">
+                {sendMethod === "email" ? (
+                  <span className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" /> Email
+                  </span>
+                ) : sendMethod === "whatsapp" ? (
+                  <span className="flex items-center gap-1">
+                    <Smartphone className="h-3 w-3" /> WhatsApp
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" /> MMS
+                  </span>
+                )}
+              </Badge>
+            </div>
+
+            {/* Contenu de l'aperçu - SANS fond blanc */}
+            <div className="relative">
+              <div className="absolute -top-2 left-4 px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded z-10">
+                APERÇU {selectedModelId !== "default" && `- ${selectedModelId.toUpperCase()}`}
+              </div>
+              <div 
+                className="border-2 border-blue-200 rounded-lg overflow-hidden shadow-sm"
+                style={{ backgroundColor: "transparent" }}
+              >
+                <div className="min-h-[450px] flex items-center justify-center">
+                  {selectedModelId !== "default" ? (
+                    // Afficher le modèle animé sélectionné - SANS conteneur blanc
+                    <div 
+                      className="w-full flex items-center justify-center"
+                      style={{ backgroundColor: "transparent" }}
+                    >
+                      {renderSelectedModelPreview()}
+                    </div>
+                  ) : (
+                    // Afficher l'aperçu HTML par défaut
+                    <ScrollArea className="h-[450px] w-full">
+                      <div
+                        className="p-4"
+                        dangerouslySetInnerHTML={{ __html: previewContent }}
+                      />
+                    </ScrollArea>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Légende */}
+            <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
+              <p className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                {selectedModelId !== "default" ? (
+                  `Ce modèle de carte (${selectedModelId}) sera envoyé à vos invités avec les variables personnalisées`
+                ) : sendMode === "group" ? (
+                  groupMessage.channel === "email"
+                    ? "Ce modèle d'invitation sera envoyé par email avec les variables remplacées"
+                    : "Ce message texte sera envoyé par WhatsApp à tous les contacts"
+                ) : (
+                  "Les messages seront personnalisés pour chaque invité selon vos paramètres"
+                )}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bouton d'envoi DIRECT - PAS DE MODALE INTERMÉDIAIRE */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Action d'envoi</CardTitle>
+          <CardDescription>Lancez l'envoi de vos invitations</CardDescription>
+        </CardHeader>
+        <CardContent>
           <Button
-            onClick={handleOpenEventModal}
+            onClick={handleSendBulk}
             disabled={sending || !canSend || maxRecipientsExceeded}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 py-6 text-lg"
           >
             {sending ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-5 w-5 mr-3 animate-spin" />
                 Envoi en cours...
               </>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-5 w-5 mr-3" />
                 {sendMode === "group"
                   ? `Envoyer groupé à ${
                       validGuests.filter(
@@ -1015,151 +1365,20 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               </>
             )}
           </Button>
+
+          {maxRecipientsExceeded && (
+            <Alert className="mt-4 bg-red-50 border-red-200">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                Le nombre de destinataires dépasse 500. Veuillez réduire le
+                nombre d'invités.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
-      {/* Aperçu du contenu pour email */}
-      {sendMethod === "email" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Aperçu du contenu</CardTitle>
-            <CardDescription>
-              Voici comment votre invitation apparaîtra
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="p-6 rounded-lg border border-gray-200 bg-white"
-              dangerouslySetInnerHTML={{ __html: generateCardHTML() }}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Dialog de personnalisation d'un invité */}
-      <Dialog
-        open={showPersonalizationDialog}
-        onOpenChange={setShowPersonalizationDialog}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              Personnaliser le message pour {selectedGuestForEdit?.name}
-            </DialogTitle>
-            <DialogDescription>
-              Écrivez un message spécifique pour cet invité
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedGuestForEdit && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      {selectedGuestForEdit.channel === "whatsapp" ? (
-                        <MessageCircle className="h-3 w-3 mr-1" />
-                      ) : (
-                        <Mail className="h-3 w-3 mr-1" />
-                      )}
-                      {selectedGuestForEdit.channel}
-                    </Badge>
-                    <span className="font-medium">
-                      {selectedGuestForEdit.name}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    {selectedGuestForEdit.channel === "whatsapp"
-                      ? selectedGuestForEdit.phone
-                      : selectedGuestForEdit.email}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="personal-subject">Sujet</Label>
-                <Input
-                  id="personal-subject"
-                  value={
-                    personalizedMessages[selectedGuestForEdit.id!]?.subject ||
-                    "Vous êtes invité!"
-                  }
-                  onChange={(e) =>
-                    updatePersonalizedMessage(selectedGuestForEdit.id!, {
-                      subject: e.target.value,
-                    })
-                  }
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="personal-message">Message</Label>
-                <Textarea
-                  id="personal-message"
-                  value={
-                    personalizedMessages[selectedGuestForEdit.id!]?.message ||
-                    ""
-                  }
-                  onChange={(e) =>
-                    updatePersonalizedMessage(selectedGuestForEdit.id!, {
-                      message: e.target.value,
-                      channel: selectedGuestForEdit.channel,
-                    })
-                  }
-                  className="min-h-[200px] mt-2"
-                  placeholder={`Écrivez votre message pour ${selectedGuestForEdit.name}...`}
-                />
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      applyTemplate(selectedGuestForEdit.id!, "casual")
-                    }
-                  >
-                    Template informel
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      applyTemplate(selectedGuestForEdit.id!, "formal")
-                    }
-                  >
-                    Template formel
-                  </Button>
-                  {selectedGuestForEdit.channel === "whatsapp" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        applyTemplate(selectedGuestForEdit.id!, "reminder")
-                      }
-                    >
-                      Template rappel
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowPersonalizationDialog(false)}
-                >
-                  Fermer
-                </Button>
-                <Button onClick={() => setShowPersonalizationDialog(false)}>
-                  Sauvegarder
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de statut */}
+      {/* Modal de statut (seulement pour voir le progrès) */}
       <SendStatusModal
         open={showStatusModal}
         onOpenChange={setShowStatusModal}
@@ -1171,62 +1390,10 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
         pendingCount={pendingCount}
       />
 
-      {/* Modal de sélection d'événement */}
-      <Dialog open={showEventModal} onOpenChange={setShowEventModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sélectionner un événement</DialogTitle>
-            <DialogDescription>
-              Choisissez l'événement associé à cet envoi
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="event-select">Événement *</Label>
-              <Select
-                value={selectedEventId}
-                onValueChange={setSelectedEventId}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Sélectionner un événement" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(templateId
-                    ? events.filter((e: any) => e.template_id === templateId)
-                    : events
-                  ).map((event: any) => (
-                    <SelectItem key={event.id} value={event.id.toString()}>
-                      {event.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowEventModal(false)}
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleSendBulkWithEvent}
-                disabled={!selectedEventId}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Continuer l'envoi
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Navigation */}
       <div className="flex justify-between gap-4">
-        <Button variant="outline" onClick={() => setStep(1)}>
-          ← Retour Gestion invités
+        <Button variant="outline" onClick={() => setStep(2)}>
+          ← Retour Prévisualisation
         </Button>
         <Button variant="outline" onClick={() => setStep(0)}>
           Accueil
