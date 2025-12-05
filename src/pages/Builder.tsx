@@ -299,11 +299,11 @@ function Builder() {
         description: `"${payload.title}" a été sauvegardé.`,
       });
       
-      // Rediriger vers la HomePage après 1.5 secondes
+      // Rediriger vers la page Designs après 1.5 secondes
       setTimeout(() => {
         setSavedSuccess(false);
         setShowSaveModal(false);
-        navigate("/");
+        navigate("/designs");
       }, 1500);
     } catch (error: any) {
       console.error("❌ Erreur sauvegarde:", error);
@@ -435,11 +435,11 @@ function Builder() {
       await saveTemplate(newTemplate);
 
       toast("Modèle sauvegardé", {
-        description: `"${name}" a été ajouté à vos modèles. Redirection vers l'accueil...`,
+        description: `"${name}" a été ajouté à vos modèles. Redirection vers Designs...`,
       });
 
       setTimeout(() => {
-        navigate("/");
+        navigate("/designs");
       }, 1500);
     } catch (err) {
       console.error("Erreur lors de la sauvegarde:", err);
