@@ -9,14 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle } from "lucide-react";
 
@@ -24,54 +16,44 @@ interface SaveTemplateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (payload: {
-    name: string;
-    category: string;
-    description?: string;
-    structure: any;
+    title: string;
+    model_preview_id?: number | null;
+    data: any;
+    thumbnail?: string | null;
   }) => Promise<void>;
   loading?: boolean;
-  structure?: any;
+  data?: any;
+  modelPreviewId?: number | null;
 }
-
-const CATEGORIES = [
-  { value: "wedding", label: "Mariage" },
-  { value: "birthday", label: "Anniversaire" },
-  { value: "corporate", label: "Événement professionnel" },
-  { value: "party", label: "Fête" },
-  { value: "other", label: "Autre" },
-];
 
 export function SaveTemplateModal({
   open,
   onOpenChange,
   onSave,
   loading = false,
-  structure,
+  data,
+  modelPreviewId,
 }: SaveTemplateModalProps) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("other");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
+    if (!title.trim()) {
       setError("Le nom du template est requis");
       return;
     }
 
     try {
       await onSave({
-        name: name.trim(),
-        category,
-        description: description.trim() || undefined,
-        structure: structure || {},
+        title: title.trim(),
+        model_preview_id: modelPreviewId || null,
+        data: data || {},
+        thumbnail: null, // TODO: Générer une miniature
       });
-      setName("");
-      setCategory("other");
-      setDescription("");
+      setTitle("");
       onOpenChange(false);
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue");
@@ -97,41 +79,13 @@ export function SaveTemplateModal({
           )}
 
           <div>
-            <Label htmlFor="template-name">Nom du template *</Label>
+            <Label htmlFor="template-title">Nom du template *</Label>
             <Input
-              id="template-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="template-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Invitation Mariage 2025"
               className="mt-2"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="template-category">Catégorie</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="template-category" className="mt-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="template-description">Description (optionnel)</Label>
-            <Textarea
-              id="template-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez ce template..."
-              className="mt-2"
-              rows={3}
             />
           </div>
 

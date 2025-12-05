@@ -1,23 +1,19 @@
-import { useState, useCallback, useEffect } from "react";
-import { templateService, Template, CreateTemplatePayload } from "@/api/services/templateService";
+import { useState, useEffect } from "react";
+import { templateService, Template } from "@/api/services/templateService";
 import { toast } from "@/components/ui/sonner";
+import { PROFESSIONAL_TEMPLATES } from "@/constants/designConstants";
 
-interface UseTemplatesReturn {
-  templates: Template[];
-  loading: boolean;
-  error: string | null;
-  fetchTemplates: () => Promise<void>;
-  createTemplate: (payload: CreateTemplatePayload) => Promise<Template>;
-  updateTemplate: (id: number, payload: Partial<CreateTemplatePayload>) => Promise<Template>;
-  deleteTemplate: (id: number) => Promise<void>;
+interface UseTemplatesProps {
+  addItem?: (type: "text" | "image" | "video") => void;
 }
-
-export const useTemplates = (): UseTemplatesReturn => {
+export function useTemplates({ addItem }: UseTemplatesProps = {}) {
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
 
-  const fetchTemplates = useCallback(async () => {
+  // Charger tous les templates depuis API
+  const fetchTemplates = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -29,82 +25,56 @@ export const useTemplates = (): UseTemplatesReturn => {
         err.message ||
         "Erreur lors du chargement des templates";
       setError(errorMessage);
-      toast.error(errorMessage);
+      console.error("Erreur chargement templates:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const createTemplateHandler = useCallback(
-    async (payload: CreateTemplatePayload): Promise<Template> => {
-      try {
-        const newTemplate = await templateService.createTemplate(payload);
-        setTemplates((prev) => [newTemplate, ...prev]);
-        toast.success("Template créé avec succès!");
-        return newTemplate;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la création du template";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        throw err;
-      }
-    },
-    []
-  );
+  // Appliquer un template
+  const applyTemplate = (template: Template) => {
+    if (!addItem) return;
+    const templateData = template.data || {};
+    const items = templateData.items || [];
+    items.forEach((item: any) =>
+      addItem(item.type as "text" | "image" | "video")
+    );
+    setIsTemplatesOpen(false);
+  };
 
-  const updateTemplateHandler = useCallback(
-    async (id: number, payload: Partial<CreateTemplatePayload>): Promise<Template> => {
-      try {
-        const updatedTemplate = await templateService.updateTemplate(id, payload);
-        setTemplates((prev) =>
-          prev.map((t) => (t.id === id ? updatedTemplate : t))
-        );
-        toast.success("Template mis à jour avec succès!");
-        return updatedTemplate;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la mise à jour du template";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        throw err;
-      }
-    },
-    []
-  );
-
-  const deleteTemplateHandler = useCallback(async (id: number): Promise<void> => {
+  // Supprimer un template
+  const deleteTemplate = async (id: number | string) => {
     try {
       await templateService.deleteTemplate(id);
-      setTemplates((prev) => prev.filter((t) => t.id !== id));
-      toast.success("Template supprimé avec succès!");
+      // Recharger les templates après suppression
+      await fetchTemplates();
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
         "Erreur lors de la suppression du template";
       setError(errorMessage);
-      toast.error(errorMessage);
+      console.error("Erreur suppression template:", err);
       throw err;
     }
-  }, []);
+  };
 
-  // Charger les templates au montage
+  const openTemplates = () => setIsTemplatesOpen(true);
+  const closeTemplates = () => setIsTemplatesOpen(false);
+
   useEffect(() => {
     fetchTemplates();
-  }, [fetchTemplates]);
+  }, []);
 
   return {
-    templates,
+    templates: templates.length ? templates : PROFESSIONAL_TEMPLATES,
     loading,
     error,
     fetchTemplates,
-    createTemplate: createTemplateHandler,
-    updateTemplate: updateTemplateHandler,
-    deleteTemplate: deleteTemplateHandler,
+    applyTemplate,
+    deleteTemplate,
+    isTemplatesOpen,
+    openTemplates,
+    closeTemplates,
   };
-};
+}

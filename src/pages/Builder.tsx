@@ -218,7 +218,7 @@ function Builder() {
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Hook de sauvegarde
-  const { saving, saveTemplate } = useSaveTemplate();
+  const { saving, saveTemplate, updateTemplate } = useSaveTemplate();
 
   const selected = useMemo(
     () => items.find((i) => i.id === selectedId) || null,
@@ -245,30 +245,70 @@ function Builder() {
   // Gérer la sauvegarde du template
   const handleSaveTemplate = async (payload: any) => {
     try {
-      await saveTemplate({
-        name: payload.name,
-        category: payload.category,
-        structure: {
-          items,
-          bgColor,
-          bgImage,
-          selectedModelId,
-          description: payload.description,
-          variables: extractVariables(),
-        },
+      // Préparer les données du template
+      const templateData = {
+        items: JSON.parse(JSON.stringify(items || [])),
+        bgColor: bgColor || "#F3F4F6",
+        bgImage: bgImage || null,
+        selectedModelId: selectedModelId || "default",
+        variables: extractVariables(),
+      };
+
+      console.log("💾 Sauvegarde du template:", {
+        title: payload.title,
+        itemsCount: templateData.items.length,
+        hasTemplateId: !!templateId,
       });
+
+      // Convertir selectedModelId en number si nécessaire
+      let modelPreviewId: number | null = null;
+      if (selectedModelId && selectedModelId !== "default") {
+        const parsed = parseInt(selectedModelId, 10);
+        if (!isNaN(parsed)) {
+          modelPreviewId = parsed;
+        }
+      }
+
+      const savePayload = {
+        title: payload.title,
+        model_preview_id: modelPreviewId,
+        data: templateData,
+        thumbnail: null,
+      };
+
+      let savedTemplate;
+      
+      if (templateId) {
+        // Mise à jour d'un template existant
+        console.log("🔄 Mise à jour du template ID:", templateId);
+        savedTemplate = await updateTemplate(templateId, savePayload);
+      } else {
+        // Création d'un nouveau template
+        console.log("✨ Création d'un nouveau template");
+        savedTemplate = await saveTemplate(savePayload);
+        
+        // Stocker l'ID du template nouvellement créé
+        if (savedTemplate && savedTemplate.id) {
+          console.log("✅ Template créé avec ID:", savedTemplate.id);
+          setTemplateId(savedTemplate.id);
+        }
+      }
+
       setSavedSuccess(true);
-      toast("Template sauvegardé", {
-        description: `"${payload.name}" a été sauvegardé avec succès.`,
+      toast.success("Template sauvegardé avec succès!", {
+        description: `"${payload.title}" a été sauvegardé.`,
       });
+      
+      // Rediriger vers la HomePage après 1.5 secondes
       setTimeout(() => {
         setSavedSuccess(false);
         setShowSaveModal(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Erreur sauvegarde:", error);
-      toast("Erreur", {
-        description: "Impossible de sauvegarder le template.",
+        navigate("/");
+      }, 1500);
+    } catch (error: any) {
+      console.error("❌ Erreur sauvegarde:", error);
+      toast.error("Erreur de sauvegarde", {
+        description: error.response?.data?.message || "Impossible de sauvegarder le template.",
       });
     }
   };
@@ -436,39 +476,62 @@ function Builder() {
 
   // Charger un template depuis l'API (avec structure complète)
   const loadTemplateFromAPI = (apiTemplate: any) => {
-    const structure = typeof apiTemplate.structure === "string" 
-      ? JSON.parse(apiTemplate.structure) 
-      : apiTemplate.structure || {};
+    console.log("🔄 loadTemplateFromAPI appelé avec:", apiTemplate);
+    
+    // Utiliser "data" au lieu de "structure" (nouveau format)
+    const templateData = typeof apiTemplate.data === "string" 
+      ? JSON.parse(apiTemplate.data) 
+      : apiTemplate.data || {};
+    
+    console.log("📦 Données du template:", templateData);
     
     // Charger les items
-    if (structure.items && Array.isArray(structure.items)) {
-      setItems(JSON.parse(JSON.stringify(structure.items)));
-      setSelectedId(structure.items[0]?.id || null);
+    if (templateData.items && Array.isArray(templateData.items)) {
+      console.log("✅ Chargement de", templateData.items.length, "items");
+      setItems(JSON.parse(JSON.stringify(templateData.items)));
+      setSelectedId(templateData.items[0]?.id || null);
+    } else {
+      console.warn("⚠️ Aucun item trouvé");
+      setItems([]);
     }
     
     // Charger bgColor
-    if (structure.bgColor) {
-      setBgColor(structure.bgColor);
+    if (templateData.bgColor) {
+      console.log("🎨 bgColor:", templateData.bgColor);
+      setBgColor(templateData.bgColor);
+    } else {
+      setBgColor("#ffffff");
     }
     
     // Charger bgImage
-    if (structure.bgImage) {
-      setBgImage(structure.bgImage);
+    if (templateData.bgImage) {
+      console.log("🖼️ bgImage chargé");
+      setBgImage(templateData.bgImage);
     } else {
       setBgImage(null);
     }
     
     // Charger selectedModelId
-    if (structure.selectedModelId) {
-      setSelectedModelId(structure.selectedModelId);
+    if (templateData.selectedModelId) {
+      console.log("📋 selectedModelId:", templateData.selectedModelId);
+      setSelectedModelId(templateData.selectedModelId);
     }
     
     // Stocker l'ID du template pour les mises à jour
     if (apiTemplate.id) {
+      console.log("🆔 Template ID stocké:", apiTemplate.id);
       setTemplateId(apiTemplate.id);
     }
     
-    toast("Modèle chargé", { description: `"${apiTemplate.name}" appliqué.` });
+    // Stocker le model_preview_id si présent
+    if (apiTemplate.model_preview_id) {
+      console.log("📋 model_preview_id:", apiTemplate.model_preview_id);
+      setSelectedModelId(String(apiTemplate.model_preview_id));
+    }
+    
+    toast.success("Modèle chargé avec succès!", { 
+      description: `"${apiTemplate.title}" chargé avec ${templateData.items?.length || 0} éléments.` 
+    });
   };
 
   const deleteTemplate = (templateId: string) => {
@@ -646,39 +709,66 @@ function Builder() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const tid = params.get("template");
-    if (!tid) return;
+    let tid = params.get("template");
+    if (!tid) {
+      console.log("ℹ️ Aucun template ID dans l'URL");
+      return;
+    }
+    
+    console.log("🔍 Chargement du template ID:", tid);
+    
     (async () => {
       try {
         // Vérifier si c'est un template par défaut
         const foundDefault = defaultTemplates.find((t) => t.id === tid);
         if (foundDefault) {
+          console.log("✅ Template par défaut trouvé");
           loadTemplate(foundDefault);
           return;
         }
         
+        // Nettoyer l'ID si nécessaire (retirer "api-" ou "local-")
+        let cleanId = tid;
+        if (tid.startsWith("api-")) {
+          cleanId = tid.replace("api-", "");
+          console.log("🔄 ID nettoyé:", cleanId);
+        }
+        
         // Vérifier si c'est un ID numérique (template API)
-        const numericId = parseInt(tid, 10);
+        const numericId = parseInt(cleanId, 10);
         if (!isNaN(numericId)) {
-          // Charger depuis l'API
+          console.log("🌐 Chargement depuis l'API avec ID:", numericId);
           const { templateService } = await import("@/api/services/templateService");
           const apiTemplate = await templateService.getTemplate(numericId);
           if (apiTemplate) {
+            console.log("✅ Template API chargé");
             loadTemplateFromAPI(apiTemplate);
             return;
+          } else {
+            console.warn("⚠️ Template non trouvé dans l'API");
           }
         }
         
         // Fallback: chercher dans le stockage local
+        console.log("💾 Recherche dans le stockage local...");
         const saved = (await Promise.resolve(getTemplates())) || [];
         const foundSaved = Array.isArray(saved)
           ? saved.find((t: any) => t.id === tid)
           : undefined;
         if (foundSaved) {
+          console.log("✅ Template local trouvé");
           loadTemplate(foundSaved);
+        } else {
+          console.warn("⚠️ Template introuvable");
+          toast.error("Template introuvable", {
+            description: `Le template "${tid}" n'a pas été trouvé.`
+          });
         }
       } catch (err) {
-        console.error("Erreur chargement template depuis URL:", err);
+        console.error("❌ Erreur chargement template:", err);
+        toast.error("Erreur de chargement", {
+          description: "Impossible de charger le template."
+        });
       }
     })();
   }, [location.search]);
@@ -875,11 +965,14 @@ const StepNav = () => {
         onOpenChange={setShowSaveModal}
         onSave={handleSaveTemplate}
         loading={saving}
-        structure={{
+        data={{
           items,
           bgColor,
+          bgImage,
+          selectedModelId,
           variables: extractVariables(),
         }}
+        modelPreviewId={selectedModelId && selectedModelId !== "default" ? parseInt(selectedModelId, 10) : null}
       />
     </div>
   );

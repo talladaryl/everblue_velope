@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Palette, Eye, ArrowLeft, ArrowRight, Download } from "lucide-react";
 
 // Sous-composants
-import { EditCard } from "./design-steps/EditCard";
-import { EditEnvelope } from "./design-steps/EditEnvelope";
+import  { EditCard }  from "./design-steps/EditCard";
+// import { EditEnvelope } from "./design-steps/EditEnvelope";
 
 export default function StepDesign({ ctx }: { ctx: any }) {
   const [currentSubStep, setCurrentSubStep] = useState<"card" | "envelope">(
@@ -41,8 +41,8 @@ export default function StepDesign({ ctx }: { ctx: any }) {
       switch (currentSubStep) {
         case "card":
           return <EditCard ctx={ctx} />;
-        case "envelope":
-          return <EditEnvelope ctx={ctx} />;
+        // case "envelope":
+        //   return <EditEnvelope ctx={ctx} />;
         default:
           return <EditCard ctx={ctx} />;
       }
@@ -106,7 +106,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
         </div>
 
         <div className="relative flex justify-between">
-          <button
+          {/* <button
             onClick={() => setCurrentSubStep("card")}
             className={`group flex flex-col items-center gap-2 transition-all ${
               currentSubStep === "card"
@@ -132,9 +132,9 @@ export default function StepDesign({ ctx }: { ctx: any }) {
             >
               Modifier la carte
             </span>
-          </button>
+          </button> */}
 
-          <button
+          {/* <button
             onClick={() => setCurrentSubStep("envelope")}
             className={`group flex flex-col items-center gap-2 transition-all ${
               currentSubStep === "envelope"
@@ -160,7 +160,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
             >
               Personnaliser l'enveloppe
             </span>
-          </button>
+          </button> */}
         </div>
       </div>
       {/* Contenu de l'étape */}

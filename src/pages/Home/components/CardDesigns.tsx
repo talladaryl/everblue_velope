@@ -4,10 +4,110 @@ interface CardDesignProps {
   type: string;
   colors: string[];
   scale?: number;
+  data?: any; // Données du template personnalisé
 }
 
-export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1 }) => {
+// Texture de papier identique à EditCard
+const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
+
+export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1, data }) => {
   const renderDesign = () => {
+    // Si c'est un template personnalisé avec des données
+    if (type === "custom" && data) {
+      const { items = [], bgColor = "#ffffff", bgImage = null } = data;
+      
+      const paperStyle = {
+        backgroundColor: bgImage ? "transparent" : (bgColor || "#FAF8F4"),
+        backgroundImage: bgImage
+          ? `url(${bgImage}), ${PAPER_TEXTURE}`
+          : bgColor.includes("gradient")
+          ? `${bgColor}, ${PAPER_TEXTURE}`
+          : `${bgColor || "#FAF8F4"}, ${PAPER_TEXTURE}`,
+        backgroundBlendMode: bgImage ? "overlay, multiply" : "normal, multiply",
+        backgroundSize: bgImage ? "cover, auto" : "cover, auto",
+        width: "100%",
+        height: "100%",
+        position: "relative" as const,
+        overflow: "hidden",
+      };
+
+      return (
+        <div style={paperStyle}>
+          {items.map((it: any) => (
+            <div
+              key={it.id}
+              className="absolute"
+              style={{
+                left: it.x,
+                top: it.y,
+                borderRadius: it.type !== "text" ? `${it.borderRadius || 0}px` : "0px",
+                transform: `
+                  rotate(${it.rotation || 0}deg)
+                  scaleX(${it.flipX ? -1 : 1})
+                  scaleY(${it.flipY ? -1 : 1})
+                `,
+                filter: `
+                  brightness(${it.filters?.brightness || 100}%)
+                  contrast(${it.filters?.contrast || 100}%)
+                  saturate(${it.filters?.saturation || 100}%)
+                  blur(${it.filters?.blur || 0}px)
+                  grayscale(${it.filters?.grayscale || 0}%)
+                  ${
+                    it.shadow?.enabled
+                      ? `drop-shadow(${it.shadow.offsetX}px ${it.shadow.offsetY}px ${it.shadow.blur}px ${it.shadow.color})`
+                      : ""
+                  }
+                `,
+                opacity: (it.opacity || 100) / 100,
+              }}
+            >
+              {it.type === "text" ? (
+                <div
+                  style={{
+                    color: it.color || "#000000",
+                    fontSize: `${it.fontSize || 16}px`,
+                    fontFamily: it.fontFamily || "Arial",
+                    fontWeight: it.fontWeight || "normal",
+                    textAlign: it.textAlign || "left",
+                    textShadow: it.textShadow || "none",
+                    lineHeight: 1.4,
+                    wordBreak: "break-word",
+                    whiteSpace: "pre-wrap",
+                    padding: "4px",
+                  }}
+                >
+                  {it.text || "Texte"}
+                </div>
+              ) : it.type === "video" ? (
+                <video
+                  src={it.src}
+                  autoPlay={it.autoPlay}
+                  loop={it.loop}
+                  muted={it.muted}
+                  className="object-cover"
+                  style={{
+                    width: it.width || "200px",
+                    height: it.height || "150px",
+                  }}
+                />
+              ) : (
+                <img
+                  src={it.src}
+                  alt=""
+                  draggable={false}
+                  className="object-cover"
+                  style={{
+                    width: it.width || "150px",
+                    height: it.height || "150px",
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     switch (type) {
       case "birthday-split":
         return (

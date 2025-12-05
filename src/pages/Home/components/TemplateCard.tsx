@@ -8,7 +8,7 @@ interface TemplateCardProps {
 }
 
 export default function TemplateCard({ template, onClick }: TemplateCardProps) {
-  const { title, designer, colors = [], type } = template;
+  const { title, designer, colors = [], type, data } = template;
 
   return (
     <div 
@@ -48,7 +48,7 @@ export default function TemplateCard({ template, onClick }: TemplateCardProps) {
         />
         {/* Carte principale avec texture papier premium */}
         <div className="relative w-full h-full overflow-hidden premium-paper-texture">
-          <CardDesigns type={type} colors={colors} scale={1} />
+          <CardDesigns type={type} colors={colors} scale={1} data={data} />
           
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">

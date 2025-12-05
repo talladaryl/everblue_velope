@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { X, ChevronLeft, ChevronRight, Heart, Share2, Pencil } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Heart, Share2, Pencil, Trash2, Eye } from "lucide-react";
 import { CardDesigns } from "./CardDesigns";
 import { useNavigate } from "react-router-dom";
+import { useTemplates } from "@/hooks/useTemplates";
+import { toast } from "@/components/ui/sonner";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
 
 interface TemplateModalProps {
   isOpen: boolean;
@@ -17,8 +21,11 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
   allTemplates,
 }) => {
   const navigate = useNavigate();
+  const { deleteTemplate } = useTemplates();
   const [currentTemplate, setCurrentTemplate] = useState(template);
   const [selectedColors, setSelectedColors] = useState(template?.colors || []);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Mettre à jour le template quand il change
   React.useEffect(() => {
@@ -27,6 +34,97 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
       setSelectedColors(template.colors);
     }
   }, [template]);
+
+  // Gérer la suppression
+  const handleDelete = async () => {
+    if (!currentTemplate.isCustom) {
+      toast.error("Ce template ne peut pas être supprimé", {
+        description: "Seuls les templates personnalisés peuvent être supprimés."
+      });
+      setShowDeleteConfirm(false);
+      return;
+    }
+
+    try {
+      // Utiliser apiId en priorité pour les templates API, sinon l'ID
+      const templateId = currentTemplate.apiId || currentTemplate.id;
+      console.log("🗑️ Tentative de suppression du template:", templateId);
+      
+      // Appeler l'API de suppression via le hook
+      await deleteTemplate(templateId);
+      
+      toast.success("Template supprimé avec succès", {
+        description: `"${currentTemplate.title}" a été supprimé définitivement.`
+      });
+      
+      // Fermer les modals
+      setShowDeleteConfirm(false);
+      onClose();
+      
+      // Recharger la page pour mettre à jour la liste
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (error: any) {
+      console.error("❌ Erreur suppression:", error);
+      toast.error("Erreur lors de la suppression", {
+        description: error.response?.data?.message || "Impossible de supprimer le template. Vérifiez la console pour plus de détails."
+      });
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  // Gérer la modification
+  const handleEdit = () => {
+    if (currentTemplate.isCustom) {
+      const templateId = currentTemplate.apiId || currentTemplate.id;
+      navigate(`/builder?template=${templateId}`);
+    } else {
+      navigate("/builder");
+    }
+    onClose();
+  };
+
+  // Gérer le preview - Nouvelle version avec modal d'animation
+  const handlePreview = () => {
+    console.log("🎬 Ouverture du preview pour:", currentTemplate.title);
+    console.log("📦 Données du template:", currentTemplate.data);
+    setShowPreview(true);
+  };
+
+  // Extraire les données du template pour le preview
+  const getTemplateData = () => {
+    // Vérifier que currentTemplate existe
+    if (!currentTemplate) {
+      return {
+        items: [],
+        bgColor: "#ffffff",
+        bgImage: null,
+      };
+    }
+
+    // Si le template a des données personnalisées (API ou local)
+    if (currentTemplate.data) {
+      const data = typeof currentTemplate.data === "string" 
+        ? JSON.parse(currentTemplate.data) 
+        : currentTemplate.data;
+      
+      return {
+        items: data.items || [],
+        bgColor: data.bgColor || "#ffffff",
+        bgImage: data.bgImage || null,
+      };
+    }
+    
+    // Sinon, retourner des valeurs par défaut
+    return {
+      items: [],
+      bgColor: "#ffffff",
+      bgImage: null,
+    };
+  };
+
+  const templateData = currentTemplate ? getTemplateData() : { items: [], bgColor: "#ffffff", bgImage: null };
 
   const currentIndex = allTemplates.findIndex((t) => t.id === currentTemplate?.id);
 
@@ -86,6 +184,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                     type={currentTemplate.type}
                     colors={selectedColors}
                     scale={1}
+                    data={currentTemplate.data}
                   />
                 </div>
               </div>
@@ -160,24 +259,37 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                 </div>
               </div>
 
-              {/* Start Customizing Button */}
-              <button
-                onClick={() => {
-                  navigate("/builder");
-                  onClose();
-                }}
-                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors shadow-md mb-4"
-              >
-                Commencer la personnalisation
-              </button>
+              {/* Boutons d'action */}
+              <div className="space-y-3">
+                {/* Modifier */}
+                <button
+                  onClick={handleEdit}
+                  className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-colors shadow-md flex items-center justify-center gap-2"
+                >
+                  <Pencil className="w-5 h-5" />
+                  <span>Modifier</span>
+                </button>
 
-              {/* Preview Animation Button */}
-              <button className="w-full py-3 border-2 border-green-500 text-green-600 hover:bg-green-50 font-semibold transition-colors mb-6 flex items-center justify-center gap-2">
-                <span>Aperçu de l'animation</span>
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
+                {/* Preview */}
+                <button
+                  onClick={handlePreview}
+                  className="w-full py-3 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Eye className="w-5 h-5" />
+                  <span>Aperçu</span>
+                </button>
+
+                {/* Supprimer (seulement pour les templates custom) */}
+                {currentTemplate.isCustom && (
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-full py-3 border-2 border-red-500 text-red-600 hover:bg-red-50 font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    <span>Supprimer</span>
+                  </button>
+                )}
+              </div>
 
               {/* Info Text */}
               <div className="flex items-start gap-2 text-sm text-gray-600">
@@ -197,6 +309,28 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Dialogue de confirmation de suppression */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Supprimer le template"
+        description={`Êtes-vous sûr de vouloir supprimer "${currentTemplate.title}" ? Cette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        isDestructive={true}
+      />
+
+      {/* Modal de prévisualisation avec animation d'enveloppe */}
+      <TemplatePreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        items={templateData.items}
+        bgColor={templateData.bgColor}
+        bgImage={templateData.bgImage}
+        templateTitle={currentTemplate.title}
+      />
     </div>
   );
 };
