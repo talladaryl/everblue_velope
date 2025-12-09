@@ -5,9 +5,10 @@ import { CardDesigns } from "./CardDesigns";
 interface TemplateCardProps {
   template: any;
   onClick: () => void;
+  isLandscape?: boolean;
 }
 
-export default function TemplateCard({ template, onClick }: TemplateCardProps) {
+export default function TemplateCard({ template, onClick, isLandscape = false }: TemplateCardProps) {
   const { title, designer, colors = [], type, data } = template;
 
   return (
@@ -31,7 +32,7 @@ export default function TemplateCard({ template, onClick }: TemplateCardProps) {
       </div>
 
       {/* Card Design Preview avec effet d'ombre double décalée */}
-      <div className="relative w-full aspect-[3/4]">
+      <div className={`relative w-full ${isLandscape ? 'aspect-[4/3]' : 'aspect-[3/4]'}`}>
         {/* Ombre décalée - 2ème niveau */}
         <div 
           className="absolute top-2 left-2 w-full h-full bg-neutral-300/40"
@@ -52,11 +53,18 @@ export default function TemplateCard({ template, onClick }: TemplateCardProps) {
           
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white px-3 py-1.5 text-xs font-semibold shadow-lg">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white px-3 py-1.5 text-xs font-semibold shadow-lg rounded-full">
               Voir détails
             </span>
           </div>
         </div>
+        
+        {/* Badge "Paysage" pour les cartes en mode paysage */}
+        {isLandscape && (
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full shadow-lg uppercase tracking-wider">
+            Wide
+          </div>
+        )}
       </div>
 
       {/* Infos */}

@@ -9,15 +9,17 @@ export interface BulkSendRecipient {
 
 export interface BulkSendPayload {
   channel: "email" | "sms" | "mms" | "whatsapp";
-  subject: string; // Obligatoire pour email, requis pour tous
+  subject: string;
   message: string;
   html?: string;
   media_url?: string;
   recipients: BulkSendRecipient[];
-  event_id: number; // Obligatoire
+  event_id?: number;
   template_id?: number;
   scheduled_at?: string;
-  batch_size?: number; // Nombre d'envois par batch (défaut: 50)
+  batch_size?: number;
+  type?: string;
+  recipient_type?: string;
 }
 
 export interface BulkSendResponse {
@@ -57,69 +59,108 @@ export interface BulkSendStatus {
 }
 
 export const bulkSendService = {
-  // Envoyer en masse (email, SMS, MMS)
-  sendBulk: async (payload: BulkSendPayload): Promise<BulkSendResponse> => {
-    try {
-      // Valider les trois champs obligatoires
-      if (!payload.event_id) {
-        throw new Error("L'ID de l'événement est requis");
+  sendBulk: async (payload: any): Promise<BulkSendResponse> => {
+    // Valider le canal
+    if (!payload.channel) {
+      throw new Error("Le canal d'envoi est requis");
+    }
+
+    // Valider le sujet pour les emails
+    if (
+      payload.channel === "email" &&
+      (!payload.subject || !payload.subject.trim())
+    ) {
+      throw new Error("Le sujet est requis pour les emails");
+    }
+
+    // Valider le message
+    if (!payload.body || !payload.body.trim()) {
+      throw new Error("Le message ne peut pas être vide");
+    }
+
+    // Valider les destinataires selon le canal
+    let validRecipients: any[] = [];
+
+    if (payload.channel === "email") {
+      if (!payload.emails || payload.emails.length === 0) {
+        throw new Error("Au moins un destinataire email est requis");
       }
 
-      if (!payload.channel) {
-        throw new Error("Le canal d'envoi est requis");
-      }
-
-      if (!payload.subject || !payload.subject.trim()) {
-        throw new Error("Le sujet est requis");
-      }
-
-      // Valider le nombre de destinataires
-      if (payload.recipients.length > 500) {
-        throw new Error("Le nombre de destinataires ne peut pas dépasser 500");
-      }
-
-      if (payload.recipients.length === 0) {
-        throw new Error("Au moins un destinataire est requis");
-      }
-
-      // Valider les destinataires selon le canal
-      const validRecipients = payload.recipients.filter((r) => {
-        if (payload.channel === "email") {
-          return r.email && r.email.includes("@");
-        } else if (payload.channel === "sms" || payload.channel === "mms" || payload.channel === "whatsapp") {
-          return r.phone && r.phone.replace(/\D/g, "").length >= 10;
-        }
-        return false;
-      });
+      // Valider chaque email
+      validRecipients = payload.emails.filter(
+        (r: any) => r.email && r.email.includes("@") && r.name
+      );
 
       if (validRecipients.length === 0) {
-        throw new Error(
-          `Aucun destinataire valide pour le canal ${payload.channel}`
-        );
+        throw new Error("Aucun email valide trouvé");
+      }
+    } else if (payload.channel === "whatsapp") {
+      if (!payload.contacts || payload.contacts.length === 0) {
+        throw new Error("Au moins un contact WhatsApp est requis");
       }
 
-      const data = {
-        event_id: payload.event_id,
-        channel: payload.channel,
-        subject: payload.subject,
-        message: payload.message,
-        html: payload.html || null,
-        media_url: payload.media_url || null,
-        recipients: validRecipients,
-        template_id: payload.template_id || null,
-        scheduled_at: payload.scheduled_at || null,
-        batch_size: payload.batch_size || 50,
-      };
+      // Valider chaque numéro de téléphone
+      validRecipients = payload.contacts.filter(
+        (r: any) => r.phone && r.phone.replace(/\D/g, "").length >= 10 && r.name
+      );
 
-      const response = await api.post("/bulk-send", data);
+      if (validRecipients.length === 0) {
+        throw new Error("Aucun numéro de téléphone valide trouvé");
+      }
+    }
+
+    // Valider le nombre de destinataires
+    if (validRecipients.length > 500) {
+      throw new Error("Le nombre de destinataires ne peut pas dépasser 500");
+    }
+
+    // Préparer les données selon le format attendu par Laravel
+    const data: any = {
+      channel: payload.channel,
+      subject: payload.subject || "",
+      body: payload.body || "",
+      template_id: payload.template_id || null,
+      event_id: payload.event_id || null,
+    };
+
+    // Ajouter emails ou contacts selon le canal
+    if (payload.channel === "email") {
+      data.emails = validRecipients;
+    } else if (payload.channel === "whatsapp") {
+      data.contacts = validRecipients;
+    }
+
+    // Ajouter html si présent (pour les emails)
+    if (payload.html && payload.channel === "email") {
+      data.html = payload.html;
+    }
+
+    console.log("📤 Envoi en masse vers /mailings/send-bulk:", {
+      channel: data.channel,
+      template_id: data.template_id,
+      recipients_count: data.emails?.length || data.contacts?.length || 0,
+      has_html: !!data.html,
+      subject: data.subject || "N/A (WhatsApp)",
+    });
+
+    if (data.channel === "email") {
+      console.log("📧 Premier email:", data.emails?.[0]);
+    } else {
+      console.log("📱 Premier contact:", data.contacts?.[0]);
+    }
+
+    try {
+      const response = await api.post("/mailings/send-bulk", data);
       return response.data.data || response.data;
-    } catch (error) {
-      console.error("Erreur lors de l'envoi en masse:", error);
+    } catch (error: any) {
+      console.error("❌ Erreur lors de l'envoi en masse:", error);
+      console.error("📋 Détails de l'erreur:", error.response?.data);
+      console.error("🔍 Erreurs de validation:", error.response?.data?.errors);
+      console.error("📦 Payload envoyé:", data);
       throw error;
     }
   },
 
-  // Récupérer le statut d'un envoi en masse
   getBulkStatus: async (bulkSendId: string): Promise<BulkSendStatus> => {
     try {
       const response = await api.get(`/bulk-send/${bulkSendId}/status`);
@@ -130,8 +171,9 @@ export const bulkSendService = {
     }
   },
 
-  // Récupérer l'historique des envois en masse
-  getBulkSendHistory: async (limit: number = 50): Promise<BulkSendResponse[]> => {
+  getBulkSendHistory: async (
+    limit: number = 50
+  ): Promise<BulkSendResponse[]> => {
     try {
       const response = await api.get(`/bulk-send?limit=${limit}`);
       return response.data.data || response.data || [];
@@ -141,7 +183,6 @@ export const bulkSendService = {
     }
   },
 
-  // Annuler un envoi en masse
   cancelBulkSend: async (bulkSendId: string): Promise<void> => {
     try {
       await api.post(`/bulk-send/${bulkSendId}/cancel`);
@@ -151,7 +192,6 @@ export const bulkSendService = {
     }
   },
 
-  // Relancer les envois échoués
   retryFailedSends: async (bulkSendId: string): Promise<BulkSendResponse> => {
     try {
       const response = await api.post(`/bulk-send/${bulkSendId}/retry`);

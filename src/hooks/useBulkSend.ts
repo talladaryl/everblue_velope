@@ -28,7 +28,7 @@ interface UseBulkSendReturn {
   } | null;
   bulkSendId: string | null;
   messages: MessageDetail[] | null;
-  sendBulk: (payload: BulkSendPayload) => Promise<BulkSendResponse>;
+  sendBulk: (payload: any) => Promise<BulkSendResponse>; // CHANGÉ: any au lieu de BulkSendPayload
   checkStatus: (bulkSendId: string) => Promise<BulkSendStatus>;
   cancelSend: (bulkSendId: string) => Promise<void>;
   retryFailed: (bulkSendId: string) => Promise<BulkSendResponse>;
@@ -47,37 +47,53 @@ export const useBulkSend = (): UseBulkSendReturn => {
   const [messages, setMessages] = useState<MessageDetail[] | null>(null);
 
   const sendBulk = useCallback(
-    async (payload: BulkSendPayload): Promise<BulkSendResponse> => {
+    async (payload: any): Promise<BulkSendResponse> => {
       try {
         setSending(true);
         setError(null);
         setProgress(null);
 
-        // Valider les données
-        if (!payload.recipients || payload.recipients.length === 0) {
-          throw new Error("Aucun destinataire fourni");
+        // VALIDATION CORRIGÉE : Vérifier emails OU contacts selon le canal
+        if (payload.channel === "email") {
+          if (!payload.emails || payload.emails.length === 0) {
+            throw new Error("Aucun destinataire email fourni");
+          }
+        } else if (payload.channel === "whatsapp") {
+          if (!payload.contacts || payload.contacts.length === 0) {
+            throw new Error("Aucun contact WhatsApp fourni");
+          }
+        } else {
+          throw new Error(`Canal ${payload.channel} non supporté`);
         }
 
-        if (payload.recipients.length > 500) {
-          throw new Error("Le nombre de destinataires ne peut pas dépasser 500");
-        }
-
-        if (!payload.message || !payload.message.trim()) {
+        // Validation du message
+        if (!payload.body || !payload.body.trim()) {
           throw new Error("Le message ne peut pas être vide");
         }
 
-        if (payload.channel === "email" && !payload.subject) {
+        // Validation du sujet pour email
+        if (
+          payload.channel === "email" &&
+          (!payload.subject || !payload.subject.trim())
+        ) {
           throw new Error("Le sujet est requis pour les emails");
         }
 
+        // Appel au service
         const response = await bulkSendService.sendBulk(payload);
+
         setBulkSendId(response.id);
         if (response.messages) {
           setMessages(response.messages);
         }
 
         toast.success(
-          `Envoi lancé! ${response.total_recipients} destinataire(s) en attente`
+          `Envoi lancé! ${
+            response.total_recipients ||
+            payload.emails?.length ||
+            payload.contacts?.length ||
+            0
+          } destinataire(s) en attente`
         );
 
         return response;

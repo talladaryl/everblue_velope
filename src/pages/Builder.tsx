@@ -65,6 +65,7 @@ import StepSendImproved from "./builder/StepSendImproved";
 // Importation du modal de sauvegarde
 import { SaveTemplateModal } from "@/components/SaveTemplateModal";
 import { useSaveTemplate } from "@/hooks/useSaveTemplate";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 // Types
 interface EditorItemBase {
@@ -105,6 +106,7 @@ interface Guest {
   time?: string;
   plus_one_allowed?: boolean;
 }
+
 interface BuilderTemplate {
   id: string;
   name: string;
@@ -176,7 +178,7 @@ function Builder() {
   const [bgImage, setBgImage] = useState<string | null>(null);
 
   const [items, setItems] = useState<EditorItem[]>([initialText()]);
-  const [selectedId, setSelectedId] = useState<string | null>(items[0].id);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [templates, setTemplates] =
     useState<BuilderTemplate[]>(defaultTemplates);
 
@@ -209,29 +211,43 @@ function Builder() {
   const [templateId, setTemplateId] = useState<number | null>(null);
   const [eventId, setEventId] = useState<number | null>(null);
   const [previewModel, setPreviewModel] = useState<string>("default");
-  
+
   // Modèle de prévisualisation sélectionné (pour l'envoi)
   const [selectedModelId, setSelectedModelId] = useState<string>("default");
 
-  // État pour la sauvegarde - GÉRÉ DIRECTEMENT ICI
+  // État pour la sauvegarde
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // État pour le loader
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Chargement...");
 
   // Hook de sauvegarde
   const { saving, saveTemplate, updateTemplate } = useSaveTemplate();
 
-  const selected = useMemo(
-    () => items.find((i) => i.id === selectedId) || null,
-    [items, selectedId]
-  );
+  // Correction: Gestion sécurisée de selected
+  const selected = useMemo(() => {
+    if (!selectedId || !items?.length) return null;
+    return items.find((i) => i?.id === selectedId) || null;
+  }, [items, selectedId]);
+
+  // Initialiser selectedId avec le premier item
+  useEffect(() => {
+    if (items?.length > 0 && !selectedId) {
+      setSelectedId(items[0]?.id || null);
+    }
+  }, [items, selectedId]);
 
   // Extraire les variables du contenu (utile pour la sauvegarde)
   const extractVariables = (): string[] => {
     const variables = new Set<string>();
     const regex = /\{\{(\w+)\}\}/g;
 
+    if (!items || !Array.isArray(items)) return [];
+
     items.forEach((item: any) => {
-      if (item.type === "text" && item.text) {
+      if (item?.type === "text" && item.text) {
         let match: RegExpExecArray | null;
         while ((match = regex.exec(item.text)) !== null) {
           variables.add(match[1]);
@@ -245,9 +261,17 @@ function Builder() {
   // Gérer la sauvegarde du template
   const handleSaveTemplate = async (payload: any) => {
     try {
+      // Validation des données
+      if (!payload || !payload.title) {
+        toast.error("Erreur de validation", {
+          description: "Le titre du template est requis.",
+        });
+        return;
+      }
+
       // Préparer les données du template
       const templateData = {
-        items: JSON.parse(JSON.stringify(items || [])),
+        items: items ? JSON.parse(JSON.stringify(items)) : [],
         bgColor: bgColor || "#F3F4F6",
         bgImage: bgImage || null,
         selectedModelId: selectedModelId || "default",
@@ -277,7 +301,7 @@ function Builder() {
       };
 
       let savedTemplate;
-      
+
       if (templateId) {
         // Mise à jour d'un template existant
         console.log("🔄 Mise à jour du template ID:", templateId);
@@ -286,7 +310,7 @@ function Builder() {
         // Création d'un nouveau template
         console.log("✨ Création d'un nouveau template");
         savedTemplate = await saveTemplate(savePayload);
-        
+
         // Stocker l'ID du template nouvellement créé
         if (savedTemplate && savedTemplate.id) {
           console.log("✅ Template créé avec ID:", savedTemplate.id);
@@ -298,50 +322,57 @@ function Builder() {
       toast.success("Template sauvegardé avec succès!", {
         description: `"${payload.title}" a été sauvegardé.`,
       });
-      
-      // Rediriger vers la page Designs après 1.5 secondes
+
+      // Fermer le modal après un court délai (pas de redirection)
       setTimeout(() => {
         setSavedSuccess(false);
         setShowSaveModal(false);
-        navigate("/designs");
       }, 1500);
     } catch (error: any) {
       console.error("❌ Erreur sauvegarde:", error);
       toast.error("Erreur de sauvegarde", {
-        description: error.response?.data?.message || "Impossible de sauvegarder le template.",
+        description:
+          error.response?.data?.message ||
+          "Impossible de sauvegarder le template.",
       });
     }
   };
 
-  // Drag handlers
+  // Drag handlers avec validations
   const onMouseDown = (e: React.MouseEvent, id: string) => {
     const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const item = items.find((i) => i.id === id);
+    if (!rect || !id) return;
+
+    const item = items?.find((i) => i?.id === id);
     if (!item) return;
+
     setSelectedId(id);
-    const offsetX = e.clientX - (rect.left + item.x);
-    const offsetY = e.clientY - (rect.top + item.y);
+    const offsetX = e.clientX - (rect.left + (item.x || 0));
+    const offsetY = e.clientY - (rect.top + (item.y || 0));
     dragRef.current = { id, offsetX, offsetY };
   };
 
   const onMouseMove = (e: React.MouseEvent) => {
-    if (!dragRef.current) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!dragRef.current || !canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
     if (!rect) return;
+
     const { id, offsetX, offsetY } = dragRef.current;
     const x = e.clientX - rect.left - offsetX;
     const y = e.clientY - rect.top - offsetY;
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id
-          ? ({
-              ...it,
-              x: Math.max(0, Math.min(x, rect.width - 10)),
-              y: Math.max(0, Math.min(y, rect.height - 10)),
-            } as EditorItem)
-          : it
-      )
+
+    setItems(
+      (prev) =>
+        prev?.map((it) =>
+          it?.id === id
+            ? ({
+                ...it,
+                x: Math.max(0, Math.min(x, rect.width - 10)),
+                y: Math.max(0, Math.min(y, rect.height - 10)),
+              } as EditorItem)
+            : it
+        ) || []
     );
   };
 
@@ -354,10 +385,12 @@ function Builder() {
     const name = prompt("Nom du modèle:");
     if (!name) return;
 
-    const palette = items
-      .filter((item) => item.type === "text")
-      .slice(0, 3)
-      .map((item) => (item as TextItem).color);
+    const palette =
+      items
+        ?.filter((item) => item?.type === "text")
+        ?.slice(0, 3)
+        ?.map((item) => (item as TextItem)?.color)
+        ?.filter(Boolean) || [];
 
     const defaults = ["#3B82F6", "#10B981", "#8B5CF6"];
     while (palette.length < 3) {
@@ -368,13 +401,13 @@ function Builder() {
       id: nanoid(),
       name,
       description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
-      bgColor,
-      bgImage: bgImage ?? null,
-      items: JSON.parse(JSON.stringify(items)),
+      bgColor: bgColor || "#F3F4F6",
+      bgImage: bgImage || null,
+      items: items ? JSON.parse(JSON.stringify(items)) : [],
       createdAt: new Date(),
       palette,
       isCustom: true,
-    } as unknown as BuilderTemplate;
+    } as BuilderTemplate;
 
     try {
       if (generateThumbnail) {
@@ -396,7 +429,7 @@ function Builder() {
 
     try {
       await saveTemplate(newTemplate);
-      setTemplates((prev) => [...prev, newTemplate]);
+      setTemplates((prev) => [...(prev || []), newTemplate]);
       toast("Modèle sauvegardé", {
         description: `"${name}" a été ajouté à vos modèles.`,
       });
@@ -410,10 +443,12 @@ function Builder() {
     if (!name) return;
 
     try {
-      const palette = items
-        .filter((item) => item.type === "text")
-        .slice(0, 3)
-        .map((item) => (item as TextItem).color);
+      const palette =
+        items
+          ?.filter((item) => item?.type === "text")
+          ?.slice(0, 3)
+          ?.map((item) => (item as TextItem)?.color)
+          ?.filter(Boolean) || [];
 
       const defaults = ["#3B82F6", "#10B981", "#8B5CF6"];
       while (palette.length < 3) {
@@ -424,23 +459,19 @@ function Builder() {
         id: nanoid(),
         name,
         description: `Modèle personnalisé créé le ${new Date().toLocaleDateString()}`,
-        bgColor,
-        bgImage: bgImage ?? null,
-        items: JSON.parse(JSON.stringify(items)),
+        bgColor: bgColor || "#F3F4F6",
+        bgImage: bgImage || null,
+        items: items ? JSON.parse(JSON.stringify(items)) : [],
         createdAt: new Date(),
         palette,
         isCustom: true,
-      } as unknown as BuilderTemplate;
+      } as BuilderTemplate;
 
       await saveTemplate(newTemplate);
 
       toast("Modèle sauvegardé", {
-        description: `"${name}" a été ajouté à vos modèles. Redirection vers Designs...`,
+        description: `"${name}" a été ajouté à vos modèles.`,
       });
-
-      setTimeout(() => {
-        navigate("/designs");
-      }, 1500);
     } catch (err) {
       console.error("Erreur lors de la sauvegarde:", err);
       toast("Erreur", {
@@ -450,11 +481,14 @@ function Builder() {
   };
 
   const loadTemplate = (template: BuilderTemplate) => {
+    if (!template) return;
+
     if (template.bgImage) {
       setBgImage(template.bgImage);
     } else {
       setBgImage(null);
     }
+
     if (
       typeof template.bgColor === "string" &&
       template.bgColor.startsWith("url(")
@@ -464,11 +498,12 @@ function Builder() {
         const url = match[1].replace(/^['"]|['"]$/g, "");
         setBgImage(url);
       } else {
-        setBgColor(template.bgColor);
+        setBgColor(template.bgColor || "#F3F4F6");
       }
     } else {
-      setBgColor(template.bgColor);
+      setBgColor(template.bgColor || "#F3F4F6");
     }
+
     setItems(JSON.parse(JSON.stringify(template.items || [])));
     setSelectedId(template.items?.[0]?.id || null);
     toast("Modèle chargé", { description: `"${template.name}" appliqué.` });
@@ -476,77 +511,131 @@ function Builder() {
 
   // Charger un template depuis l'API (avec structure complète)
   const loadTemplateFromAPI = (apiTemplate: any) => {
+    if (!apiTemplate) return;
+
     console.log("🔄 loadTemplateFromAPI appelé avec:", apiTemplate);
-    
+
     // Utiliser "data" au lieu de "structure" (nouveau format)
-    const templateData = typeof apiTemplate.data === "string" 
-      ? JSON.parse(apiTemplate.data) 
-      : apiTemplate.data || {};
-    
-    console.log("📦 Données du template:", templateData);
-    
-    // Charger les items
-    if (templateData.items && Array.isArray(templateData.items)) {
-      console.log("✅ Chargement de", templateData.items.length, "items");
-      setItems(JSON.parse(JSON.stringify(templateData.items)));
-      setSelectedId(templateData.items[0]?.id || null);
-    } else {
-      console.warn("⚠️ Aucun item trouvé");
-      setItems([]);
+    let templateData = {};
+    try {
+      templateData =
+        typeof apiTemplate.data === "string"
+          ? JSON.parse(apiTemplate.data)
+          : apiTemplate.data || {};
+    } catch (error) {
+      console.error("❌ Erreur parsing JSON:", error);
+      templateData = {};
     }
-    
+
+    console.log("📦 Données parsées du template:", templateData);
+
+    // Charger les items - vérifier plusieurs emplacements possibles
+    let itemsToLoad: any[] = [];
+
+    if (
+      templateData.items &&
+      Array.isArray(templateData.items) &&
+      templateData.items.length > 0
+    ) {
+      console.log(
+        "✅ Items trouvés dans templateData.items:",
+        templateData.items.length
+      );
+      itemsToLoad = templateData.items;
+    } else if (
+      apiTemplate.items &&
+      Array.isArray(apiTemplate.items) &&
+      apiTemplate.items.length > 0
+    ) {
+      console.log(
+        "✅ Items trouvés dans apiTemplate.items:",
+        apiTemplate.items.length
+      );
+      itemsToLoad = apiTemplate.items;
+    } else {
+      console.warn("⚠️ Aucun item trouvé - création d'un item par défaut");
+      itemsToLoad = [initialText()];
+    }
+
+    // S'assurer que tous les items ont un ID
+    itemsToLoad = itemsToLoad.map((item) => ({
+      ...item,
+      id: item?.id || nanoid(),
+    }));
+
+    console.log("📝 Items à charger:", itemsToLoad.length);
+    setItems(JSON.parse(JSON.stringify(itemsToLoad)));
+    setSelectedId(itemsToLoad[0]?.id || null);
+
     // Charger bgColor
     if (templateData.bgColor) {
-      console.log("🎨 bgColor:", templateData.bgColor);
+      console.log("🎨 bgColor chargé:", templateData.bgColor);
       setBgColor(templateData.bgColor);
     } else {
-      setBgColor("#ffffff");
+      console.log("🎨 bgColor par défaut: #F3F4F6");
+      setBgColor("#F3F4F6");
     }
-    
+
     // Charger bgImage
     if (templateData.bgImage) {
-      console.log("🖼️ bgImage chargé");
+      console.log(
+        "🖼️ bgImage chargé:",
+        templateData.bgImage.substring(0, 50) + "..."
+      );
       setBgImage(templateData.bgImage);
     } else {
+      console.log("🖼️ Pas de bgImage");
       setBgImage(null);
     }
-    
+
     // Charger selectedModelId
     if (templateData.selectedModelId) {
-      console.log("📋 selectedModelId:", templateData.selectedModelId);
-      setSelectedModelId(templateData.selectedModelId);
+      console.log(
+        "📋 selectedModelId depuis data:",
+        templateData.selectedModelId
+      );
+      setSelectedModelId(String(templateData.selectedModelId));
+    } else if (apiTemplate.model_preview_id) {
+      console.log(
+        "📋 model_preview_id depuis template:",
+        apiTemplate.model_preview_id
+      );
+      setSelectedModelId(String(apiTemplate.model_preview_id));
+    } else {
+      console.log("📋 selectedModelId par défaut: default");
+      setSelectedModelId("default");
     }
-    
+
     // Stocker l'ID du template pour les mises à jour
     if (apiTemplate.id) {
-      console.log("🆔 Template ID stocké:", apiTemplate.id);
+      console.log("🆔 Template ID stocké pour mises à jour:", apiTemplate.id);
       setTemplateId(apiTemplate.id);
     }
-    
-    // Stocker le model_preview_id si présent
-    if (apiTemplate.model_preview_id) {
-      console.log("📋 model_preview_id:", apiTemplate.model_preview_id);
-      setSelectedModelId(String(apiTemplate.model_preview_id));
-    }
-    
-    toast.success("Modèle chargé avec succès!", { 
-      description: `"${apiTemplate.title}" chargé avec ${templateData.items?.length || 0} éléments.` 
+
+    toast.success("Modèle chargé avec succès!", {
+      description: `"${apiTemplate.title || "Modèle sans nom"}" chargé avec ${
+        itemsToLoad.length
+      } éléments.`,
     });
+
+    console.log("✅ Chargement terminé!");
   };
 
   const deleteTemplate = (templateId: string) => {
-    setTemplates((prev) => prev.filter((t) => t.id !== templateId));
+    setTemplates((prev) => prev?.filter((t) => t?.id !== templateId) || []);
     toast("Modèle supprimé");
   };
 
   // Controls actions
   const addText = () => {
     const t = initialText();
-    setItems((prev) => [...prev, t]);
+    setItems((prev) => [...(prev || []), t]);
     setSelectedId(t.id);
   };
 
   const addImage = (file: File, isBackground: boolean = false) => {
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = () => {
       const imgEl = new window.Image();
@@ -564,7 +653,7 @@ function Builder() {
             height: Math.min(180, imgEl.height),
             isBackground: false,
           };
-          setItems((prev) => [...prev, item]);
+          setItems((prev) => [...(prev || []), item]);
           setSelectedId(item.id);
         }
       };
@@ -580,21 +669,24 @@ function Builder() {
   };
 
   const replaceImage = (file: File, id: string) => {
+    if (!file || !id) return;
+
     const reader = new FileReader();
     reader.onload = () => {
       const imgEl = new window.Image();
       imgEl.onload = () => {
-        setItems((prev) =>
-          prev.map((it) =>
-            it.id === id && it.type === "image"
-              ? ({
-                  ...(it as ImageItem),
-                  src: String(reader.result),
-                  width: Math.min(800, imgEl.width),
-                  height: Math.min(800, imgEl.height),
-                } as ImageItem)
-              : it
-          )
+        setItems(
+          (prev) =>
+            prev?.map((it) =>
+              it?.id === id && it.type === "image"
+                ? ({
+                    ...(it as ImageItem),
+                    src: String(reader.result),
+                    width: Math.min(800, imgEl.width),
+                    height: Math.min(800, imgEl.height),
+                  } as ImageItem)
+                : it
+            ) || []
         );
       };
       imgEl.onerror = () => {
@@ -607,12 +699,14 @@ function Builder() {
 
   const removeSelected = () => {
     if (!selectedId) return;
-    setItems((prev) => prev.filter((i) => i.id !== selectedId));
+    setItems((prev) => prev?.filter((i) => i?.id !== selectedId) || []);
     setSelectedId(null);
   };
 
   // Guests import - extended to parse location/date/time if present
   const handleCSV = (file: File) => {
+    if (!file) return;
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -628,8 +722,8 @@ function Builder() {
           const timeField = String(r.time || r.heure || r.Heure || "").trim();
           return {
             id: nanoid(),
-            name,
-            email,
+            name: name || "Invité",
+            email: email || "",
             valid: emailRegex.test(email),
             location: locationField || undefined,
             date: dateField || undefined,
@@ -647,12 +741,12 @@ function Builder() {
 
   const addGuest = () =>
     setGuests((g) => [
-      ...g,
+      ...(g || []),
       {
         id: nanoid(),
         name: "Invité",
         email: "email@example.com",
-        valid: true,
+        valid: false,
         location: "",
         date: "",
         time: "",
@@ -660,34 +754,36 @@ function Builder() {
     ]);
 
   const applyPaperTheme = (theme: PaperTheme) => {
-    if (theme.value && theme.value.startsWith("url(")) {
+    if (theme?.value && theme.value.startsWith("url(")) {
       setBgImage(theme.value);
     } else {
-      setBgColor(theme.value);
+      setBgColor(theme?.value || "#F3F4F6");
       setBgImage(null);
     }
   };
 
   const handleInsertVariable = (variable: string) => {
-    if (selected && selected.type === "text") {
-      const textItem = selected as TextItem;
-      const newText = textItem.text + variable;
+    if (!selected || selected.type !== "text" || !selectedId) return;
 
-      setItems((prev) =>
-        prev.map((p) =>
-          p.id === selectedId
+    const textItem = selected as TextItem;
+    const newText = (textItem.text || "") + variable;
+
+    setItems(
+      (prev) =>
+        prev?.map((p) =>
+          p?.id === selectedId
             ? ({
                 ...(p as TextItem),
                 text: newText,
               } as EditorItem)
             : p
-        )
-      );
-    }
+        ) || []
+    );
   };
 
   const replaceVariables = (text: string, guest?: any) => {
-    if (!guest) return text;
+    if (!text || !guest) return text || "";
+
     return text.replace(
       /{{\s*([\w]+)\s*}}|{\s*([\w]+)\s*}|%([\w]+)%/g,
       (_m, g1, g2, g3) => {
@@ -707,93 +803,122 @@ function Builder() {
     );
   };
 
+  // Chargement initial des templates
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     let tid = params.get("template");
     if (!tid) {
       console.log("ℹ️ Aucun template ID dans l'URL");
+      setIsLoading(false);
       return;
     }
-    
-    console.log("🔍 Chargement du template ID:", tid);
-    
+
+    console.log("🔍 Chargement du template ID:", tid, "Type:", typeof tid);
+
     (async () => {
+      // Afficher le loader
+      setIsLoading(true);
+      setLoadingMessage("Chargement du modèle...");
+
       try {
         // Vérifier si c'est un template par défaut
-        const foundDefault = defaultTemplates.find((t) => t.id === tid);
+        const foundDefault = defaultTemplates.find((t) => t?.id === tid);
         if (foundDefault) {
-          console.log("✅ Template par défaut trouvé");
+          console.log("✅ Template par défaut trouvé:", foundDefault.name);
           loadTemplate(foundDefault);
           return;
         }
-        
+
         // Nettoyer l'ID si nécessaire (retirer "api-" ou "local-")
         let cleanId = tid;
         if (tid.startsWith("api-")) {
           cleanId = tid.replace("api-", "");
-          console.log("🔄 ID nettoyé:", cleanId);
+          console.log("🔄 ID nettoyé: api-" + cleanId + " → " + cleanId);
         }
-        
+
         // Vérifier si c'est un ID numérique (template API)
         const numericId = parseInt(cleanId, 10);
         if (!isNaN(numericId)) {
-          console.log("🌐 Chargement depuis l'API avec ID:", numericId);
-          const { templateService } = await import("@/api/services/templateService");
+          console.log(
+            "🌐 Chargement depuis l'API avec ID numérique:",
+            numericId
+          );
+          const { templateService } = await import(
+            "@/api/services/templateService"
+          );
           const apiTemplate = await templateService.getTemplate(numericId);
+
           if (apiTemplate) {
-            console.log("✅ Template API chargé");
+            console.log("✅ Template API chargé:", apiTemplate.title);
             loadTemplateFromAPI(apiTemplate);
             return;
           } else {
-            console.warn("⚠️ Template non trouvé dans l'API");
+            console.warn(
+              "⚠️ Template non trouvé dans l'API pour ID:",
+              numericId
+            );
+            toast.error("Template introuvable", {
+              description: `Le template avec l'ID ${numericId} n'existe pas.`,
+            });
           }
+        } else {
+          console.log(
+            "💾 ID non numérique, recherche dans le stockage local..."
+          );
         }
-        
+
         // Fallback: chercher dans le stockage local
-        console.log("💾 Recherche dans le stockage local...");
+        console.log("💾 Recherche dans le stockage local pour ID:", tid);
         const saved = (await Promise.resolve(getTemplates())) || [];
         const foundSaved = Array.isArray(saved)
-          ? saved.find((t: any) => t.id === tid)
+          ? saved.find((t: any) => t?.id === tid)
           : undefined;
         if (foundSaved) {
-          console.log("✅ Template local trouvé");
+          console.log("✅ Template local trouvé:", foundSaved.name);
           loadTemplate(foundSaved);
         } else {
-          console.warn("⚠️ Template introuvable");
+          console.warn("⚠️ Template introuvable dans le stockage local");
           toast.error("Template introuvable", {
-            description: `Le template "${tid}" n'a pas été trouvé.`
+            description: `Le template "${tid}" n'a pas été trouvé.`,
           });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("❌ Erreur chargement template:", err);
+        console.error("Détails:", err.response?.data || err.message);
         toast.error("Erreur de chargement", {
-          description: "Impossible de charger le template."
+          description:
+            err.response?.data?.message || "Impossible de charger le template.",
         });
+      } finally {
+        // Masquer le loader après un court délai pour une transition fluide
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
       }
     })();
   }, [location.search]);
 
-// Nouveau StepNav compact, professionnel et CENTRÉ
-const StepNav = () => {
-  const labels = ["Design", "Détails", "Prévisualisation", "Envoi"];
-  const icons = [
-    <Palette className="h-3.5 w-3.5" />,
-    <Type className="h-3.5 w-3.5" />,
-    <Eye className="h-3.5 w-3.5" />,
-    <Send className="h-3.5 w-3.5" />,
-  ];
+  // Nouveau StepNav compact, professionnel et CENTRÉ
+  const StepNav = () => {
+    const labels = ["Design", "Détails", "Prévisualisation", "Envoi"];
+    const icons = [
+      <Palette className="h-3.5 w-3.5" />,
+      <Type className="h-3.5 w-3.5" />,
+      <Eye className="h-3.5 w-3.5" />,
+      <Send className="h-3.5 w-3.5" />,
+    ];
 
-  return (
-    <nav className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 mx-auto w-fit">
-      {labels.map((label, i) => {
-        const isActive = step === i;
-        const isCompleted = step > i;
+    return (
+      <nav className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 mx-auto w-fit">
+        {labels.map((label, i) => {
+          const isActive = step === i;
+          const isCompleted = step > i;
 
-        return (
-          <button
-            key={label}
-            onClick={() => setStep(i as Step)}
-            className={`
+          return (
+            <button
+              key={label}
+              onClick={() => setStep(i as Step)}
+              className={`
               relative flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 rounded text-xs font-medium transition-all
               min-w-[70px] sm:min-w-[95px]
               ${
@@ -802,19 +927,19 @@ const StepNav = () => {
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }
             `}
-            aria-current={isActive ? "step" : undefined}
-            title={label}
-          >
-            {/* Indicateur de progression */}
-            {isCompleted && !isActive && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-[8px] text-white">✓</span>
-              </div>
-            )}
+              aria-current={isActive ? "step" : undefined}
+              title={label}
+            >
+              {/* Indicateur de progression */}
+              {isCompleted && !isActive && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-[8px] text-white">✓</span>
+                </div>
+              )}
 
-            {/* Contenu */}
-            <div
-              className={`
+              {/* Contenu */}
+              <div
+                className={`
               ${
                 isActive
                   ? "text-white"
@@ -823,17 +948,18 @@ const StepNav = () => {
                   : "text-gray-500"
               }
             `}
-            >
-              {icons[i]}
-            </div>
-            <span className="hidden sm:inline font-medium">{label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-};
+              >
+                {icons[i]}
+              </div>
+              <span className="hidden sm:inline font-medium">{label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    );
+  };
 
+  // Préparer le contexte avec toutes les vérifications
   const ctx = {
     step,
     setStep,
@@ -841,10 +967,11 @@ const StepNav = () => {
     onMouseMove,
     onMouseUp,
     onMouseDown,
-    items,
+    items: items || [],
     setItems,
     selectedId,
     setSelectedId,
+    selected,
     addText,
     addImage,
     replaceImage,
@@ -852,15 +979,15 @@ const StepNav = () => {
     setShowTextVariables,
     setBgColor,
     setBgImage,
-    bgColor,
+    bgColor: bgColor || "#F3F4F6",
     bgImage,
-    templates,
+    templates: templates || [],
     setTemplates,
     loadTemplate,
     deleteTemplate,
     handleSaveTemplate: handleSaveTemplateOld, // ancienne méthode
     handleSaveAndGoHome,
-    guests,
+    guests: guests || [],
     setGuests,
     validCount,
     handleCSV,
@@ -883,6 +1010,11 @@ const StepNav = () => {
     selectedModelId,
     setSelectedModelId,
   };
+
+  // Si loading, afficher seulement le spinner
+  if (isLoading) {
+    return <LoadingSpinner message={loadingMessage} size="lg" />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -959,20 +1091,24 @@ const StepNav = () => {
         />
       )}
 
-      {/* Modal de sauvegarde - GÉRÉ DIRECTEMENT DANS BUILDER */}
+      {/* Modal de sauvegarde */}
       <SaveTemplateModal
         open={showSaveModal}
         onOpenChange={setShowSaveModal}
         onSave={handleSaveTemplate}
         loading={saving}
         data={{
-          items,
-          bgColor,
-          bgImage,
-          selectedModelId,
+          items: items || [],
+          bgColor: bgColor || "#F3F4F6",
+          bgImage: bgImage || null,
+          selectedModelId: selectedModelId || "default",
           variables: extractVariables(),
         }}
-        modelPreviewId={selectedModelId && selectedModelId !== "default" ? parseInt(selectedModelId, 10) : null}
+        modelPreviewId={
+          selectedModelId && selectedModelId !== "default"
+            ? parseInt(selectedModelId, 10)
+            : null
+        }
       />
     </div>
   );

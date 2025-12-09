@@ -49,6 +49,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { generateModelHTML } from "@/utils/modelGenerator";
 
 interface StepSendProps {
   ctx: any;
@@ -85,9 +86,6 @@ const MESSAGE_TEMPLATES = {
       "Cher(e) {name},\n\nC'est avec plaisir que je vous invite à rejoindre cet événement spécial.",
   },
 };
-
-// Import de la fonction pour générer l'HTML du modèle
-import { generateModelHTML } from "@/utils/modelGenerator";
 
 // Import des composants de prévisualisation des modèles
 import {
@@ -455,120 +453,193 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     }
   };
 
-  // Envoyer en masse DIRECTEMENT - PAS DE MODALE ÉVÉNEMENT
-  const handleSendBulk = async () => {
-    // Validation finale avant envoi
-    const validation = validateRequiredFields();
-    if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
+const handleSendBulk = async () => {
+  // Validation finale avant envoi
+  const validation = validateRequiredFields();
+  if (!validation.valid) {
+    toast.error(validation.error);
+    return;
+  }
 
-    if (!sendMethod) {
-      toast.error("Le canal d'envoi est manquant");
-      return;
-    }
+  // Valider canal
+  if (!sendMethod) {
+    toast.error("Le canal d'envoi est manquant");
+    return;
+  }
 
-    let subject = "";
-    let recipients = [];
+  // ========================================
+  // RÉCUPÉRATION DU TEMPLATE_ID
+  // ========================================
+  let resolvedTemplateId: number | null = null;
 
-    if (sendMode === "group") {
-      subject = groupMessage.subject;
-      // Filtrer les invités selon le canal d'envoi groupé
-      recipients = validGuests
-        .filter((guest: Guest) => {
-          if (groupMessage.channel === "whatsapp") {
-            return guest.channel === "whatsapp" && guest.phone;
-          } else {
-            return guest.channel === "email" && guest.email;
-          }
-        })
+  // Prendre le templateId du contexte
+  if (templateId && !isNaN(Number(templateId)) && Number(templateId) > 0) {
+    resolvedTemplateId = Number(templateId);
+    console.log("✅ TemplateId:", resolvedTemplateId);
+  }
+
+  // ========================================
+  // GÉNÉRER L'HTML DE LA CARD ANIMÉE
+  // ========================================
+  console.log("🎨 Génération HTML de la card animée...");
+  
+  // Prendre un invité exemple pour générer l'HTML
+  const exampleGuest = validGuests[0] || { 
+    name: "Invité", 
+    email: "invite@example.com",
+    full_name: "Invité"
+  };
+
+  // Générer l'HTML EXACT de la card (identique à "Aperçu du message")
+  const cardHTML = generateModelHTML(
+    selectedModelId || "default",
+    items,
+    bgColor,
+    exampleGuest
+  );
+
+  console.log("✅ HTML généré (card animée):", {
+    longueur: cardHTML.length,
+    preview: cardHTML.substring(0, 150) + "..."
+  });
+
+  // ========================================
+  // CONSTRUIRE LES DESTINATAIRES
+  // ========================================
+  let emails: any[] = [];
+  let contacts: any[] = [];
+
+  if (sendMode === "group") {
+    if (groupMessage.channel === "whatsapp") {
+      contacts = validGuests
+        .filter((guest: Guest) => guest.channel === "whatsapp" && guest.phone)
         .map((guest: Guest) => ({
-          name: guest.full_name || guest.name || "Invité",
-          email: guest.email || "",
           phone: guest.phone || "",
-          variables: {
-            nom: guest.full_name || guest.name || "",
-            email: guest.email || "",
-            phone: guest.phone || "",
-            lieu: guest.location || "",
-            date: guest.date || "",
-            heure: guest.time || "",
-          },
+          name: guest.full_name || guest.name || "Invité",
         }));
     } else {
-      // Envoi personnalisé
-      recipients = validGuests
-        .filter((guest: Guest) => personalizedMessages[guest.id!]?.customized)
+      emails = validGuests
+        .filter((guest: Guest) => guest.channel === "email" && guest.email)
         .map((guest: Guest) => ({
-          name: guest.full_name || guest.name || "Invité",
           email: guest.email || "",
+          name: guest.full_name || guest.name || "Invité",
+        }));
+    }
+  } else {
+    const customizedGuests = validGuests.filter(
+      (guest: Guest) => personalizedMessages[guest.id!]?.customized
+    );
+
+    if (sendMethod === "email") {
+      emails = customizedGuests
+        .filter((guest: Guest) => guest.email && guest.email.includes("@"))
+        .map((guest: Guest) => ({
+          email: guest.email || "",
+          name: guest.full_name || guest.name || "Invité",
+        }));
+    } else if (sendMethod === "whatsapp") {
+      contacts = customizedGuests
+        .filter((guest: Guest) => guest.phone && guest.phone.replace(/\D/g, "").length >= 10)
+        .map((guest: Guest) => ({
           phone: guest.phone || "",
-          subject:
-            personalizedMessages[guest.id!]?.subject || "Vous êtes invité!",
-          message: personalizedMessages[guest.id!]?.message || "",
-          channel: guest.channel,
-          variables: {
-            nom: guest.full_name || guest.name || "",
-            email: guest.email || "",
-            phone: guest.phone || "",
-            lieu: guest.location || "",
-            date: guest.date || "",
-            heure: guest.time || "",
-          },
+          name: guest.full_name || guest.name || "Invité",
+        }));
+    }
+  }
+
+  // Vérifier qu'on a des destinataires
+  if ((sendMethod === "email" && emails.length === 0) || 
+      (sendMethod === "whatsapp" && contacts.length === 0)) {
+    toast.error(`Aucun destinataire ${sendMethod} valide trouvé`);
+    return;
+  }
+
+  try {
+    // ========================================
+    // PAYLOAD ULTRA SIMPLE POUR ÉVITER LES ERREURS
+    // ========================================
+    const payload: any = {
+      channel: sendMethod,
+      subject: sendMode === "group" ? groupMessage.subject : "Vous êtes invité!",
+      body: sendMode === "group" 
+        ? groupMessage[groupMessage.channel] 
+        : (personalizedMessages[validGuests[0]?.id!]?.message || "Vous êtes invité!"),
+    };
+
+    // Template ID (facultatif)
+    if (templateId && !isNaN(Number(templateId))) {
+      payload.template_id = Number(templateId);
+    }
+
+    // Event ID
+    if (selectedEventId !== "new" && selectedEventId) {
+      payload.event_id = parseInt(String(selectedEventId), 10);
+    }
+
+    // Ajouter emails ou contacts
+    if (sendMethod === "email") {
+      payload.emails = validGuests
+        .filter((guest: Guest) => guest.email && guest.email.includes("@"))
+        .map((guest: Guest) => ({
+          email: guest.email || "",
+          name: guest.full_name || guest.name || "Invité",
+        }));
+      
+      // HTML DE LA CARD ANIMÉE
+      const exampleGuest = validGuests[0] || { name: "Invité", email: "invite@example.com" };
+      const cardHTML = generateModelHTML(
+        selectedModelId || "default",
+        items,
+        bgColor,
+        exampleGuest
+      );
+      
+      payload.html = cardHTML;
+      
+    } else if (sendMethod === "whatsapp") {
+      payload.contacts = validGuests
+        .filter((guest: Guest) => guest.phone && guest.phone.replace(/\D/g, "").length >= 10)
+        .map((guest: Guest) => ({
+          phone: guest.phone || "",
+          name: guest.full_name || guest.name || "Invité",
         }));
     }
 
-    if (recipients.length === 0) {
-      toast.error("Aucun destinataire valide pour l'envoi");
-      return;
+    // LOG SIMPLE
+    console.log("📤 Envoi simple:", {
+      channel: payload.channel,
+      destinataires: payload.emails?.length || payload.contacts?.length || 0,
+      hasHtml: !!payload.html
+    });
+
+    const response = await sendBulk(payload);
+
+    // Mettre à jour l'UI
+    setTotalCount(response.total_recipients || 0);
+    setSentCount(response.sent_count || 0);
+    setFailedCount(response.failed_count || 0);
+    setPendingCount(response.pending_count || 0);
+
+    if (response.messages) {
+      const converted = convertToMessageStatus(response.messages, sendMethod);
+      setStatusMessages(converted);
     }
 
-    try {
-      // Construire le payload selon le mode
-      const payload: any = {
-        channel: sendMethod,
-        subject: subject,
-        recipients,
-        batch_size: 50,
-        event_id: selectedEventId === "new" ? null : parseInt(selectedEventId),
-        template_id: templateId || null,
-      };
-
-      if (sendMode === "group") {
-        payload.message = groupMessage[groupMessage.channel];
-        if (groupMessage.channel === "email") {
-          payload.html = generateSelectedModelHTML();
-        }
-      } else {
-        payload.personalized = true;
-        // Pour l'email personnalisé, inclure l'HTML
-        if (sendMethod === "email") {
-          payload.html = generateSelectedModelHTML();
-        }
-      }
-
-      const response = await sendBulk(payload);
-
-      // Mettre à jour les statistiques
-      setTotalCount(response.total_recipients);
-      setSentCount(response.sent_count);
-      setFailedCount(response.failed_count);
-      setPendingCount(response.pending_count);
-
-      // Convertir et afficher les messages
-      if (response.messages) {
-        const converted = convertToMessageStatus(response.messages, sendMethod);
-        setStatusMessages(converted);
-      }
-
-      // Afficher le modal de statut
-      setShowStatusModal(true);
-    } catch (error) {
-      console.error("Erreur envoi:", error);
-      toast.error("Erreur lors de l'envoi");
+    setShowStatusModal(true);
+    
+  } catch (error: any) {
+    console.error("❌ Erreur:", error);
+    
+    // Afficher le message d'erreur COMPLET
+    if (error.response?.data?.message) {
+      toast.error("Backend: " + error.response.data.message);
+    } else if (error.message) {
+      toast.error("Erreur: " + error.message);
+    } else {
+      toast.error("Erreur inconnue");
     }
-  };
+  }
+};
 
   const getChannelLabel = (channel: string): string => {
     switch (channel) {
@@ -599,12 +670,15 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   // Fonction pour remplacer les variables dans les items
   const replaceVariablesInItems = (itemsList: any[], guestData: any) => {
     if (!itemsList || !guestData) return itemsList;
-    
+
     return itemsList.map((item: any) => {
       if (item.type === "text" && item.text) {
         let text = item.text;
         text = text.replace(/\{\{name\}\}/g, guestData.name || "");
-        text = text.replace(/\{\{first_name\}\}/g, guestData.name?.split(" ")[0] || "");
+        text = text.replace(
+          /\{\{first_name\}\}/g,
+          guestData.name?.split(" ")[0] || ""
+        );
         text = text.replace(/\{\{email\}\}/g, guestData.email || "");
         text = text.replace(/\{\{location\}\}/g, guestData.location || "");
         text = text.replace(/\{\{lieu\}\}/g, guestData.location || "");
@@ -619,9 +693,12 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
 
   // Fonction pour rendre le modèle de prévisualisation sélectionné
   const renderSelectedModelPreview = () => {
-    const previewGuest = validGuests[0] || { name: "Invité", email: "email@example.com" };
+    const previewGuest = validGuests[0] || {
+      name: "Invité",
+      email: "email@example.com",
+    };
     const processedItems = replaceVariablesInItems(items, previewGuest);
-    
+
     const commonProps = {
       items: processedItems,
       bgColor: bgColor,
@@ -1283,19 +1360,21 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
               </Badge>
             </div>
 
-            {/* Contenu de l'aperçu - SANS fond blanc */}
+            {/* Contenu de l'aperçu - APERÇU COMPLET DU MESSAGE */}
             <div className="relative">
               <div className="absolute -top-2 left-4 px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded z-10">
-                APERÇU {selectedModelId !== "default" && `- ${selectedModelId.toUpperCase()}`}
+                APERÇU COMPLET{" "}
+                {selectedModelId !== "default" &&
+                  `- ${selectedModelId.toUpperCase()}`}
               </div>
-              <div 
+              <div
                 className="border-2 border-blue-200 rounded-lg overflow-hidden shadow-sm"
                 style={{ backgroundColor: "transparent" }}
               >
                 <div className="min-h-[450px] flex items-center justify-center">
                   {selectedModelId !== "default" ? (
                     // Afficher le modèle animé sélectionné - SANS conteneur blanc
-                    <div 
+                    <div
                       className="w-full flex items-center justify-center"
                       style={{ backgroundColor: "transparent" }}
                     >
@@ -1318,15 +1397,13 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
             <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
               <p className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                {selectedModelId !== "default" ? (
-                  `Ce modèle de carte (${selectedModelId}) sera envoyé à vos invités avec les variables personnalisées`
-                ) : sendMode === "group" ? (
-                  groupMessage.channel === "email"
+                {selectedModelId !== "default"
+                  ? `Ce modèle de carte (${selectedModelId}) sera envoyé à vos invités avec les variables personnalisées`
+                  : sendMode === "group"
+                  ? groupMessage.channel === "email"
                     ? "Ce modèle d'invitation sera envoyé par email avec les variables remplacées"
                     : "Ce message texte sera envoyé par WhatsApp à tous les contacts"
-                ) : (
-                  "Les messages seront personnalisés pour chaque invité selon vos paramètres"
-                )}
+                  : "Les messages seront personnalisés pour chaque invité selon vos paramètres"}
               </p>
             </div>
           </div>
