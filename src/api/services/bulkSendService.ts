@@ -60,104 +60,62 @@ export interface BulkSendStatus {
 
 export const bulkSendService = {
   sendBulk: async (payload: any): Promise<BulkSendResponse> => {
-    // Valider le canal
+    console.log("🚀 sendBulk - Payload:", {
+      channel: payload.channel,
+      emails: payload.emails?.length || 0,
+      contacts: payload.contacts?.length || 0,
+      hasHtml: !!payload.html,
+    });
+
     if (!payload.channel) {
       throw new Error("Le canal d'envoi est requis");
     }
 
-    // Valider le sujet pour les emails
-    if (
-      payload.channel === "email" &&
-      (!payload.subject || !payload.subject.trim())
-    ) {
-      throw new Error("Le sujet est requis pour les emails");
-    }
-
-    // Valider le message
-    if (!payload.body || !payload.body.trim()) {
-      throw new Error("Le message ne peut pas être vide");
-    }
-
-    // Valider les destinataires selon le canal
-    let validRecipients: any[] = [];
-
-    if (payload.channel === "email") {
-      if (!payload.emails || payload.emails.length === 0) {
-        throw new Error("Au moins un destinataire email est requis");
-      }
-
-      // Valider chaque email
-      validRecipients = payload.emails.filter(
-        (r: any) => r.email && r.email.includes("@") && r.name
-      );
-
-      if (validRecipients.length === 0) {
-        throw new Error("Aucun email valide trouvé");
-      }
-    } else if (payload.channel === "whatsapp") {
-      if (!payload.contacts || payload.contacts.length === 0) {
-        throw new Error("Au moins un contact WhatsApp est requis");
-      }
-
-      // Valider chaque numéro de téléphone
-      validRecipients = payload.contacts.filter(
-        (r: any) => r.phone && r.phone.replace(/\D/g, "").length >= 10 && r.name
-      );
-
-      if (validRecipients.length === 0) {
-        throw new Error("Aucun numéro de téléphone valide trouvé");
-      }
-    }
-
-    // Valider le nombre de destinataires
-    if (validRecipients.length > 500) {
-      throw new Error("Le nombre de destinataires ne peut pas dépasser 500");
-    }
-
-    // Préparer les données selon le format attendu par Laravel
+    // ----- FORMATTAGE DES DONNÉES -----
     const data: any = {
       channel: payload.channel,
-      subject: payload.subject || "",
-      body: payload.body || "",
-      template_id: payload.template_id || null,
-      event_id: payload.event_id || null,
+      subject: payload.subject || "Invitation",
+      body: payload.body || "Vous êtes invité à notre événement.",
     };
 
-    // Ajouter emails ou contacts selon le canal
+    if (payload.html) data.html = payload.html;
+    if (payload.template_id) data.template_id = payload.template_id;
+    if (payload.event_id) data.event_id = payload.event_id;
+
     if (payload.channel === "email") {
-      data.emails = validRecipients;
-    } else if (payload.channel === "whatsapp") {
-      data.contacts = validRecipients;
+      if (!payload.emails?.length) {
+        throw new Error("Aucun email fourni pour l'envoi");
+      }
+      data.emails = payload.emails;
     }
 
-    // Ajouter html si présent (pour les emails)
-    if (payload.html && payload.channel === "email") {
-      data.html = payload.html;
+    if (payload.channel === "whatsapp") {
+      if (!payload.contacts?.length) {
+        throw new Error("Aucun contact WhatsApp fourni");
+      }
+      data.contacts = payload.contacts;
     }
 
-    console.log("📤 Envoi en masse vers /mailings/send-bulk:", {
+    console.log("📤 Données envoyées:", {
       channel: data.channel,
-      template_id: data.template_id,
-      recipients_count: data.emails?.length || data.contacts?.length || 0,
-      has_html: !!data.html,
-      subject: data.subject || "N/A (WhatsApp)",
+      emails: data.emails?.length || 0,
+      contacts: data.contacts?.length || 0,
+      hasHtml: !!data.html,
     });
-
-    if (data.channel === "email") {
-      console.log("📧 Premier email:", data.emails?.[0]);
-    } else {
-      console.log("📱 Premier contact:", data.contacts?.[0]);
-    }
 
     try {
       const response = await api.post("/mailings/send-bulk", data);
       return response.data.data || response.data;
     } catch (error: any) {
-      console.error("❌ Erreur lors de l'envoi en masse:", error);
-      console.error("📋 Détails de l'erreur:", error.response?.data);
-      console.error("🔍 Erreurs de validation:", error.response?.data?.errors);
-      console.error("📦 Payload envoyé:", data);
-      throw error;
+      const status = error.response?.status;
+      const errors = error.response?.data?.errors;
+      const message = error.response?.data?.message;
+
+      console.error("❌ Laravel Error:", { status, message, errors });
+
+      throw new Error(
+        message || "Erreur lors de l'envoi. Vérifiez le backend Laravel."
+      );
     }
   },
 
@@ -166,7 +124,7 @@ export const bulkSendService = {
       const response = await api.get(`/bulk-send/${bulkSendId}/status`);
       return response.data.data || response.data;
     } catch (error) {
-      console.error("Erreur lors du chargement du statut:", error);
+      console.error("Erreur statut envoi:", error);
       throw error;
     }
   },
@@ -178,7 +136,7 @@ export const bulkSendService = {
       const response = await api.get(`/bulk-send?limit=${limit}`);
       return response.data.data || response.data || [];
     } catch (error) {
-      console.error("Erreur lors du chargement de l'historique:", error);
+      console.error("Erreur historique:", error);
       throw error;
     }
   },
@@ -187,7 +145,7 @@ export const bulkSendService = {
     try {
       await api.post(`/bulk-send/${bulkSendId}/cancel`);
     } catch (error) {
-      console.error("Erreur lors de l'annulation:", error);
+      console.error("Erreur annulation:", error);
       throw error;
     }
   },
@@ -197,7 +155,7 @@ export const bulkSendService = {
       const response = await api.post(`/bulk-send/${bulkSendId}/retry`);
       return response.data.data || response.data;
     } catch (error) {
-      console.error("Erreur lors de la relance:", error);
+      console.error("Erreur relance:", error);
       throw error;
     }
   },

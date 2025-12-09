@@ -454,167 +454,108 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   };
 
 const handleSendBulk = async () => {
-  // Validation finale avant envoi
-  const validation = validateRequiredFields();
-  if (!validation.valid) {
-    toast.error(validation.error);
-    return;
-  }
-
-  // Valider canal
+  // Validation minimale
   if (!sendMethod) {
-    toast.error("Le canal d'envoi est manquant");
+    toast.error("Sélectionnez un canal d'envoi");
     return;
   }
 
-  // ========================================
-  // RÉCUPÉRATION DU TEMPLATE_ID
-  // ========================================
-  let resolvedTemplateId: number | null = null;
-
-  // Prendre le templateId du contexte
-  if (templateId && !isNaN(Number(templateId)) && Number(templateId) > 0) {
-    resolvedTemplateId = Number(templateId);
-    console.log("✅ TemplateId:", resolvedTemplateId);
-  }
-
-  // ========================================
-  // GÉNÉRER L'HTML DE LA CARD ANIMÉE
-  // ========================================
-  console.log("🎨 Génération HTML de la card animée...");
-  
-  // Prendre un invité exemple pour générer l'HTML
-  const exampleGuest = validGuests[0] || { 
-    name: "Invité", 
-    email: "invite@example.com",
-    full_name: "Invité"
-  };
-
-  // Générer l'HTML EXACT de la card (identique à "Aperçu du message")
-  const cardHTML = generateModelHTML(
-    selectedModelId || "default",
-    items,
-    bgColor,
-    exampleGuest
-  );
-
-  console.log("✅ HTML généré (card animée):", {
-    longueur: cardHTML.length,
-    preview: cardHTML.substring(0, 150) + "..."
-  });
-
-  // ========================================
-  // CONSTRUIRE LES DESTINATAIRES
-  // ========================================
-  let emails: any[] = [];
-  let contacts: any[] = [];
-
-  if (sendMode === "group") {
-    if (groupMessage.channel === "whatsapp") {
-      contacts = validGuests
-        .filter((guest: Guest) => guest.channel === "whatsapp" && guest.phone)
-        .map((guest: Guest) => ({
-          phone: guest.phone || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-    } else {
-      emails = validGuests
-        .filter((guest: Guest) => guest.channel === "email" && guest.email)
-        .map((guest: Guest) => ({
-          email: guest.email || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-    }
-  } else {
-    const customizedGuests = validGuests.filter(
-      (guest: Guest) => personalizedMessages[guest.id!]?.customized
-    );
-
-    if (sendMethod === "email") {
-      emails = customizedGuests
-        .filter((guest: Guest) => guest.email && guest.email.includes("@"))
-        .map((guest: Guest) => ({
-          email: guest.email || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-    } else if (sendMethod === "whatsapp") {
-      contacts = customizedGuests
-        .filter((guest: Guest) => guest.phone && guest.phone.replace(/\D/g, "").length >= 10)
-        .map((guest: Guest) => ({
-          phone: guest.phone || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-    }
-  }
-
-  // Vérifier qu'on a des destinataires
-  if ((sendMethod === "email" && emails.length === 0) || 
-      (sendMethod === "whatsapp" && contacts.length === 0)) {
-    toast.error(`Aucun destinataire ${sendMethod} valide trouvé`);
+  if (validGuests.length === 0) {
+    toast.error("Aucun invité valide");
     return;
   }
+
+  console.log("🚀 Début envoi - Template URL:", window.location.href);
 
   try {
     // ========================================
-    // PAYLOAD ULTRA SIMPLE POUR ÉVITER LES ERREURS
+    // 1. PAYLOAD MINIMAL SANS ERREUR
     // ========================================
     const payload: any = {
       channel: sendMethod,
-      subject: sendMode === "group" ? groupMessage.subject : "Vous êtes invité!",
-      body: sendMode === "group" 
-        ? groupMessage[groupMessage.channel] 
-        : (personalizedMessages[validGuests[0]?.id!]?.message || "Vous êtes invité!"),
+      subject: "Vous êtes invité à notre événement",
+      body: "Bonjour, vous êtes invité à notre événement. Voir les détails ci-dessous.",
     };
 
-    // Template ID (facultatif)
-    if (templateId && !isNaN(Number(templateId))) {
-      payload.template_id = Number(templateId);
-    }
-
-    // Event ID
-    if (selectedEventId !== "new" && selectedEventId) {
-      payload.event_id = parseInt(String(selectedEventId), 10);
-    }
-
-    // Ajouter emails ou contacts
+    // ========================================
+    // 2. GÉNÉRER L'HTML DE LA CARD ANIMÉE
+    // ========================================
     if (sendMethod === "email") {
-      payload.emails = validGuests
-        .filter((guest: Guest) => guest.email && guest.email.includes("@"))
-        .map((guest: Guest) => ({
-          email: guest.email || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-      
-      // HTML DE LA CARD ANIMÉE
-      const exampleGuest = validGuests[0] || { name: "Invité", email: "invite@example.com" };
+      // Prendre un invité exemple
+      const exampleGuest = validGuests[0] || {
+        name: "Invité",
+        email: "invite@example.com",
+      };
+
+      // Générer l'HTML exact de la card
       const cardHTML = generateModelHTML(
         selectedModelId || "default",
         items,
         bgColor,
         exampleGuest
       );
-      
+
       payload.html = cardHTML;
-      
+      console.log("✅ HTML généré:", cardHTML.length, "caractères");
+    }
+
+    // ========================================
+    // 3. AJOUTER LES DESTINATAIRES
+    // ========================================
+    if (sendMethod === "email") {
+      payload.emails = validGuests
+        .filter((guest: Guest) => guest.email && guest.email.includes("@"))
+        .slice(0, 10) // Limiter à 10 pour tester
+        .map((guest: Guest) => ({
+          email: guest.email || "",
+          name: guest.full_name || guest.name || "Invité",
+        }));
+
+      console.log("📧 Destinataires email:", payload.emails.length);
     } else if (sendMethod === "whatsapp") {
       payload.contacts = validGuests
-        .filter((guest: Guest) => guest.phone && guest.phone.replace(/\D/g, "").length >= 10)
+        .filter(
+          (guest: Guest) =>
+            guest.phone && guest.phone.replace(/\D/g, "").length >= 10
+        )
+        .slice(0, 10)
         .map((guest: Guest) => ({
           phone: guest.phone || "",
           name: guest.full_name || guest.name || "Invité",
         }));
+
+      console.log("📱 Destinataires WhatsApp:", payload.contacts.length);
     }
 
-    // LOG SIMPLE
-    console.log("📤 Envoi simple:", {
+    // Vérifier qu'on a au moins 1 destinataire
+    if (
+      (sendMethod === "email" &&
+        (!payload.emails || payload.emails.length === 0)) ||
+      (sendMethod === "whatsapp" &&
+        (!payload.contacts || payload.contacts.length === 0))
+    ) {
+      toast.error("Aucun destinataire valide");
+      return;
+    }
+
+    // ========================================
+    // 4. ENVOYER SIMPLEMENT
+    // ========================================
+    console.log("📤 Envoi payload minimal:", {
       channel: payload.channel,
       destinataires: payload.emails?.length || payload.contacts?.length || 0,
-      hasHtml: !!payload.html
+      hasHtml: !!payload.html,
     });
 
     const response = await sendBulk(payload);
 
-    // Mettre à jour l'UI
+    // Succès
+    toast.success(
+      `Message envoyé à ${
+        payload.emails?.length || payload.contacts?.length || 0
+      } personne(s)`
+    );
+
     setTotalCount(response.total_recipients || 0);
     setSentCount(response.sent_count || 0);
     setFailedCount(response.failed_count || 0);
@@ -626,21 +567,21 @@ const handleSendBulk = async () => {
     }
 
     setShowStatusModal(true);
-    
   } catch (error: any) {
-    console.error("❌ Erreur:", error);
-    
-    // Afficher le message d'erreur COMPLET
-    if (error.response?.data?.message) {
-      toast.error("Backend: " + error.response.data.message);
-    } else if (error.message) {
-      toast.error("Erreur: " + error.message);
-    } else {
-      toast.error("Erreur inconnue");
+    console.error("❌ ERREUR FINALE:", error);
+
+    // Afficher l'erreur exacte
+    const errorMsg =
+      error.response?.data?.message || error.message || "Erreur inconnue";
+
+    toast.error(`Échec envoi: ${errorMsg}`);
+
+    // Log détaillé
+    if (error.response?.data) {
+      console.error("📋 Détails erreur backend:", error.response.data);
     }
   }
 };
-
   const getChannelLabel = (channel: string): string => {
     switch (channel) {
       case "email":

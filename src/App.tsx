@@ -16,6 +16,7 @@ import Events from "./pages/Events";
 import Invitations from "./pages/Invitations";
 import Inbox from "./pages/Inbox";
 import Organizations from "./pages/Organizations";
+import InvitationView from "./pages/InvitationView";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,10 @@ const App = () => (
             <Routes>
               <Route index element={<Index />} />
               <Route path="pricing" element={<Pricing />} />
+              
+              {/* Page publique d'invitation (sans layout) */}
+              <Route path="invitation/:token" element={<InvitationView />} />
+              
               <Route path="/" element={<Layout />}>
                 <Route path="designs" element={<HomePage />} />
                 <Route path="builder" element={<Builder />} />

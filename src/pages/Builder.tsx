@@ -821,11 +821,15 @@ function Builder() {
       setLoadingMessage("Chargement du modèle...");
 
       try {
+        // Import du service en avance pour réduire le temps
+        const { templateService } = await import("@/api/services/templateService");
+        
         // Vérifier si c'est un template par défaut
         const foundDefault = defaultTemplates.find((t) => t?.id === tid);
         if (foundDefault) {
           console.log("✅ Template par défaut trouvé:", foundDefault.name);
           loadTemplate(foundDefault);
+          setIsLoading(false);
           return;
         }
 
@@ -839,32 +843,24 @@ function Builder() {
         // Vérifier si c'est un ID numérique (template API)
         const numericId = parseInt(cleanId, 10);
         if (!isNaN(numericId)) {
-          console.log(
-            "🌐 Chargement depuis l'API avec ID numérique:",
-            numericId
-          );
-          const { templateService } = await import(
-            "@/api/services/templateService"
-          );
+          console.log("🌐 Chargement depuis l'API avec ID numérique:", numericId);
+          
           const apiTemplate = await templateService.getTemplate(numericId);
 
           if (apiTemplate) {
             console.log("✅ Template API chargé:", apiTemplate.title);
+            console.log("📦 Data complet:", apiTemplate.data);
             loadTemplateFromAPI(apiTemplate);
+            setIsLoading(false);
             return;
           } else {
-            console.warn(
-              "⚠️ Template non trouvé dans l'API pour ID:",
-              numericId
-            );
+            console.warn("⚠️ Template non trouvé dans l'API pour ID:", numericId);
             toast.error("Template introuvable", {
               description: `Le template avec l'ID ${numericId} n'existe pas.`,
             });
+            setIsLoading(false);
+            return;
           }
-        } else {
-          console.log(
-            "💾 ID non numérique, recherche dans le stockage local..."
-          );
         }
 
         // Fallback: chercher dans le stockage local
@@ -875,6 +871,7 @@ function Builder() {
           : undefined;
         if (foundSaved) {
           console.log("✅ Template local trouvé:", foundSaved.name);
+          console.log("📦 Data local:", foundSaved);
           loadTemplate(foundSaved);
         } else {
           console.warn("⚠️ Template introuvable dans le stockage local");
