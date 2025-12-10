@@ -1,160 +1,124 @@
-import { useState, useCallback } from "react";
-import {
-  guestService,
-  Guest,
-  CreateGuestPayload,
-  UpdateGuestPayload,
-  ImportGuestsPayload,
-} from "@/api/services/guestService";
+import { useState, useEffect } from "react";
+import { guestService, type Guest } from "@/api/services/guestService";
 import { toast } from "@/components/ui/sonner";
 
-interface UseGuestsReturn {
-  guests: Guest[];
-  loading: boolean;
-  error: string | null;
-  fetchGuests: (eventId?: number) => Promise<void>;
-  createGuest: (payload: CreateGuestPayload) => Promise<Guest>;
-  updateGuest: (id: number, payload: UpdateGuestPayload) => Promise<Guest>;
-  deleteGuest: (id: number) => Promise<void>;
-  importGuests: (
-    eventId: number,
-    payload: ImportGuestsPayload
-  ) => Promise<Guest[]>;
-  importGuestsCSV: (eventId: number, file: File) => Promise<Guest[]>;
-}
-
-export const useGuests = (): UseGuestsReturn => {
+/**
+ * Hook personnalisé pour gérer les invités
+ * Utilise le service hybride (API + localStorage)
+ */
+export function useGuests() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchGuests = useCallback(async (eventId?: number) => {
+  // Charger les invités au montage
+  useEffect(() => {
+    loadGuests();
+  }, []);
+
+  const loadGuests = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = eventId
-        ? await guestService.getGuestsByEvent(eventId)
-        : await guestService.getAllGuests();
-      setGuests(data);
+      const loadedGuests = await guestService.getAll();
+      setGuests(loadedGuests);
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Erreur lors du chargement des invités";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      console.error("❌ Erreur chargement invités:", err);
+      setError(err.message || "Erreur de chargement");
+      toast.error("Erreur de chargement des invités");
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const createGuestHandler = useCallback(
-    async (payload: CreateGuestPayload): Promise<Guest> => {
-      try {
-        const newGuest = await guestService.createGuest(payload);
-        setGuests((prev) => [newGuest, ...prev]);
-        toast.success("Invité ajouté avec succès!");
-        return newGuest;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de l'ajout de l'invité";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        throw err;
-      }
-    },
-    []
-  );
-
-  const updateGuestHandler = useCallback(
-    async (id: number, payload: UpdateGuestPayload): Promise<Guest> => {
-      try {
-        const updatedGuest = await guestService.updateGuest(id, payload);
-        setGuests((prev) => prev.map((g) => (g.id === id ? updatedGuest : g)));
-        toast.success("Invité mis à jour avec succès!");
-        return updatedGuest;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la mise à jour de l'invité";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        throw err;
-      }
-    },
-    []
-  );
-
-  const deleteGuestHandler = useCallback(async (id: number): Promise<void> => {
+  const addGuest = async (guest: Omit<Guest, "id">) => {
     try {
-      await guestService.deleteGuest(id);
-      setGuests((prev) => prev.filter((g) => g.id !== id));
-      toast.success("Invité supprimé avec succès!");
+      const newGuest = await guestService.create(guest);
+      setGuests((prev) => [...prev, newGuest]);
+      toast.success("Invité ajouté avec succès");
+      return newGuest;
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Erreur lors de la suppression de l'invité";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      console.error("❌ Erreur ajout invité:", err);
+      toast.error("Erreur lors de l'ajout");
       throw err;
     }
-  }, []);
+  };
 
-  const importGuestsHandler = useCallback(
-    async (eventId: number, payload: ImportGuestsPayload): Promise<Guest[]> => {
-      try {
-        const newGuests = await guestService.importGuests(eventId, payload);
-        setGuests((prev) => [...newGuests, ...prev]);
-        toast.success(`${newGuests.length} invité(s) importé(s) avec succès!`);
-        return newGuests;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de l'import des invités";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        throw err;
-      }
-    },
-    []
-  );
+  const updateGuest = async (id: string, updates: Partial<Guest>) => {
+    try {
+      const updatedGuest = await guestService.update(id, updates);
+      setGuests((prev) =>
+        prev.map((g) => (g.id === id ? updatedGuest : g))
+      );
+      toast.success("Invité mis à jour");
+      return updatedGuest;
+    } catch (err: any) {
+      console.error("❌ Erreur mise à jour invité:", err);
+      toast.error("Erreur lors de la mise à jour");
+      throw err;
+    }
+  };
 
-  const importGuestsCSVHandler = useCallback(
-    async (eventId: number, file: File): Promise<Guest[]> => {
-      try {
-        const newGuests = await guestService.importGuestsCSV(eventId, file);
-        setGuests((prev) => [...newGuests, ...prev]);
-        toast.success(
-          `${newGuests.length} invité(s) importé(s) depuis le CSV!`
-        );
-        return newGuests;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de l'import du CSV";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        throw err;
-      }
-    },
-    []
-  );
+  const deleteGuest = async (id: string) => {
+    try {
+      await guestService.delete(id);
+      setGuests((prev) => prev.filter((g) => g.id !== id));
+      toast.success("Invité supprimé");
+    } catch (err: any) {
+      console.error("❌ Erreur suppression invité:", err);
+      toast.error("Erreur lors de la suppression");
+      throw err;
+    }
+  };
+
+  const bulkAddGuests = async (guestsToAdd: Omit<Guest, "id">[]) => {
+    try {
+      const newGuests = await guestService.bulkCreate(guestsToAdd);
+      setGuests((prev) => [...prev, ...newGuests]);
+      toast.success(`${newGuests.length} invités importés`);
+      return newGuests;
+    } catch (err: any) {
+      console.error("❌ Erreur import en masse:", err);
+      toast.error("Erreur lors de l'import");
+      throw err;
+    }
+  };
+
+  const replaceAllGuests = async (newGuests: Guest[]) => {
+    try {
+      await guestService.replaceAll(newGuests);
+      setGuests(newGuests);
+      toast.success("Liste d'invités mise à jour");
+    } catch (err: any) {
+      console.error("❌ Erreur remplacement invités:", err);
+      toast.error("Erreur lors du remplacement");
+      throw err;
+    }
+  };
+
+  const clearAllGuests = async () => {
+    try {
+      await guestService.clear();
+      setGuests([]);
+      toast.success("Tous les invités ont été supprimés");
+    } catch (err: any) {
+      console.error("❌ Erreur suppression complète:", err);
+      toast.error("Erreur lors de la suppression");
+      throw err;
+    }
+  };
 
   return {
     guests,
     loading,
     error,
-    fetchGuests,
-    createGuest: createGuestHandler,
-    updateGuest: updateGuestHandler,
-    deleteGuest: deleteGuestHandler,
-    importGuests: importGuestsHandler,
-    importGuestsCSV: importGuestsCSVHandler,
+    loadGuests,
+    addGuest,
+    updateGuest,
+    deleteGuest,
+    bulkAddGuests,
+    replaceAllGuests,
+    clearAllGuests,
+    setGuests, // Pour compatibilité avec le code existant
   };
-};
+}

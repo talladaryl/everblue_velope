@@ -478,25 +478,56 @@ const handleSendBulk = async () => {
     };
 
     // ========================================
-    // 2. GÉNÉRER L'HTML DE LA CARD ANIMÉE
+    // 2. GÉNÉRER L'HTML AVEC ENVELOPPE
     // ========================================
     if (sendMethod === "email") {
-      // Prendre un invité exemple
-      const exampleGuest = validGuests[0] || {
+      // Importer les fonctions du template email
+      const { 
+        generateEnvelopeEmailTemplate, 
+        generateInvitationToken, 
+        generateInvitationUrl 
+      } = await import("@/utils/emailTemplates");
+      
+      // Générer un token unique pour cette invitation
+      const token = generateInvitationToken();
+      const invitationUrl = generateInvitationUrl(token);
+      
+      // Prendre le premier invité pour l'exemple d'enveloppe
+      const firstRecipient = validGuests[0] || {
         name: "Invité",
         email: "invite@example.com",
       };
-
-      // Générer l'HTML exact de la card
-      const cardHTML = generateModelHTML(
-        selectedModelId || "default",
-        items,
-        bgColor,
-        exampleGuest
-      );
-
-      payload.html = cardHTML;
-      console.log("✅ HTML généré:", cardHTML.length, "caractères");
+      
+      // Utiliser le template avec enveloppe
+      payload.html = generateEnvelopeEmailTemplate({
+        recipientName: firstRecipient.name || "Invité",
+        invitationUrl: invitationUrl,
+        envelopeColor: "#26452b", // Vert par défaut
+      });
+      
+      console.log("✅ Email avec enveloppe généré:", payload.html.length, "caractères");
+      console.log("🔗 URL invitation:", invitationUrl);
+      console.log("🎫 Token:", token);
+      
+      // Sauvegarder l'invitation (API ou localStorage)
+      try {
+        const { invitationService } = await import("@/api/services/invitationService");
+        
+        await invitationService.create({
+          token,
+          recipientName: firstRecipient.name || "Invité",
+          recipientEmail: firstRecipient.email || "",
+          items: items,
+          bgColor: bgColor,
+          bgImage: bgImage,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+        });
+        
+        console.log("✅ Invitation sauvegardée avec succès");
+      } catch (invError: any) {
+        console.warn("⚠️ Erreur sauvegarde invitation:", invError.message);
+        // Ne pas bloquer l'envoi si la sauvegarde échoue
+      }
     }
 
     // ========================================

@@ -1,169 +1,253 @@
 import api from "@/api/axios";
 
+/**
+ * Service hybride pour la gestion des invités
+ * Essaie d'abord l'API, puis utilise localStorage en fallback
+ */
+
 export interface Guest {
-  id: number;
-  event_id: number;
-  full_name: string;
-  email?: string;
-  phone?: string;
-  plus_one_allowed: boolean;
-  metadata?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-  valid?: boolean;
-  status?: "valid" | "invalid";
-}
-
-export interface CreateGuestPayload {
-  event_id: number;
-  full_name: string;
-  email?: string;
-  phone?: string;
-  plus_one_allowed?: boolean;
-  metadata?: Record<string, any>;
-}
-
-export interface UpdateGuestPayload {
+  id: string;
+  name: string;
   full_name?: string;
   email?: string;
   phone?: string;
+  countryCode?: string;
+  channel: "whatsapp" | "email";
+  valid: boolean;
   plus_one_allowed?: boolean;
-  metadata?: Record<string, any>;
+  location?: string;
+  date?: string;
+  time?: string;
+  addedAt?: string;
+  imported?: boolean;
 }
 
-export interface ImportGuestsPayload {
-  guests: Array<{
-    full_name: string;
-    email?: string;
-    phone?: string;
-    plus_one_allowed?: boolean;
-    metadata?: Record<string, any>;
-  }>;
-}
+const STORAGE_KEY = "everblue_guests";
 
-// Validation utilitaires
-const isValidEmail = (email?: string): boolean => {
-  if (!email) return false;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+// ========================================
+// FONCTIONS LOCALSTORAGE (FALLBACK)
+// ========================================
+
+const getGuestsFromLocalStorage = (): Guest[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    return JSON.parse(stored);
+  } catch (error) {
+    console.error("❌ Erreur lecture localStorage:", error);
+    return [];
+  }
 };
 
-const isValidPhone = (phone?: string): boolean => {
-  if (!phone) return false;
-  const phoneDigits = phone.replace(/\D/g, "");
-  return phoneDigits.length >= 10;
+const saveGuestsToLocalStorage = (guests: Guest[]): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
+    console.log("💾 Invités sauvegardés dans localStorage:", guests.length);
+  } catch (error) {
+    console.error("❌ Erreur sauvegarde localStorage:", error);
+  }
 };
 
-const enrichGuest = (guest: Guest): Guest => {
-  const isValid = isValidEmail(guest.email) || isValidPhone(guest.phone);
-  return {
-    ...guest,
-    valid: isValid,
-    status: isValid ? "valid" : "invalid",
-  };
-};
+// ========================================
+// SERVICE PRINCIPAL
+// ========================================
 
 export const guestService = {
-  getAllGuests: async (): Promise<Guest[]> => {
+  /**
+   * Récupérer tous les invités
+   * Essaie l'API d'abord, puis localStorage
+   */
+  getAll: async (): Promise<Guest[]> => {
     try {
+      console.log("🔄 Tentative récupération invités depuis API...");
       const response = await api.get("/guests");
       const guests = response.data.data || response.data || [];
-      return guests.map(enrichGuest);
-    } catch (error) {
-      console.error("Erreur lors du chargement des invités:", error);
-      throw error;
+      console.log("✅ Invités récupérés depuis API:", guests.length);
+      
+      // Synchroniser avec localStorage
+      saveGuestsToLocalStorage(guests);
+      
+      return guests;
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, utilisation localStorage:", error.message);
+      const localGuests = getGuestsFromLocalStorage();
+      console.log("💾 Invités récupérés depuis localStorage:", localGuests.length);
+      return localGuests;
     }
   },
 
-  getGuestsByEvent: async (eventId: number): Promise<Guest[]> => {
+  /**
+   * Créer un nouvel invité
+   * Essaie l'API d'abord, puis localStorage
+   */
+  create: async (guest: Omit<Guest, "id">): Promise<Guest> => {
+    const newGuest: Guest = {
+      ...guest,
+      id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      addedAt: new Date().toISOString(),
+    };
+
     try {
-      const response = await api.get(`/guests?event_id=${eventId}`);
-      const guests = response.data.data || response.data || [];
-      return guests
-        .filter((guest) => guest && guest.full_name)
-        .map(enrichGuest);
-    } catch (error) {
-      console.error(
-        `Erreur lors du chargement des invités de l'événement ${eventId}:`,
-        error
+      console.log("🔄 Tentative création invité via API...");
+      const response = await api.post("/guests", newGuest);
+      const createdGuest = response.data.data || response.data;
+      console.log("✅ Invité créé via API:", createdGuest.id);
+      
+      // Synchroniser avec localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      saveGuestsToLocalStorage([...localGuests, createdGuest]);
+      
+      return createdGuest;
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, sauvegarde localStorage:", error.message);
+      
+      // Fallback: sauvegarder dans localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      const updatedGuests = [...localGuests, newGuest];
+      saveGuestsToLocalStorage(updatedGuests);
+      console.log("💾 Invité créé dans localStorage:", newGuest.id);
+      
+      return newGuest;
+    }
+  },
+
+  /**
+   * Mettre à jour un invité
+   * Essaie l'API d'abord, puis localStorage
+   */
+  update: async (id: string, updates: Partial<Guest>): Promise<Guest> => {
+    try {
+      console.log("🔄 Tentative mise à jour invité via API:", id);
+      const response = await api.put(`/guests/${id}`, updates);
+      const updatedGuest = response.data.data || response.data;
+      console.log("✅ Invité mis à jour via API:", id);
+      
+      // Synchroniser avec localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      const updatedLocalGuests = localGuests.map((g) =>
+        g.id === id ? { ...g, ...updatedGuest } : g
       );
-      throw error;
+      saveGuestsToLocalStorage(updatedLocalGuests);
+      
+      return updatedGuest;
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, mise à jour localStorage:", error.message);
+      
+      // Fallback: mettre à jour dans localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      const guestIndex = localGuests.findIndex((g) => g.id === id);
+      
+      if (guestIndex === -1) {
+        throw new Error(`Invité ${id} introuvable`);
+      }
+      
+      const updatedGuest = { ...localGuests[guestIndex], ...updates };
+      localGuests[guestIndex] = updatedGuest;
+      saveGuestsToLocalStorage(localGuests);
+      console.log("💾 Invité mis à jour dans localStorage:", id);
+      
+      return updatedGuest;
     }
   },
 
-  createGuest: async (payload: CreateGuestPayload): Promise<Guest> => {
+  /**
+   * Supprimer un invité
+   * Essaie l'API d'abord, puis localStorage
+   */
+  delete: async (id: string): Promise<void> => {
     try {
-      const response = await api.post("/guests", payload);
-      const guest = response.data.data || response.data;
-      return enrichGuest(guest);
-    } catch (error) {
-      console.error("Erreur lors de la création de l'invité:", error);
-      throw error;
-    }
-  },
-
-  updateGuest: async (
-    id: number,
-    payload: UpdateGuestPayload
-  ): Promise<Guest> => {
-    try {
-      const response = await api.put(`/guests/${id}`, payload);
-      const guest = response.data.data || response.data;
-      return enrichGuest(guest);
-    } catch (error) {
-      console.error(`Erreur lors de la mise à jour de l'invité ${id}:`, error);
-      throw error;
-    }
-  },
-
-  deleteGuest: async (id: number): Promise<void> => {
-    try {
+      console.log("🔄 Tentative suppression invité via API:", id);
       await api.delete(`/guests/${id}`);
-    } catch (error) {
-      console.error(`Erreur lors de la suppression de l'invité ${id}:`, error);
-      throw error;
+      console.log("✅ Invité supprimé via API:", id);
+      
+      // Synchroniser avec localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      const filteredGuests = localGuests.filter((g) => g.id !== id);
+      saveGuestsToLocalStorage(filteredGuests);
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, suppression localStorage:", error.message);
+      
+      // Fallback: supprimer de localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      const filteredGuests = localGuests.filter((g) => g.id !== id);
+      saveGuestsToLocalStorage(filteredGuests);
+      console.log("💾 Invité supprimé de localStorage:", id);
     }
   },
 
-  importGuestsCSV: async (eventId: number, file: File): Promise<Guest[]> => {
+  /**
+   * Importer plusieurs invités en masse
+   * Essaie l'API d'abord, puis localStorage
+   */
+  bulkCreate: async (guests: Omit<Guest, "id">[]): Promise<Guest[]> => {
+    const newGuests: Guest[] = guests.map((guest) => ({
+      ...guest,
+      id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      addedAt: new Date().toISOString(),
+    }));
+
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("event_id", eventId.toString());
-
-      const response = await api.post(
-        `/events/${eventId}/guests/import`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      const guests = response.data.data || response.data || [];
-      return guests.map(enrichGuest);
-    } catch (error) {
-      console.error("Erreur lors de l'import du fichier CSV:", error);
-      throw error;
+      console.log("🔄 Tentative import en masse via API:", newGuests.length);
+      const response = await api.post("/guests/bulk", { guests: newGuests });
+      const createdGuests = response.data.data || response.data || newGuests;
+      console.log("✅ Invités importés via API:", createdGuests.length);
+      
+      // Synchroniser avec localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      saveGuestsToLocalStorage([...localGuests, ...createdGuests]);
+      
+      return createdGuests;
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, import localStorage:", error.message);
+      
+      // Fallback: sauvegarder dans localStorage
+      const localGuests = getGuestsFromLocalStorage();
+      const updatedGuests = [...localGuests, ...newGuests];
+      saveGuestsToLocalStorage(updatedGuests);
+      console.log("💾 Invités importés dans localStorage:", newGuests.length);
+      
+      return newGuests;
     }
   },
 
-  importGuests: async (
-    eventId: number,
-    payload: ImportGuestsPayload
-  ): Promise<Guest[]> => {
+  /**
+   * Remplacer tous les invités
+   * Utile pour la synchronisation complète
+   */
+  replaceAll: async (guests: Guest[]): Promise<void> => {
     try {
-      const response = await api.post(
-        `/events/${eventId}/guests/import`,
-        payload
-      );
-      const guests = response.data.data || response.data || [];
-      return guests.map(enrichGuest);
-    } catch (error) {
-      console.error("Erreur lors de l'import des invités:", error);
-      throw error;
+      console.log("🔄 Tentative remplacement complet via API:", guests.length);
+      await api.post("/guests/replace-all", { guests });
+      console.log("✅ Invités remplacés via API");
+      
+      // Synchroniser avec localStorage
+      saveGuestsToLocalStorage(guests);
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, remplacement localStorage:", error.message);
+      
+      // Fallback: remplacer dans localStorage
+      saveGuestsToLocalStorage(guests);
+      console.log("💾 Invités remplacés dans localStorage:", guests.length);
     }
   },
 
-  isValidEmail,
-  isValidPhone,
+  /**
+   * Vider tous les invités
+   */
+  clear: async (): Promise<void> => {
+    try {
+      console.log("🔄 Tentative suppression complète via API");
+      await api.delete("/guests/all");
+      console.log("✅ Tous les invités supprimés via API");
+      
+      // Synchroniser avec localStorage
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error: any) {
+      console.warn("⚠️ API indisponible, suppression localStorage:", error.message);
+      
+      // Fallback: vider localStorage
+      localStorage.removeItem(STORAGE_KEY);
+      console.log("💾 Tous les invités supprimés de localStorage");
+    }
+  },
 };

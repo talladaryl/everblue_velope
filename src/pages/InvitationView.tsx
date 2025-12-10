@@ -26,37 +26,41 @@ export default function InvitationView() {
     try {
       setLoading(true);
       
-      // TODO: Appeler l'API pour récupérer les données de l'invitation
-      // const response = await api.get(`/invitations/${token}`);
-      // setInvitation(response.data);
-      
-      // Pour l'instant, simuler un chargement
-      setTimeout(() => {
-        // Données mockées - à remplacer par l'API
-        setInvitation({
-          recipientName: "John Doe",
-          items: [
-            {
-              id: "text-1",
-              type: "text",
-              text: "Vous êtes invité !",
-              x: 50,
-              y: 50,
-              fontSize: 32,
-              color: "#1e40af",
-              fontWeight: 600,
-              textAlign: "center",
-              fontFamily: "Arial",
-            },
-          ],
-          bgColor: "#F3F4F6",
-          bgImage: null,
-        });
+      if (!token) {
+        setError("Token d'invitation manquant");
         setLoading(false);
-      }, 1000);
+        return;
+      }
+      
+      // Importer le service d'invitation
+      const { invitationService } = await import("@/api/services/invitationService");
+      
+      // Récupérer l'invitation (API ou localStorage)
+      const invitationData = await invitationService.getByToken(token);
+      
+      if (!invitationData) {
+        setError("Invitation introuvable ou expirée");
+        setLoading(false);
+        return;
+      }
+      
+      // Vérifier si l'invitation est expirée
+      if (invitationData.expiresAt) {
+        const expiryDate = new Date(invitationData.expiresAt);
+        if (expiryDate < new Date()) {
+          setError("Cette invitation a expiré");
+          setLoading(false);
+          return;
+        }
+      }
+      
+      setInvitation(invitationData);
+      setLoading(false);
+      
+      console.log("✅ Invitation chargée:", invitationData.recipientName);
     } catch (err: any) {
-      console.error("Erreur chargement invitation:", err);
-      setError("Invitation introuvable ou expirée");
+      console.error("❌ Erreur chargement invitation:", err);
+      setError("Impossible de charger l'invitation");
       setLoading(false);
     }
   };
@@ -112,7 +116,7 @@ export default function InvitationView() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 animate-fade-in">
-            ✨ Votre Invitation ✨
+             Votre Invitation 
           </h1>
           <p className="text-xl text-white/80 animate-fade-in animation-delay-200">
             Cliquez sur l'enveloppe pour découvrir votre carte
