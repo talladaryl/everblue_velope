@@ -59,8 +59,11 @@ export function SendStatusModal({
   pendingCount,
 }: SendStatusModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "sent" | "failed" | "pending">("all");
-  const [filteredMessages, setFilteredMessages] = useState<MessageStatus[]>(messages);
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "sent" | "failed" | "pending"
+  >("all");
+  const [filteredMessages, setFilteredMessages] =
+    useState<MessageStatus[]>(messages);
 
   useEffect(() => {
     let filtered = messages;
@@ -105,7 +108,9 @@ export function SendStatusModal({
       case "failed":
         return <Badge className="bg-red-100 text-red-800">Échoué</Badge>;
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>
+        );
       default:
         return null;
     }
@@ -154,17 +159,19 @@ export function SendStatusModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Statut des messages - {getChannelLabel(channel)}</DialogTitle>
+          <DialogTitle>
+            Statut des messages - {getChannelLabel(channel)}
+          </DialogTitle>
           <DialogDescription>
             Vérifiez le statut de chaque message envoyé
           </DialogDescription>
         </DialogHeader>
 
         {/* Statistiques */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-secondary rounded-lg">
           <div className="text-center">
             <p className="text-sm text-gray-600">Total</p>
-            <p className="text-2xl font-bold text-gray-900">{totalCount}</p>
+            <p className="text-2xl font-bold text-foreground">{totalCount}</p>
           </div>
           <div className="text-center">
             <p className="text-sm text-gray-600">Envoyés</p>
@@ -191,7 +198,10 @@ export function SendStatusModal({
               className="pl-10"
             />
           </div>
-          <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+          <Select
+            value={filterStatus}
+            onValueChange={(value: any) => setFilterStatus(value)}
+          >
             <SelectTrigger className="w-40">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
@@ -219,33 +229,43 @@ export function SendStatusModal({
         <ScrollArea className="flex-1">
           <div className="space-y-2 p-4">
             {filteredMessages.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 Aucun message ne correspond aux critères de recherche
               </div>
             ) : (
               filteredMessages.map((message) => (
                 <div
                   key={message.id}
-                  className="flex items-start gap-4 p-3 border rounded-lg hover:bg-gray-50 transition"
+                  className="flex items-start gap-4 p-3 border rounded-lg hover:bg-accent transition"
                 >
                   <div className="pt-1">{getStatusIcon(message.status)}</div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm truncate">{message.name}</p>
+                      <p className="font-medium text-sm truncate">
+                        {message.name}
+                      </p>
                       {getStatusBadge(message.status)}
                     </div>
-                    <p className="text-sm text-gray-600 truncate">{message.recipient}</p>
+                    <p className="text-sm text-gray-600 truncate">
+                      {message.recipient}
+                    </p>
                     {message.error && (
-                      <p className="text-xs text-red-600 mt-1">{message.error}</p>
+                      <p className="text-xs text-red-600 mt-1">
+                        {message.error}
+                      </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">{message.timestamp}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {message.timestamp}
+                    </p>
                   </div>
 
-                  <div className="text-right text-xs text-gray-500">
+                  <div className="text-right text-xs text-muted-foreground">
                     <p>{getChannelLabel(message.channel)}</p>
                     {message.message_id && (
-                      <p className="text-gray-400 mt-1">ID: {message.message_id.slice(0, 8)}...</p>
+                      <p className="text-gray-400 mt-1">
+                        ID: {message.message_id.slice(0, 8)}...
+                      </p>
                     )}
                   </div>
                 </div>

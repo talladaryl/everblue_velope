@@ -43,9 +43,12 @@ export default function Organizations() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [selectedOrganization, setSelectedOrganization] = useState<Organization | undefined>();
+  const [selectedOrganization, setSelectedOrganization] = useState<
+    Organization | undefined
+  >();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [organizationToDelete, setOrganizationToDelete] = useState<Organization | null>(null);
+  const [organizationToDelete, setOrganizationToDelete] =
+    useState<Organization | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -119,7 +122,7 @@ export default function Organizations() {
         {/* En-tête */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <Building2 className="h-8 w-8 text-blue-600" />
               Organisations
             </h1>
@@ -140,7 +143,9 @@ export default function Organizations() {
         {error && (
           <Alert className="bg-red-50 border-red-200">
             <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">{error}</AlertDescription>
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -165,7 +170,9 @@ export default function Organizations() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-sm text-gray-600">Total d'organisations</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">{organizations.length}</p>
+                <p className="text-3xl font-bold text-blue-600 mt-2">
+                  {organizations.length}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -205,19 +212,19 @@ export default function Organizations() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      <h3 className="text-lg font-semibold text-foreground truncate">
                         {org.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        ID: {org.id}
-                      </p>
+                      <p className="text-sm text-gray-600 mt-1">ID: {org.id}</p>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          disabled={savingId === org.id || deletingId === org.id}
+                          disabled={
+                            savingId === org.id || deletingId === org.id
+                          }
                         >
                           {savingId === org.id || deletingId === org.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -227,7 +234,9 @@ export default function Organizations() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditOrganization(org)}>
+                        <DropdownMenuItem
+                          onClick={() => handleEditOrganization(org)}
+                        >
                           <Edit className="h-4 w-4 mr-2" />
                           Modifier
                         </DropdownMenuItem>
@@ -245,7 +254,9 @@ export default function Organizations() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Créée le:</span>
-                      <span className="font-medium">{formatDate(org.created_at)}</span>
+                      <span className="font-medium">
+                        {formatDate(org.created_at)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Propriétaire:</span>

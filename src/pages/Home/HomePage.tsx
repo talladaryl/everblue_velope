@@ -92,8 +92,8 @@ export default function HomePage() {
       {/* Message si aucun résultat */}
       {!loading && filteredTemplates.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg mb-2">Aucun modèle trouvé</p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-lg mb-2">Aucun modèle trouvé</p>
+          <p className="text-muted-foreground text-sm">
             Essayez de modifier votre recherche ou de changer de catégorie
           </p>
         </div>

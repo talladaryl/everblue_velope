@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PreviewModel1 } from "./builder/modelPreviews";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { Home, Download, Share2 } from "lucide-react";
+import { Home, Share2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 /**
@@ -13,10 +13,14 @@ import { toast } from "@/components/ui/sonner";
 export default function InvitationView() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  
+
   const [loading, setLoading] = useState(true);
   const [invitation, setInvitation] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Image de fond Pexels
+  const backgroundImage =
+    "https://images.pexels.com/photos/7130537/pexels-photo-7130537.jpeg";
 
   useEffect(() => {
     loadInvitation();
@@ -25,25 +29,27 @@ export default function InvitationView() {
   const loadInvitation = async () => {
     try {
       setLoading(true);
-      
+
       if (!token) {
         setError("Token d'invitation manquant");
         setLoading(false);
         return;
       }
-      
+
       // Importer le service d'invitation
-      const { invitationService } = await import("@/api/services/invitationService");
-      
+      const { invitationService } = await import(
+        "@/api/services/invitationService"
+      );
+
       // Récupérer l'invitation (API ou localStorage)
       const invitationData = await invitationService.getByToken(token);
-      
+
       if (!invitationData) {
         setError("Invitation introuvable ou expirée");
         setLoading(false);
         return;
       }
-      
+
       // Vérifier si l'invitation est expirée
       if (invitationData.expiresAt) {
         const expiryDate = new Date(invitationData.expiresAt);
@@ -53,10 +59,10 @@ export default function InvitationView() {
           return;
         }
       }
-      
+
       setInvitation(invitationData);
       setLoading(false);
-      
+
       console.log("✅ Invitation chargée:", invitationData.recipientName);
     } catch (err: any) {
       console.error("❌ Erreur chargement invitation:", err);
@@ -79,23 +85,44 @@ export default function InvitationView() {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Chargement de votre invitation..." size="lg" />;
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          backgroundImage: `url('${backgroundImage}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <LoadingSpinner message="Chargement de votre invitation..." size="lg" />
+      </div>
+    );
   }
 
   if (error || !invitation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          backgroundImage: `url('${backgroundImage}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-8 max-w-md text-center">
           <div className="text-6xl mb-4">😔</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Invitation introuvable
           </h1>
           <p className="text-gray-600 mb-6">
             {error || "Cette invitation n'existe pas ou a expiré."}
           </p>
-          <Button onClick={() => navigate("/")} className="w-full">
+          <Button
+            onClick={() => navigate("/designs")}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          >
             <Home className="mr-2 h-4 w-4" />
-            Retour à l'accueil
+            Retour aux designs
           </Button>
         </div>
       </div>
@@ -103,29 +130,62 @@ export default function InvitationView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Effets de fond */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
+    <div
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: `url('${backgroundImage}')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* Menu avec logo EV */}
+      <header className="relative z-20 pt-4">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            {/* Logo EV */}
+            <button
+              onClick={() => navigate("/designs")}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-10 h-10 bg-blue-500 text-white flex items-center justify-center font-bold text-lg rounded-md shadow-md">
+                EV
+              </div>
+              <span className="text-white font-medium hidden md:inline text-shadow">
+                Everblue
+              </span>
+            </button>
+
+            {/* Navigation */}
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => navigate("/designs")}
+                variant="ghost"
+                className="text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Designs
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Contenu */}
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 animate-fade-in">
-             Votre Invitation 
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 animate-fade-in text-shadow-lg">
+            Votre Invitation
           </h1>
-          <p className="text-xl text-white/80 animate-fade-in animation-delay-200">
+          <p className="text-xl text-white/90 animate-fade-in animation-delay-200 text-shadow">
             Cliquez sur l'enveloppe pour découvrir votre carte
           </p>
         </div>
 
         {/* Animation d'enveloppe */}
         <div className="flex items-center justify-center mb-8 animate-fade-in animation-delay-400">
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
+          <div className="bg-white/15 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
             <PreviewModel1
               items={invitation.items}
               bgColor={invitation.bgColor}
@@ -140,16 +200,14 @@ export default function InvitationView() {
         <div className="flex flex-wrap gap-4 justify-center animate-fade-in animation-delay-600">
           <Button
             onClick={handleShare}
-            variant="outline"
-            className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20"
+            className="bg-blue-500 hover:bg-blue-600 text-white border-none shadow-lg"
           >
             <Share2 className="mr-2 h-4 w-4" />
             Partager
           </Button>
           <Button
-            onClick={() => navigate("/")}
-            variant="outline"
-            className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20"
+            onClick={() => navigate("/designs")}
+            className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm border border-white/30"
           >
             <Home className="mr-2 h-4 w-4" />
             Créer ma propre invitation
@@ -157,25 +215,20 @@ export default function InvitationView() {
         </div>
       </div>
 
+      {/* Pied de page simple */}
+      <footer className="relative z-10 py-4 mt-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-white/80 text-sm">
+            <p>Everblue 2025</p>
+          </div>
+        </div>
+      </footer>
+
       {/* Styles pour les animations */}
       <style>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
         }
         .animate-fade-in {
           animation: fade-in 0.6s ease-out forwards;
@@ -191,6 +244,12 @@ export default function InvitationView() {
         .animation-delay-600 {
           animation-delay: 0.6s;
           opacity: 0;
+        }
+        .text-shadow {
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .text-shadow-lg {
+          text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
       `}</style>
     </div>

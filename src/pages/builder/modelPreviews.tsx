@@ -9,20 +9,56 @@ if (typeof window !== "undefined") {
 
 // Couleurs disponibles pour les enveloppes
 export const ENVELOPE_COLORS = [
-  { id: "green", primary: "#26452b", secondary: "#283c2b", accent: "#7873A7", name: "Vert" },
-  { id: "red", primary: "#ae4243", secondary: "#ff6b6b", accent: "#ee5253", name: "Rouge" },
-  { id: "blue", primary: "#004d66", secondary: "#0077B2", accent: "#006699", name: "Bleu" },
-  { id: "gold", primary: "#967b5c", secondary: "#ba9872", accent: "#d4af37", name: "Or" },
-  { id: "pink", primary: "#ff9eb5", secondary: "#ffc6d9", accent: "#d87a8d", name: "Rose" },
-  { id: "purple", primary: "#6b5b95", secondary: "#8b7bb5", accent: "#a99bc5", name: "Violet" },
+  {
+    id: "green",
+    primary: "#26452b",
+    secondary: "#283c2b",
+    accent: "#7873A7",
+    name: "Vert",
+  },
+  {
+    id: "red",
+    primary: "#ae4243",
+    secondary: "#ff6b6b",
+    accent: "#ee5253",
+    name: "Rouge",
+  },
+  {
+    id: "blue",
+    primary: "#004d66",
+    secondary: "#0077B2",
+    accent: "#006699",
+    name: "Bleu",
+  },
+  {
+    id: "gold",
+    primary: "#967b5c",
+    secondary: "#ba9872",
+    accent: "#d4af37",
+    name: "Or",
+  },
+  {
+    id: "pink",
+    primary: "#ff9eb5",
+    secondary: "#ffc6d9",
+    accent: "#d87a8d",
+    name: "Rose",
+  },
+  {
+    id: "purple",
+    primary: "#6b5b95",
+    secondary: "#8b7bb5",
+    accent: "#a99bc5",
+    name: "Violet",
+  },
 ];
 
 // Composant de sélection de couleur d'enveloppe
-export function EnvelopeColorPicker({ 
-  selectedColor, 
-  onColorChange 
-}: { 
-  selectedColor: string; 
+export function EnvelopeColorPicker({
+  selectedColor,
+  onColorChange,
+}: {
+  selectedColor: string;
   onColorChange: (colorId: string) => void;
 }) {
   return (
@@ -32,9 +68,9 @@ export function EnvelopeColorPicker({
           key={color.id}
           onClick={() => onColorChange(color.id)}
           className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
-            selectedColor === color.id 
-              ? "border-white ring-2 ring-offset-2 ring-blue-500" 
-              : "border-gray-300"
+            selectedColor === color.id
+              ? "border-white ring-2 ring-offset-2 ring-blue-500"
+              : "border"
           }`}
           style={{ backgroundColor: color.primary }}
           title={color.name}
@@ -69,7 +105,14 @@ interface CardPreviewProps {
 const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
 // Composant CardPreview (identique à votre version)
-function CardPreview({ items, bgColor, bgImage, scale = 0.5, width = 600, height = 400 }: CardPreviewProps) {
+function CardPreview({
+  items,
+  bgColor,
+  bgImage,
+  scale = 0.5,
+  width = 600,
+  height = 400,
+}: CardPreviewProps) {
   const scaledWidth = width * scale;
   const scaledHeight = height * scale;
 
@@ -79,7 +122,7 @@ function CardPreview({ items, bgColor, bgImage, scale = 0.5, width = 600, height
     position: "relative",
     overflow: "hidden",
     borderRadius: "0px",
-    backgroundColor: bgImage ? "transparent" : (bgColor || "#FAF8F4"),
+    backgroundColor: bgImage ? "transparent" : bgColor || "#FAF8F4",
     backgroundImage: bgImage
       ? `url(${bgImage}), ${PAPER_TEXTURE}`
       : bgColor?.includes("gradient")
@@ -118,13 +161,15 @@ function CardPreview({ items, bgColor, bgImage, scale = 0.5, width = 600, height
               scaleX(${item.flipX ? -1 : 1})
               scaleY(${item.flipY ? -1 : 1})
             `,
-            filter: item.filters ? `
+            filter: item.filters
+              ? `
               brightness(${item.filters.brightness || 100}%)
               contrast(${item.filters.contrast || 100}%)
               saturate(${item.filters.saturation || 100}%)
               blur(${(item.filters.blur || 0) * scale}px)
               grayscale(${item.filters.grayscale || 0}%)
-            ` : "none",
+            `
+              : "none",
             opacity: (item.opacity || 100) / 100,
           }}
         >
@@ -185,7 +230,15 @@ function CardPreview({ items, bgColor, bgImage, scale = 0.5, width = 600, height
 }
 
 // Modèle 1: Simple and Basic - Version épurée avec uniquement votre carte
-export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelopeColor = "green", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel1({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "green",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const flapRef = useRef<HTMLDivElement>(null);
   const letterRef = useRef<HTMLDivElement>(null);
   const shadowRef = useRef<HTMLDivElement>(null);
@@ -194,7 +247,8 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
 
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[0];
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[0];
 
   useEffect(() => {
     // Réinitialiser quand les couleurs changent ou au montage
@@ -207,15 +261,15 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
       gsap.set(flapRef.current, {
         rotationX: 0,
         transformOrigin: "top",
-        zIndex: 30
+        zIndex: 30,
       });
-      
-      gsap.set(letterRef.current, { 
+
+      gsap.set(letterRef.current, {
         y: 0,
         z: 0,
-        zIndex: 15
+        zIndex: 15,
       });
-      
+
       gsap.set(shadowRef.current, {
         width: 200,
         boxShadow: "50px 100px 10px 5px rgba(238, 238, 243, 0.7)",
@@ -223,40 +277,52 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
 
       // Créer une timeline unifiée
       const tl = gsap.timeline({ paused: true });
-      
+
       // 1. Le flap se soulève
       tl.to(flapRef.current, {
         duration: 0.5,
         rotationX: 180,
         transformOrigin: "top",
-        ease: "power2.out"
+        ease: "power2.out",
       })
-      // 2. Réduire le z-index du flap
-      .to(flapRef.current, {
-        zIndex: 10,
-        duration: 0.01
-      }, "-=0.1")
-      // 3. La carte monte
-      .to(letterRef.current, {
-        y: -200,
-        duration: 0.9,
-        ease: "back.inOut(1.5)",
-        zIndex: 40
-      }, "-=0.1")
-      // 4. La carte redescend un peu
-      .to(letterRef.current, {
-        duration: 0.7,
-        ease: "back.out(.4)",
-        y: -5,
-        z: 250
-      })
-      // 5. L'ombre s'agrandit
-      .to(shadowRef.current, {
-        width: 450,
-        boxShadow: "-75px 150px 10px 5px rgba(238, 238, 243, 0.7)",
-        ease: "back.out(.2)",
-        duration: 0.7
-      }, "-=0.5");
+        // 2. Réduire le z-index du flap
+        .to(
+          flapRef.current,
+          {
+            zIndex: 10,
+            duration: 0.01,
+          },
+          "-=0.1"
+        )
+        // 3. La carte monte
+        .to(
+          letterRef.current,
+          {
+            y: -200,
+            duration: 0.9,
+            ease: "back.inOut(1.5)",
+            zIndex: 40,
+          },
+          "-=0.1"
+        )
+        // 4. La carte redescend un peu
+        .to(letterRef.current, {
+          duration: 0.7,
+          ease: "back.out(.4)",
+          y: -5,
+          z: 250,
+        })
+        // 5. L'ombre s'agrandit
+        .to(
+          shadowRef.current,
+          {
+            width: 450,
+            boxShadow: "-75px 150px 10px 5px rgba(238, 238, 243, 0.7)",
+            ease: "back.out(.2)",
+            duration: 0.7,
+          },
+          "-=0.5"
+        );
 
       timelineRef.current = tl;
     }
@@ -299,10 +365,13 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
-        style={{ 
+        style={{
           position: "relative",
           perspective: "600px",
           width: "300px",
@@ -315,8 +384,8 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
           onClick={openCard}
           style={{
             position: "relative",
-            width: "300px", 
-            height: "180px", 
+            width: "300px",
+            height: "180px",
             cursor: "pointer",
           }}
         >
@@ -415,7 +484,7 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
                 justifyContent: "center",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -445,30 +514,43 @@ export function PreviewModel1({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "30px", 
-        color: colors.secondary, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isOpen ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer" : "Cliquez sur l'enveloppe pour ouvrir"}
+      <div
+        style={{
+          marginTop: "30px",
+          color: colors.secondary,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isOpen
+          ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer"
+          : "Cliquez sur l'enveloppe pour ouvrir"}
       </div>
     </div>
   );
 }
 
 // Modèle 2: Birthday Card - Version épurée
-export function PreviewModel2({ items, bgColor, bgImage, onClose, guest, envelopeColor = "red", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel2({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "red",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[1]; // Rouge par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[1]; // Rouge par défaut
 
   const toggleEnvelope = () => {
     setIsOpen(!isOpen);
@@ -493,8 +575,11 @@ export function PreviewModel2({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         onClick={toggleEnvelope}
         style={{
@@ -639,7 +724,7 @@ export function PreviewModel2({ items, bgColor, bgImage, onClose, guest, envelop
                 justifyContent: "center",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -666,30 +751,43 @@ export function PreviewModel2({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "30px", 
-        color: colors.accent, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isOpen ? "✓ Carte ouverte - Cliquez sur ✕ ou l'enveloppe pour fermer" : "Cliquez sur l'enveloppe pour ouvrir"}
+      <div
+        style={{
+          marginTop: "30px",
+          color: colors.accent,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isOpen
+          ? "✓ Carte ouverte - Cliquez sur ✕ ou l'enveloppe pour fermer"
+          : "Cliquez sur l'enveloppe pour ouvrir"}
       </div>
     </div>
   );
 }
 
 // Modèle 3: Simple and Basic Card - Version corrigée avec couverture complète
-export function PreviewModel3({ items, bgColor, bgImage, onClose, guest, envelopeColor = "gold", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel3({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "gold",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[3]; // Or par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[3]; // Or par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -710,8 +808,11 @@ export function PreviewModel3({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="envelope-model3"
         onMouseEnter={() => setIsHovered(true)}
@@ -803,7 +904,7 @@ export function PreviewModel3({ items, bgColor, bgImage, onClose, guest, envelop
                 justifyContent: "center",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -913,31 +1014,44 @@ export function PreviewModel3({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "40px", 
-        color: colors.accent, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isHovered ? "✓ Carte sortie - Passez la souris ailleurs ou cliquez ✕" : "Passez la souris sur l'enveloppe"}
+      <div
+        style={{
+          marginTop: "40px",
+          color: colors.accent,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isHovered
+          ? "✓ Carte sortie - Passez la souris ailleurs ou cliquez ✕"
+          : "Passez la souris sur l'enveloppe"}
       </div>
     </div>
   );
 }
 
 // Modèle 4: Love Card - Version corrigée
-export function PreviewModel4({ items, bgColor, bgImage, onClose, guest, envelopeColor = "blue", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel4({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "blue",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
   const letterRef = useRef<HTMLDivElement>(null);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[2]; // Bleu par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[2]; // Bleu par défaut
 
   useEffect(() => {
     // Ajouter les keyframes CSS pour les cœurs
@@ -977,14 +1091,20 @@ export function PreviewModel4({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
-      <div className="envlope-wrapper" style={{ 
-        height: "380px", 
-        marginTop: "20px",
-        position: "relative",
-        width: "280px",
-      }}>
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
+      <div
+        className="envlope-wrapper"
+        style={{
+          height: "380px",
+          marginTop: "20px",
+          position: "relative",
+          width: "280px",
+        }}
+      >
         <div
           id="envelope-model4"
           className={isOpen ? "open" : "close"}
@@ -1108,7 +1228,7 @@ export function PreviewModel4({ items, bgColor, bgImage, onClose, guest, envelop
                   padding: "10px",
                 }}
               >
-                <CardPreview 
+                <CardPreview
                   items={items}
                   bgColor={bgColor}
                   bgImage={bgImage}
@@ -1154,18 +1274,22 @@ export function PreviewModel4({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "180px", 
-        color: colors.accent, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isOpen ? "✓ Carte ouverte - Cliquez sur ✕ ou l'enveloppe pour fermer" : "Cliquez sur l'enveloppe pour ouvrir"}
+      <div
+        style={{
+          marginTop: "180px",
+          color: colors.accent,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isOpen
+          ? "✓ Carte ouverte - Cliquez sur ✕ ou l'enveloppe pour fermer"
+          : "Cliquez sur l'enveloppe pour ouvrir"}
       </div>
 
       {/* Styles inline pour les animations */}
@@ -1223,12 +1347,21 @@ export function PreviewModel4({ items, bgColor, bgImage, onClose, guest, envelop
 }
 
 // Modèle 5: Valentine Card - Version épurée
-export function PreviewModel5({ items, bgColor, bgImage, onClose, guest, envelopeColor = "pink", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel5({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "pink",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isActive, setIsActive] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[4]; // Rose par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[4]; // Rose par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -1249,8 +1382,11 @@ export function PreviewModel5({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className={`envelope-model5 ${isActive ? "active" : ""}`}
         style={{
@@ -1392,7 +1528,7 @@ export function PreviewModel5({ items, bgColor, bgImage, onClose, guest, envelop
                 justifyContent: "center",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -1406,18 +1542,22 @@ export function PreviewModel5({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "30px", 
-        color: "#fff", 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.2)",
-        borderRadius: "8px",
-        border: `1px solid rgba(255, 255, 255, 0.3)`,
-      }}>
-        {isActive ? "✓ Carte ouverte - Cliquez sur ✕ ou l'enveloppe pour fermer" : "Cliquez sur l'enveloppe pour ouvrir"}
+      <div
+        style={{
+          marginTop: "30px",
+          color: "#fff",
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.2)",
+          borderRadius: "8px",
+          border: `1px solid rgba(255, 255, 255, 0.3)`,
+        }}
+      >
+        {isActive
+          ? "✓ Carte ouverte - Cliquez sur ✕ ou l'enveloppe pour fermer"
+          : "Cliquez sur l'enveloppe pour ouvrir"}
       </div>
 
       {/* Styles inline pour les animations */}
@@ -1435,12 +1575,21 @@ export function PreviewModel5({ items, bgColor, bgImage, onClose, guest, envelop
 }
 
 // Modèle 6: Simple Card - Version corrigée avec meilleure visibilité
-export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelopeColor = "green", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel6({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "green",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[0]; // Vert par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[0]; // Vert par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -1461,8 +1610,11 @@ export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="envelope-model6"
         onMouseEnter={() => setIsHovered(true)}
@@ -1497,11 +1649,12 @@ export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelop
               height: "0",
               borderStyle: "solid",
               borderWidth: "75px 0 0 120px",
-              borderColor: "transparent transparent transparent " + colors.primary,
+              borderColor:
+                "transparent transparent transparent " + colors.primary,
               zIndex: 1,
             }}
           />
-          
+
           {/* Triangles latéraux (côté droit) */}
           <div
             style={{
@@ -1512,7 +1665,8 @@ export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelop
               height: "0",
               borderStyle: "solid",
               borderWidth: "0 0 75px 120px",
-              borderColor: "transparent transparent " + colors.primary + " transparent",
+              borderColor:
+                "transparent transparent " + colors.primary + " transparent",
               zIndex: 1,
             }}
           />
@@ -1621,7 +1775,7 @@ export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelop
                 justifyContent: "center",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -1635,18 +1789,22 @@ export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "120px", // Ajusté pour la nouvelle hauteur
-        color: colors.secondary, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isHovered ? "✓ Carte sortie - Passez la souris ailleurs ou cliquez ✕" : "Passez la souris sur l'enveloppe"}
+      <div
+        style={{
+          marginTop: "120px", // Ajusté pour la nouvelle hauteur
+          color: colors.secondary,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isHovered
+          ? "✓ Carte sortie - Passez la souris ailleurs ou cliquez ✕"
+          : "Passez la souris sur l'enveloppe"}
       </div>
 
       {/* Styles inline pour les animations */}
@@ -1668,13 +1826,22 @@ export function PreviewModel6({ items, bgColor, bgImage, onClose, guest, envelop
   );
 }
 // Modèle 7: Extravagant Card - Version fidèle au original
-export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelopeColor = "gold", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel7({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "gold",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCutting, setIsCutting] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[3]; // Or par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[3]; // Or par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -1711,8 +1878,11 @@ export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="envelop-model7"
         style={{
@@ -1768,11 +1938,14 @@ export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelop
             zIndex: 400,
             backgroundColor: "#f9f9f9",
             border: "4px solid #e2e2e2",
-            backgroundImage: "url('https://www.freepnglogos.com/uploads/heart-png/emoji-heart-33.png')",
+            backgroundImage:
+              "url('https://www.freepnglogos.com/uploads/heart-png/emoji-heart-33.png')",
             backgroundSize: "24px",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
-            cursor: isCutting ? "default" : `url('https://i.postimg.cc/GtLCdKxR/sisors.png'), pointer`,
+            cursor: isCutting
+              ? "default"
+              : `url('https://i.postimg.cc/GtLCdKxR/sisors.png'), pointer`,
             transition: "all 0.5s ease",
             transform: isCutting ? "translateX(-80%)" : "translateX(0)",
           }}
@@ -1791,7 +1964,8 @@ export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelop
             zIndex: 300,
             backgroundColor: "#f9f9f9",
             border: "4px solid #e2e2e2",
-            backgroundImage: "url('https://www.freepnglogos.com/uploads/heart-png/emoji-heart-33.png')",
+            backgroundImage:
+              "url('https://www.freepnglogos.com/uploads/heart-png/emoji-heart-33.png')",
             backgroundSize: "24px",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -1868,7 +2042,7 @@ export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelop
                 padding: "5px",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -1896,22 +2070,28 @@ export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état avec instructions */}
-      <div style={{ 
-        marginTop: "40px", 
-        color: colors.primary, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}40`,
-        maxWidth: "300px",
-      }}>
+      <div
+        style={{
+          marginTop: "40px",
+          color: colors.primary,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}40`,
+          maxWidth: "300px",
+        }}
+      >
         {!isCutting && !isOpen ? (
           <>
-            <div style={{ marginBottom: "5px", fontWeight: "bold" }}>✂️ Cliquez sur le TIMBRE pour couper</div>
-            <div style={{ fontSize: "12px", opacity: 0.8 }}>Utilisez les ciseaux pour ouvrir l'enveloppe</div>
+            <div style={{ marginBottom: "5px", fontWeight: "bold" }}>
+              ✂️ Cliquez sur le TIMBRE pour couper
+            </div>
+            <div style={{ fontSize: "12px", opacity: 0.8 }}>
+              Utilisez les ciseaux pour ouvrir l'enveloppe
+            </div>
           </>
         ) : isOpen ? (
           "✓ Enveloppe ouverte - Cliquez sur ✕ pour fermer"
@@ -1934,14 +2114,23 @@ export function PreviewModel7({ items, bgColor, bgImage, onClose, guest, envelop
 }
 
 // Modèle 8: Basic Card - Version avec position ajustée
-export function PreviewModel8({ items, bgColor, bgImage, onClose, guest, envelopeColor = "pink", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel8({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "pink",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
   const flapRef = useRef<HTMLDivElement>(null);
   const letterRef = useRef<HTMLDivElement>(null);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[4]; // Rose par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[4]; // Rose par défaut
 
   useEffect(() => {
     if (isOpen && flapRef.current && letterRef.current) {
@@ -1950,15 +2139,15 @@ export function PreviewModel8({ items, bgColor, bgImage, onClose, guest, envelop
         duration: 1.6,
         rotationX: -180,
         transformOrigin: "top center",
-        ease: "power2.inOut"
+        ease: "power2.inOut",
       });
-      
+
       gsap.to(letterRef.current, {
         duration: 0.32,
         y: -180, // RÉDUIT de -260 à -180 (sort moins haut)
         opacity: 1,
         ease: "power2.out",
-        delay: 0.8
+        delay: 0.8,
       });
     } else if (!isOpen && flapRef.current && letterRef.current) {
       // Animation de fermeture
@@ -1966,15 +2155,15 @@ export function PreviewModel8({ items, bgColor, bgImage, onClose, guest, envelop
         duration: 0.3,
         y: 0,
         opacity: 0,
-        ease: "power2.in"
+        ease: "power2.in",
       });
-      
+
       gsap.to(flapRef.current, {
         duration: 1,
         rotationX: 0,
         transformOrigin: "top center",
         ease: "power2.inOut",
-        delay: 0.1
+        delay: 0.1,
       });
     }
   }, [isOpen]);
@@ -2009,8 +2198,11 @@ export function PreviewModel8({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="envelope-wrapper-model8"
         style={{
@@ -2148,7 +2340,7 @@ export function PreviewModel8({ items, bgColor, bgImage, onClose, guest, envelop
                 padding: "10px",
               }}
             >
-              <CardPreview 
+              <CardPreview
                 items={items}
                 bgColor={bgColor}
                 bgImage={bgImage}
@@ -2180,30 +2372,43 @@ export function PreviewModel8({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état - DESCENDU aussi */}
-      <div style={{ 
-        marginTop: "60px", // RÉDUIT de 100px à 60px
-        color: colors.accent, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isOpen ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer" : "Cliquez sur l'enveloppe pour ouvrir"}
+      <div
+        style={{
+          marginTop: "60px", // RÉDUIT de 100px à 60px
+          color: colors.accent,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isOpen
+          ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer"
+          : "Cliquez sur l'enveloppe pour ouvrir"}
       </div>
     </div>
   );
 }
 
 // Modèle 9: Fly Card - Version corrigée avec bonnes dimensions
-export function PreviewModel9({ items, bgColor, bgImage, onClose, guest, envelopeColor = "purple", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel9({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "purple",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[5]; // Violet par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[5]; // Violet par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -2224,11 +2429,14 @@ export function PreviewModel9({ items, bgColor, bgImage, onClose, guest, envelop
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="envelope_form_wrap-model9"
-        style={{ 
+        style={{
           maxWidth: "300px", // RÉDUIT de 500px à 300px
           width: "300px",
           marginTop: "20px",
@@ -2326,7 +2534,7 @@ export function PreviewModel9({ items, bgColor, bgImage, onClose, guest, envelop
                     padding: "10px",
                   }}
                 >
-                  <CardPreview 
+                  <CardPreview
                     items={items}
                     bgColor={bgColor}
                     bgImage={bgImage}
@@ -2386,21 +2594,25 @@ export function PreviewModel9({ items, bgColor, bgImage, onClose, guest, envelop
                 }}
               >
                 {/* Côtés de l'enveloppe */}
-                <div style={{
-                  position: "absolute",
-                  background: colors.accent, // Couleur dynamique
-                  width: "50%",
-                  height: "100%",
-                  clipPath: "polygon(100% 50%, 0 0, 0 100%)",
-                }} />
-                <div style={{
-                  position: "absolute",
-                  right: "0",
-                  background: colors.accent, // Couleur dynamique
-                  width: "50%",
-                  height: "100%",
-                  clipPath: "polygon(0 50%, 100% 0, 100% 100%)",
-                }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    background: colors.accent, // Couleur dynamique
+                    width: "50%",
+                    height: "100%",
+                    clipPath: "polygon(100% 50%, 0 0, 0 100%)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    right: "0",
+                    background: colors.accent, // Couleur dynamique
+                    width: "50%",
+                    height: "100%",
+                    clipPath: "polygon(0 50%, 100% 0, 100% 100%)",
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -2408,31 +2620,44 @@ export function PreviewModel9({ items, bgColor, bgImage, onClose, guest, envelop
       </div>
 
       {/* Indicateur d'état - STYLE UNIFIÉ */}
-      <div style={{ 
-        marginTop: "30px", 
-        color: colors.accent, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-        maxWidth: "300px",
-      }}>
-        {isHovered ? "✓ Carte visible - Passez la souris ailleurs ou cliquez ✕" : "Passez la souris sur l'enveloppe"}
+      <div
+        style={{
+          marginTop: "30px",
+          color: colors.accent,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+          maxWidth: "300px",
+        }}
+      >
+        {isHovered
+          ? "✓ Carte visible - Passez la souris ailleurs ou cliquez ✕"
+          : "Passez la souris sur l'enveloppe"}
       </div>
     </div>
   );
 }
 
 // Modèle 10: Amour Card - Version corrigée
-export function PreviewModel10({ items, bgColor, bgImage, onClose, guest, envelopeColor = "red", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel10({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "red",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isActive, setIsActive] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[1]; // Rouge par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[1]; // Rouge par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -2453,8 +2678,11 @@ export function PreviewModel10({ items, bgColor, bgImage, onClose, guest, envelo
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="cssletter-model10"
         style={{
@@ -2614,7 +2842,7 @@ export function PreviewModel10({ items, bgColor, bgImage, onClose, guest, envelo
                   justifyContent: "center",
                 }}
               >
-                <CardPreview 
+                <CardPreview
                   items={items}
                   bgColor={bgColor}
                   bgImage={bgImage}
@@ -2629,30 +2857,43 @@ export function PreviewModel10({ items, bgColor, bgImage, onClose, guest, envelo
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "30px", 
-        color: "white", 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid rgba(255, 255, 255, 0.3)`,
-      }}>
-        {isActive ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer" : "Cliquez sur le cœur pour ouvrir"}
+      <div
+        style={{
+          marginTop: "30px",
+          color: "white",
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid rgba(255, 255, 255, 0.3)`,
+        }}
+      >
+        {isActive
+          ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer"
+          : "Cliquez sur le cœur pour ouvrir"}
       </div>
     </div>
   );
 }
 
 // Modèle 11: Heart Card - Version avec carte qui sort sur le côté
-export function PreviewModel11({ items, bgColor, bgImage, onClose, guest, envelopeColor = "pink", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel11({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "pink",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isChecked, setIsChecked] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[4]; // Rose par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[4]; // Rose par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -2673,8 +2914,11 @@ export function PreviewModel11({ items, bgColor, bgImage, onClose, guest, envelo
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         style={{
           width: "300px",
@@ -2694,10 +2938,10 @@ export function PreviewModel11({ items, bgColor, bgImage, onClose, guest, envelo
           onChange={(e) => setIsChecked(e.target.checked)}
           style={{ display: "none" }}
         />
-        
+
         <label
           htmlFor="check-model11"
-          style={{ 
+          style={{
             position: "absolute",
             cursor: "pointer",
             width: "100%",
@@ -2795,7 +3039,7 @@ export function PreviewModel11({ items, bgColor, bgImage, onClose, guest, envelo
                   justifyContent: "center",
                 }}
               >
-                <CardPreview 
+                <CardPreview
                   items={items}
                   bgColor={bgColor}
                   bgImage={bgImage}
@@ -2844,7 +3088,9 @@ export function PreviewModel11({ items, bgColor, bgImage, onClose, guest, envelo
               backgroundColor: colors.primary,
               clipPath: "polygon(0 0, 100% 0, 50% 55%)",
               transformOrigin: "top",
-              transform: isChecked ? "rotateX(-180deg) translateY(-3px)" : "rotateX(0deg)",
+              transform: isChecked
+                ? "rotateX(-180deg) translateY(-3px)"
+                : "rotateX(0deg)",
               transition: "transform 0.4s ease-in-out",
               transitionDelay: isChecked ? "0s" : "0.2s",
               zIndex: 5,
@@ -2899,32 +3145,44 @@ export function PreviewModel11({ items, bgColor, bgImage, onClose, guest, envelo
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "100px", 
-        color: colors.accent, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.05)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-        maxWidth: "400px",
-      }}>
-        {isChecked ? "✓ Carte ouverte à droite - Cliquez sur ✕ pour fermer" : "Cliquez sur la lettre pour ouvrir"}
+      <div
+        style={{
+          marginTop: "100px",
+          color: colors.accent,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+          maxWidth: "400px",
+        }}
+      >
+        {isChecked
+          ? "✓ Carte ouverte à droite - Cliquez sur ✕ pour fermer"
+          : "Cliquez sur la lettre pour ouvrir"}
       </div>
     </div>
   );
 }
 
-
 // Modèle 12: Friend Card - Version corrigée
-export function PreviewModel12({ items, bgColor, bgImage, onClose, guest, envelopeColor = "purple", onEnvelopeColorChange }: ModelPreviewProps) {
+export function PreviewModel12({
+  items,
+  bgColor,
+  bgImage,
+  onClose,
+  guest,
+  envelopeColor = "purple",
+  onEnvelopeColorChange,
+}: ModelPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localEnvColor, setLocalEnvColor] = useState(envelopeColor);
-  
+
   // Obtenir les couleurs selon la sélection
-  const colors = ENVELOPE_COLORS.find(c => c.id === localEnvColor) || ENVELOPE_COLORS[5]; // Violet par défaut
+  const colors =
+    ENVELOPE_COLORS.find((c) => c.id === localEnvColor) || ENVELOPE_COLORS[5]; // Violet par défaut
 
   const handleColorChange = (colorId: string) => {
     setLocalEnvColor(colorId);
@@ -2956,8 +3214,11 @@ export function PreviewModel12({ items, bgColor, bgImage, onClose, guest, envelo
       }}
     >
       {/* Sélecteur de couleur */}
-      <EnvelopeColorPicker selectedColor={localEnvColor} onColorChange={handleColorChange} />
-      
+      <EnvelopeColorPicker
+        selectedColor={localEnvColor}
+        onColorChange={handleColorChange}
+      />
+
       <div
         className="letter-model12"
         style={{
@@ -3004,7 +3265,9 @@ export function PreviewModel12({ items, bgColor, bgImage, onClose, guest, envelo
               }}
             >
               <p>from:</p>
-              <p style={{ color: colors.secondary }}>{guest?.name || "Expéditeur"}</p>
+              <p style={{ color: colors.secondary }}>
+                {guest?.name || "Expéditeur"}
+              </p>
             </li>
           </ul>
 
@@ -3111,7 +3374,7 @@ export function PreviewModel12({ items, bgColor, bgImage, onClose, guest, envelo
                   justifyContent: "center",
                 }}
               >
-                <CardPreview 
+                <CardPreview
                   items={items}
                   bgColor={bgColor}
                   bgImage={bgImage}
@@ -3126,18 +3389,22 @@ export function PreviewModel12({ items, bgColor, bgImage, onClose, guest, envelo
       </div>
 
       {/* Indicateur d'état */}
-      <div style={{ 
-        marginTop: "30px", 
-        color: colors.primary, 
-        fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
-        textAlign: "center",
-        padding: "10px 15px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "8px",
-        border: `1px solid ${colors.accent}20`,
-      }}>
-        {isOpen ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer" : "Cliquez sur l'enveloppe pour ouvrir"}
+      <div
+        style={{
+          marginTop: "30px",
+          color: colors.primary,
+          fontFamily: "Arial, sans-serif",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "10px 15px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          border: `1px solid ${colors.accent}20`,
+        }}
+      >
+        {isOpen
+          ? "✓ Carte ouverte - Cliquez sur ✕ pour fermer"
+          : "Cliquez sur l'enveloppe pour ouvrir"}
       </div>
 
       {/* Styles inline pour les animations */}
@@ -3181,4 +3448,3 @@ export function PreviewModel12({ items, bgColor, bgImage, onClose, guest, envelo
     </div>
   );
 }
-

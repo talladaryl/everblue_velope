@@ -17,24 +17,32 @@ import {
   Gift,
   Building,
   Plus,
-  LayoutDashboard,
-  Send,
   Inbox,
   Settings,
+  Bell,
+  Search,
+  User,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const items = [
-  { to: "/designs", label: "Mes designs", icon: ImageIcon },
-  { to: "/invitations", label: "Invitations", icon: Gift },
-  { to: "/messages", label: "Messages", icon: MessageSquare },
-  { to: "/events", label: "Événements", icon: Calendar },
-  { to: "/inbox", label: "Invitations reçues", icon: Inbox },
-  { to: "/organizations", label: "Organisations", icon: Building },
-  { to: "/help", label: "Centre d'aide", icon: HelpCircle },
+const getNavigationItems = (t: (key: string) => string) => [
+  { to: "/designs", label: t("nav.designs"), icon: ImageIcon },
+  { to: "/invitations", label: t("nav.invitations"), icon: Gift },
+  { to: "/messages", label: t("nav.messages"), icon: MessageSquare },
+  { to: "/events", label: t("nav.events"), icon: Calendar },
+  { to: "/inbox", label: t("nav.inbox"), icon: Inbox },
+  { to: "/organizations", label: t("nav.organizations"), icon: Building },
+  { to: "/help", label: t("nav.help"), icon: HelpCircle },
 ];
 
 export default function LayoutWrapper() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const { t } = useLanguage();
+  const items = getNavigationItems(t);
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
       return localStorage.getItem("eb_sidebar_collapsed") === "1";
@@ -50,33 +58,68 @@ export default function LayoutWrapper() {
     } catch {}
   }, [collapsed]);
 
+  // Appliquer le thème
+  useEffect(() => {
+    document.documentElement.className = theme;
+  }, [theme]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background avec effet flottant */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div
+          className={`absolute -top-40 -right-40 w-80 h-80 rounded-full ${
+            theme === "dark"
+              ? "bg-blue-900/10 blur-3xl"
+              : "bg-blue-50/50 blur-3xl"
+          }`}
+        ></div>
+        <div
+          className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full ${
+            theme === "dark"
+              ? "bg-purple-900/10 blur-3xl"
+              : "bg-purple-50/50 blur-3xl"
+          }`}
+        ></div>
+      </div>
+
       <div className="flex">
-        {/* Sidebar - Style moderne */}
+        {/* Sidebar flottante */}
         <aside
-          className={`bg-white border-r border-gray-100 h-screen fixed top-0 left-0 z-30 transform transition-all duration-300 ease-in-out
-            ${collapsed ? "w-20" : "w-64"} 
-            hidden md:block shadow-sm`}
+          className={`h-screen fixed top-4 left-4 bottom-4 z-30 transform transition-all duration-300 ease-out rounded-2xl shadow-2xl ${
+            collapsed ? "w-20" : "w-64"
+          } hidden md:block backdrop-blur-xl ${
+            theme === "dark"
+              ? "bg-gray-800/80 border border-gray-700/50"
+              : "bg-white/80 border border-gray-200/50"
+          }`}
+          style={{
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
         >
           <div className="h-full flex flex-col">
-            {/* Logo section */}
-            <div className="px-4 py-5 flex items-center justify-between border-b border-gray-100">
+            {/* Logo section avec contrôles de thème/langue */}
+            <div
+              className={`px-4 py-4 flex items-center justify-between ${
+                theme === "dark" ? "border-gray-700/50" : "border-gray-200/50"
+              } border-b`}
+            >
               <div className="flex items-center gap-3">
                 <div
                   className={`flex items-center justify-center ${
                     collapsed ? "w-8 h-8" : "w-9 h-9"
-                  } bg-blue-600 rounded-lg`}
+                  } bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md`}
                 >
                   <span className="text-white font-bold text-lg">EB</span>
                 </div>
                 {!collapsed && (
                   <div className="flex flex-col">
-                    <div className="font-bold text-gray-900 text-lg tracking-tight">
+                    <div className="font-bold text-lg tracking-tight text-foreground">
                       Everblue
                     </div>
-                    <div className="text-xs text-gray-500 font-medium">
-                      Design Studio
+                    <div className="text-xs font-medium text-muted-foreground">
+                      {t("app.subtitle")}
                     </div>
                   </div>
                 )}
@@ -85,15 +128,45 @@ export default function LayoutWrapper() {
               <button
                 onClick={() => setCollapsed((s) => !s)}
                 aria-label={collapsed ? "Ouvrir le menu" : "Réduire le menu"}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                title={collapsed ? "Ouvrir" : "Réduire"}
+                className={`p-2 rounded-lg transition-all hover:scale-105 ${
+                  theme === "dark"
+                    ? "hover:bg-gray-700/50"
+                    : "hover:bg-gray-100/50"
+                }`}
               >
                 {collapsed ? (
-                  <ChevronRight className="h-4 w-4 text-gray-600" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronLeft className="h-4 w-4 text-gray-600" />
+                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                 )}
               </button>
+            </div>
+
+            {/* Contrôles de thème et langue */}
+            <div
+              className={`px-3 py-3 ${
+                theme === "dark" ? "border-gray-700/50" : "border-gray-200/50"
+              } border-b`}
+            >
+              <div
+                className={`flex ${
+                  collapsed
+                    ? "flex-col items-center gap-2"
+                    : "items-center justify-between gap-3"
+                }`}
+              >
+                {!collapsed && (
+                  <div className="text-xs font-medium text-muted-foreground">
+                    {t("menu.settings")}
+                  </div>
+                )}
+                <div
+                  className={`flex ${collapsed ? "flex-col gap-2" : "gap-2"}`}
+                >
+                  <ThemeToggle />
+                  <LanguageSelector />
+                </div>
+              </div>
             </div>
 
             {/* Navigation */}
@@ -106,26 +179,41 @@ export default function LayoutWrapper() {
                       <NavLink
                         to={it.to}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 py-2.5 px-3 rounded-lg mx-1 transition-all duration-200
+                          `flex items-center gap-3 py-2.5 px-3 rounded-xl mx-1 transition-all duration-200 group
                           ${
                             isActive
-                              ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                              ? theme === "dark"
+                                ? "bg-blue-500/20 text-blue-400 shadow-inner shadow-blue-500/10"
+                                : "bg-blue-50 text-blue-600 shadow-inner shadow-blue-100"
+                              : theme === "dark"
+                              ? "text-gray-300 hover:bg-gray-700/30 hover:text-white hover:shadow-sm"
+                              : "text-gray-600 hover:bg-white/50 hover:text-gray-900 hover:shadow-sm"
                           } 
                           ${collapsed ? "justify-center px-2" : ""}`
                         }
                       >
                         {({ isActive }) => (
                           <>
-                            <Icon
-                              className={`h-5 w-5 ${
-                                isActive ? "text-blue-600" : "text-gray-500"
-                              }`}
-                            />
+                            <div className="relative">
+                              <div
+                                className={`absolute inset-0 rounded-lg ${
+                                  isActive ? "bg-blue-500/10" : "bg-transparent"
+                                }`}
+                              ></div>
+                              <Icon
+                                className={`h-5 w-5 relative z-10 ${
+                                  isActive
+                                    ? "text-blue-500"
+                                    : "text-muted-foreground group-hover:text-foreground"
+                                }`}
+                              />
+                            </div>
                             {!collapsed && (
                               <span
                                 className={`text-sm font-medium ${
-                                  isActive ? "text-blue-600" : "text-gray-700"
+                                  isActive
+                                    ? "text-blue-500"
+                                    : "text-gray-700 dark:text-gray-300 group-hover:text-foreground"
                                 }`}
                               >
                                 {it.label}
@@ -140,172 +228,216 @@ export default function LayoutWrapper() {
               </ul>
             </nav>
 
-            {/* Bottom section */}
-            <div className="px-3 py-4 border-t border-gray-100">
-              <button
-                onClick={() => navigate("/builder")}
-                className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm
-                  ${collapsed ? "px-3" : "px-4"} mb-3`}
-              >
-                <Plus className="h-5 w-5" />
-                {!collapsed && (
-                  <span className="text-sm font-medium">Nouveau design</span>
-                )}
-              </button>
-
+            {/* Bottom section - PROFIL SANS BOUTON DE DÉCONNEXION */}
+            <div
+              className={`px-3 py-4 ${
+                theme === "dark" ? "border-gray-700/50" : "border-gray-200/50"
+              } border-t`}
+            >
               <div className="flex items-center gap-2 px-1">
                 <div className={`flex-shrink-0 ${collapsed ? "mx-auto" : ""}`}>
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-semibold text-gray-700">
-                      U
-                    </span>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
+                      theme === "dark" ? "bg-gray-700" : "bg-gray-100"
+                    }`}
+                  >
+                    <User className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
 
                 {!collapsed && (
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      Utilisateur
+                    <div className="text-sm font-medium text-foreground truncate">
+                      {t("user.guest")}
                     </div>
-                    <div className="text-xs text-gray-500">Compte</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("user.account")}
+                    </div>
                   </div>
                 )}
-
-                <button
-                  onClick={() => navigate("/logout")}
-                  className={`p-2 rounded-lg hover:bg-gray-100 ${
-                    collapsed ? "ml-0" : ""
-                  }`}
-                  title="Déconnexion"
-                >
-                  <LogOut className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                </button>
               </div>
             </div>
           </div>
         </aside>
 
-        {/* Mobile header */}
-        <div className="md:hidden w-full fixed top-0 left-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">EB</span>
+        {/* Header mobile flottant */}
+        <div className="md:hidden w-full fixed top-0 left-0 z-40">
+          <div
+            className={`mx-4 mt-4 rounded-2xl shadow-2xl backdrop-blur-xl ${
+              theme === "dark"
+                ? "bg-gray-800/80 border border-gray-700/50"
+                : "bg-white/80 border border-gray-200/50"
+            }`}
+            style={{
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">EB</span>
+                </div>
+                <div>
+                  <div className="font-bold text-foreground">Everblue</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("app.subtitle")}
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="font-bold text-gray-900">Everblue</div>
-                <div className="text-xs text-gray-500">Design Studio</div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate("/builder")}
-                className="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                title="Nouveau design"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setOrganisationOpen(true)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Menu className="h-5 w-5 text-gray-600" />
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-2">
+                  <LanguageSelector />
+                  <ThemeToggle />
+                </div>
+                <button
+                  onClick={() => setOrganisationOpen(true)}
+                  className={`p-2 rounded-lg transition-all ${
+                    theme === "dark"
+                      ? "hover:bg-gray-700/50"
+                      : "hover:bg-gray-100/50"
+                  }`}
+                >
+                  <Menu className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile drawer */}
+        {/* Drawer mobile flottant */}
         {OrganisationOpen && (
           <div className="md:hidden fixed inset-0 z-50">
             <div
               className="absolute inset-0 bg-black/30 backdrop-blur-sm"
               onClick={() => setOrganisationOpen(false)}
             />
-            <div className="absolute left-0 top-0 bottom-0 w-80 bg-white p-5 shadow-xl">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">EB</span>
-                  </div>
-                  <div>
-                    <div className="font-bold text-gray-900 text-lg">
-                      Everblue
+            <div
+              className={`absolute left-4 top-4 bottom-4 w-80 rounded-2xl shadow-2xl backdrop-blur-xl ${
+                theme === "dark"
+                  ? "bg-gray-800/90 border border-gray-700/50"
+                  : "bg-white/90 border border-gray-200/50"
+              }`}
+              style={{
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+              }}
+            >
+              <div className="p-5 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">EB</span>
                     </div>
-                    <div className="text-xs text-gray-500">Design Studio</div>
+                    <div>
+                      <div className="font-bold text-lg text-foreground">
+                        Everblue
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t("app.subtitle")}
+                      </div>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setOrganisationOpen(false)}
+                    className={`p-2 rounded-lg transition-all hover:scale-105 ${
+                      theme === "dark"
+                        ? "hover:bg-gray-700/50"
+                        : "hover:bg-gray-100/50"
+                    }`}
+                  >
+                    <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setOrganisationOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                >
-                  <ChevronLeft className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
 
-              <div className="mb-6">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
-                  MENU PRINCIPAL
-                </div>
-                <nav className="space-y-1">
-                  {items.map((it) => {
-                    const Icon = it.icon;
-                    return (
-                      <button
-                        key={it.to}
-                        onClick={() => {
-                          navigate(it.to);
-                          setOrganisationOpen(false);
-                        }}
-                        className="flex items-center gap-3 w-full text-left py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors"
-                      >
-                        <Icon className="h-5 w-5 text-gray-500" />
-                        <span className="font-medium">{it.label}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
-              </div>
-
-              <div className="pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-3 px-2 py-3">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-700">
-                      U
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">Utilisateur</div>
-                    <div className="text-sm text-gray-500">
-                      Compte personnel
+                {/* Contrôles */}
+                <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs font-medium text-muted-foreground mb-1">
+                        {t("menu.theme")}
+                      </div>
+                      <ThemeToggle />
+                    </div>
+                    <div>
+                      <div className="text-xs font-medium text-muted-foreground mb-1">
+                        {t("menu.language")}
+                      </div>
+                      <LanguageSelector />
                     </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    navigate("/logout");
-                    setOrganisationOpen(false);
-                  }}
-                  className="flex items-center gap-3 w-full text-left py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600 mt-2"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="font-medium">Déconnexion</span>
-                </button>
+                <div className="flex-1 overflow-auto">
+                  <div className="text-xs font-semibold uppercase tracking-wider mb-3 px-2 text-muted-foreground">
+                    {t("menu.main")}
+                  </div>
+                  <nav className="space-y-1">
+                    {items.map((it) => {
+                      const Icon = it.icon;
+                      return (
+                        <button
+                          key={it.to}
+                          onClick={() => {
+                            navigate(it.to);
+                            setOrganisationOpen(false);
+                          }}
+                          className={`flex items-center gap-3 w-full text-left py-3 px-3 rounded-xl transition-all ${
+                            theme === "dark"
+                              ? "text-gray-300 hover:bg-gray-700/30"
+                              : "text-gray-700 hover:bg-white/50"
+                          }`}
+                        >
+                          <Icon className="h-5 w-5 text-muted-foreground" />
+                          <span className="font-medium">{it.label}</span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </div>
+
+                {/* Section profil mobile - SANS BOUTON DE DÉCONNEXION */}
+                <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50 mt-4">
+                  <div className="flex items-center gap-3 px-2 py-3">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${
+                        theme === "dark" ? "bg-gray-700" : "bg-gray-100"
+                      }`}
+                    >
+                      <User className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-foreground">
+                        {t("user.guest")}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("user.account")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Content area */}
+        {/* Content area avec effet flottant et marge basse */}
         <div
           className={`flex-1 min-h-screen transition-all duration-300 ml-0 md:ml-0 ${
-            collapsed ? "md:pl-20" : "md:pl-64"
+            collapsed ? "md:pl-28" : "md:pl-72"
           }`}
         >
-          <div className="pt-16 md:pt-6 px-4 md:px-6 max-w-7xl mx-auto">
-            <Outlet />
+          <div className="pt-20 md:pt-8 px-4 md:px-8 max-w-7xl mx-auto pb-8">
+            <div
+              className={`rounded-2xl p-4 md:p-6 shadow-sm ${
+                theme === "dark"
+                  ? "bg-gray-800/30 border border-gray-700/30"
+                  : "bg-white/50 border border-gray-200/30"
+              }`}
+            >
+              <Outlet />
+            </div>
           </div>
         </div>
       </div>

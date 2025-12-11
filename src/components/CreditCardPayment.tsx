@@ -125,7 +125,7 @@ export const CreditCardPayment = ({
           <label className="text-sm font-medium text-gray-700">
             Numéro de carte
           </label>
-          <div className="p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+          <div className="p-3 border border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
             <CardNumberElement
               options={cardElementOptions}
               onChange={(e) =>
@@ -144,7 +144,7 @@ export const CreditCardPayment = ({
             <label className="text-sm font-medium text-gray-700">
               Expiration
             </label>
-            <div className="p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+            <div className="p-3 border border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
               <CardExpiryElement
                 options={cardElementOptions}
                 onChange={(e) =>
@@ -160,7 +160,7 @@ export const CreditCardPayment = ({
           {/* CVC */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">CVC</label>
-            <div className="p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+            <div className="p-3 border border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
               <CardCvcElement
                 options={cardElementOptions}
                 onChange={(e) =>
@@ -194,7 +194,7 @@ export const CreditCardPayment = ({
         </Button>
 
         {/* Sécurité */}
-        <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+        <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
           <Shield className="h-4 w-4" />
           <span>Paiement sécurisé par Stripe</span>
         </div>

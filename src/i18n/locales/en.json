@@ -64,5 +64,412 @@
   "notifications": {
     "themeApplied": "Theme applied successfully",
     "languageApplied": "Language changed successfully"
+  },
+  "editCard": {
+    "title": "Professional Card Editor",
+    "subtitle": "Create stunning designs in just a few clicks",
+    "dragToMove": "Drag to move",
+    "emptyCanvas": {
+      "title": "Blank card",
+      "description": "Start by adding content or choose a professional template"
+    },
+    "tabs": {
+      "elements": "Elements",
+      "background": "Background",
+      "properties": "Properties"
+    },
+    "elements": {
+      "text": "Text",
+      "image": "Image",
+      "video": "Video",
+      "gif": "GIF",
+      "textVariables": "Text variables ({{name}}, {{email}}, etc.)"
+    },
+    "background": {
+      "backgroundColor": "Background color",
+      "professionalTemplates": "Professional Templates",
+      "customBackground": "Custom background image"
+    },
+    "properties": {
+      "title": "Properties",
+      "selectedType": "selected",
+      "noSelection": {
+        "title": "No element selected",
+        "description": "Click on an element in the editor to modify its properties"
+      },
+      "text": {
+        "content": "Content",
+        "text": "Text",
+        "size": "Size",
+        "color": "Color",
+        "font": "Font (60+ available)",
+        "textShadow": "Text shadow",
+        "alignment": "Alignment",
+        "weight": "Weight",
+        "shadowOptions": {
+          "none": "None",
+          "light": "Light",
+          "medium": "Medium",
+          "strong": "Strong",
+          "veryStrong": "Very strong",
+          "whiteGlow": "White glow",
+          "goldGlow": "Gold glow",
+          "blackOutline": "Black outline",
+          "goldOutline": "Gold outline"
+        },
+        "alignmentOptions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        },
+        "weightOptions": {
+          "normal": "Normal",
+          "bold": "Bold",
+          "lighter": "Light"
+        }
+      },
+      "media": {
+        "base": "Base",
+        "width": "Width",
+        "height": "Height",
+        "opacity": "Opacity",
+        "rotation": "Rotation",
+        "flip": "Flip",
+        "horizontal": "Horizontal",
+        "vertical": "Vertical",
+        "style": "Style",
+        "borderRadius": "Border radius",
+        "borderColor": "Border color",
+        "thickness": "Thickness",
+        "shadows": "Shadows",
+        "enableShadow": "Enable shadow",
+        "shadowColor": "Shadow color",
+        "blur": "Blur",
+        "offsetX": "Offset X",
+        "offsetY": "Offset Y",
+        "filters": "Filters",
+        "brightness": "Brightness",
+        "contrast": "Contrast",
+        "saturation": "Saturation",
+        "grayscale": "Grayscale",
+        "mediaControls": "Media Controls",
+        "play": "Play",
+        "pause": "Pause",
+        "sound": "Sound",
+        "mute": "Mute",
+        "autoPlay": "Auto play",
+        "loop": "Loop",
+        "useAsBackground": "Use as background"
+      },
+      "deleteElement": "Delete element"
+    },
+    "chat": {
+      "title": "Design Assistant",
+      "subtitle": "Creative AI",
+      "placeholder": "Describe your card or ask for improvements...",
+      "examples": "💡 Examples: \"birthday card\" or \"improve my design with a modern style\"",
+      "assistant": "AI Assistant",
+      "you": "You",
+      "apply": "✅ Apply",
+      "cancel": "↩️ Cancel"
+    },
+    "templates": {
+      "title": "🎨 Professional Templates",
+      "subtitle": "20+ designs with images, varied borders and realistic paper effect",
+      "categories": {
+        "all": "All",
+        "birthday": "Birthday",
+        "wedding": "Wedding",
+        "baptism": "Baptism",
+        "easter": "Easter",
+        "christmas": "Christmas",
+        "elegant": "Elegant",
+        "nature": "Nature",
+        "minimal": "Minimal"
+      },
+      "close": "Close"
+    }
+  },
+  "guests": {
+    "title": "Guest Management",
+    "subtitle": "Add and manage your guests for invitation sending",
+    "stats": {
+      "total": "Total",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "valid": "Valid"
+    },
+    "alerts": {
+      "noGuests": "Start by adding guests or importing a list.",
+      "noValidGuests": "No valid guests. Please correct the information.",
+      "validGuests": "guest(s) ready to receive the invitation."
+    },
+    "search": {
+      "placeholder": "Search for a guest...",
+      "filterAll": "All channels",
+      "filterWhatsapp": "WhatsApp only",
+      "filterEmail": "Email only"
+    },
+    "import": {
+      "title": "Import guests",
+      "csv": "CSV",
+      "google": "Google",
+      "excel": "Excel",
+      "icloud": "iCloud",
+      "csvDescription": "Expected format: Name, Email or Phone",
+      "connectGoogle": "Connect to Google Contacts",
+      "connectIcloud": "Connect to iCloud Contacts",
+      "excelNotAvailable": "Excel import will be available in the next version. Use CSV export for now.",
+      "serviceWillBeImplemented": "Import functionality from",
+      "importSuccess": "guests imported successfully!",
+      "importError": "Import error. Check the file format.",
+      "noGuestsToExport": "No guests to export"
+    },
+    "table": {
+      "title": "Guest list",
+      "description": "guest(s) found",
+      "descriptionFiltered": "guest(s) found",
+      "headers": {
+        "status": "Status",
+        "channel": "Channel",
+        "name": "Name & Surname",
+        "contact": "Phone / Email",
+        "countryCode": "Country Code",
+        "actions": "Actions"
+      },
+      "status": {
+        "new": "New",
+        "valid": "✓ Valid",
+        "invalid": "✗ Invalid"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "email": "Email"
+      },
+      "placeholders": {
+        "name": "John Doe",
+        "phone": "XX XX XX XX XX",
+        "email": "john@example.com"
+      },
+      "actions": {
+        "add": "Add",
+        "edit": "Edit (double-click)",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "empty": {
+        "noResults": "No guests match your filters",
+        "noGuests": "No guests yet. Add your first guest above."
+      }
+    },
+    "form": {
+      "validation": {
+        "nameRequired": "Please enter a name",
+        "invalidPhone": "Invalid phone number. Format: +XX XXX XX XX XX",
+        "invalidEmail": "Invalid email address"
+      },
+      "confirmDelete": "Are you sure you want to delete this guest?"
+    },
+    "navigation": {
+      "backToDesign": "← Back to design",
+      "continueToPreview": "Continue to preview →"
+    }
+  },
+  "preview": {
+    "title": "Invitation Preview",
+    "subtitle": "Check how your invitation will display for each guest",
+    "noGuest": {
+      "title": "No guest found",
+      "description": "Please return to the previous step to add guests.",
+      "backButton": "← Back"
+    },
+    "configuration": {
+      "title": "Configuration",
+      "subtitle": "Select a guest and a model",
+      "guestLabel": "Guest",
+      "modelLabel": "Design model",
+      "deviceLabel": "Preview on",
+      "devices": {
+        "mobile": "Mobile",
+        "tablet": "Tablet",
+        "desktop": "Desktop"
+      }
+    },
+    "guestInfo": {
+      "title": "Guest Information",
+      "location": "Location:",
+      "date": "Date:",
+      "time": "Time:"
+    },
+    "validation": {
+      "warning": "Warning:",
+      "success": "Perfect! All variables have been successfully replaced for this guest."
+    },
+    "livePreview": {
+      "title": "Live Preview",
+      "description": "Visualization on"
+    },
+    "models": {
+      "default": {
+        "name": "Simple Preview",
+        "description": "Basic display"
+      },
+      "selectModel": "Select a model"
+    },
+    "navigation": {
+      "backToDetails": "← Back to details",
+      "continueToSend": "Continue to send"
+    },
+    "fullPreview": {
+      "title": "Full invitation preview"
+    }
+  },
+  "send": {
+    "title": "Send Invitations",
+    "subtitle": "Configure and send your invitations to guests",
+    "noGuests": "No guests found. Please return to the previous step to add guests.",
+    "noValidGuests": "No valid guests found for channel. Please check your guest data.",
+    "summary": {
+      "title": "Send Summary",
+      "subtitle": "Check information before sending",
+      "elements": "Elements",
+      "validGuests": "Valid guests",
+      "variables": "Variables",
+      "sendMode": "Send mode",
+      "personalized": "Personalized",
+      "group": "Group",
+      "personalizedMode": "Personalized"
+    },
+    "sendMode": {
+      "title": "Send Mode",
+      "subtitle": "Choose between group or personalized sending per guest",
+      "group": {
+        "title": "Group Send",
+        "description": "Send the same message to all guests of a specific channel.",
+        "channelLabel": "Group send channel",
+        "whatsapp": "WhatsApp",
+        "email": "Email",
+        "subjectLabel": "Subject",
+        "messageLabel": "Group message",
+        "messagePlaceholder": "Write your message...",
+        "templates": {
+          "casual": "Casual template",
+          "formal": "Formal template"
+        }
+      },
+      "personalized": {
+        "title": "Personalization per guest",
+        "description": "Enable personalization for each guest, then click the arrow to edit the message.",
+        "personalizedCount": "personalized message(s)",
+        "personalizeAll": "Personalize all",
+        "standardAll": "All standard",
+        "personalizedBadge": "Personalized",
+        "subjectLabel": "Message subject",
+        "messageLabel": "Personalized message for",
+        "messagePlaceholder": "Write your personalized message for...",
+        "templates": {
+          "casual": "Casual",
+          "formal": "Formal",
+          "reminder": "Reminder"
+        },
+        "noValidGuests": "No valid guests to personalize messages."
+      }
+    },
+    "settings": {
+      "title": "Send Settings",
+      "subtitle": "Configure technical sending details",
+      "channelLabel": "Technical send channel",
+      "subjectLabel": "Email subject",
+      "defaultSubjectLabel": "Default subject",
+      "subjectPlaceholder": "Ex: You are invited to our wedding!",
+      "eventLabel": "Associated event",
+      "eventOptions": {
+        "new": "Create new event",
+        "event1": "Event 1",
+        "event2": "Event 2",
+        "event3": "Event 3"
+      },
+      "variablesTitle": "Available variables:"
+    },
+    "preview": {
+      "title": "Message Preview",
+      "subtitle": "Here's what will be sent to your guests",
+      "groupSend": "Group send",
+      "personalizedSend": "Personalized send",
+      "emailTo": "Email to",
+      "whatsappTo": "WhatsApp to",
+      "guests": "guests",
+      "completePreview": "COMPLETE PREVIEW",
+      "modelDescription": "This card model will be sent to your guests with personalized variables",
+      "emailDescription": "This invitation template will be sent by email with replaced variables",
+      "whatsappDescription": "This text message will be sent by WhatsApp to all contacts",
+      "personalizedDescription": "Messages will be personalized for each guest according to your settings"
+    },
+    "action": {
+      "title": "Send Action",
+      "subtitle": "Launch sending your invitations",
+      "sendButton": "Send to",
+      "sendPersonalized": "Send personalized message(s)",
+      "sending": "Sending...",
+      "maxRecipientsError": "Number of recipients exceeds 500. Please reduce the number of guests."
+    },
+    "navigation": {
+      "backToPreview": "← Back to Preview",
+      "home": "Home"
+    },
+    "channels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "mms": "MMS"
+    },
+    "defaults": {
+      "invitationTitle": "My invitation",
+      "emailSubject": "You are invited!",
+      "defaultSubject": "You are invited to our event",
+      "defaultBody": "Hello, you are invited to our event. See details below.",
+      "subjectPlaceholder": "You are invited!",
+      "messagePlaceholder": "Write your message...",
+      "selectChannel": "Select a channel",
+      "selectChannelError": "Please select a send channel",
+      "subjectRequired": "Subject is required",
+      "modelWillBeSent": "This card model ({{model}}) will be sent to your guests with personalized variables",
+      "personalizedToSend": "personalized message(s) to send",
+      "noPersonalizedMessage": "No personalized message",
+      "enablePersonalization": "Enable personalization to see preview",
+      "whatsappWillBeSent": "This message will be sent via WhatsApp",
+      "messageTemplates": {
+        "whatsapp": {
+          "casual": "Hi {name}! I invite you to my event on {date}. Reply to confirm!",
+          "formal": "Hello {name}, you are cordially invited to our event on {date}. We hope to see you there.",
+          "reminder": "Reminder: {name}, don't forget our event tomorrow!"
+        },
+        "email": {
+          "casual": "Hi {name},\n\nYou are invited to my event!\n\nSee you soon!",
+          "formal": "Dear {name},\n\nWe have the pleasure to invite you to our event.\n\nBest regards,",
+          "invitation": "Dear {name},\n\nIt is with pleasure that I invite you to join this special event."
+        }
+      }
+    }
+  },
+  "builder": {
+    "title": "Invitation Creation",
+    "subtitle": "Personalize your card and envelope",
+    "editor": "Editor",
+    "steps": {
+      "design": "Design",
+      "details": "Details", 
+      "preview": "Preview",
+      "send": "Send"
+    },
+    "actions": {
+      "save": "Save",
+      "saving": "Saving...",
+      "saveModel": "Save model",
+      "back": "Back"
+    },
+    "defaults": {
+      "yourTextHere": "Your text here"
+    }
   }
 }

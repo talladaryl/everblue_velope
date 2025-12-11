@@ -1,7 +1,5 @@
 /**
  * Template email avec enveloppe statique - Thème Bleu
- * Le destinataire reçoit une enveloppe fermée avec son nom en blanc
- * et un bouton pour ouvrir la carte sur le web
  */
 
 interface EmailEnvelopeTemplateProps {
@@ -30,7 +28,7 @@ export function generateEnvelopeEmailTemplate({
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #f8fafc;
+      background-color: #ffffff;
       padding: 40px 20px;
       min-height: 100vh;
     }
@@ -38,68 +36,39 @@ export function generateEnvelopeEmailTemplate({
       max-width: 580px;
       margin: 0 auto;
       background: white;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       border: 1px solid #e2e8f0;
     }
     .header {
       background-color: #1e40af;
-      padding: 32px;
+      padding: 40px;
       text-align: center;
       color: white;
     }
-    .header-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
     .header h1 {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-    .header-icon {
       font-size: 32px;
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
     }
     .content {
       padding: 48px 32px;
       text-align: center;
     }
     .envelope-container {
-      position: relative;
       width: 100%;
-      max-width: 380px;
+      max-width: 400px;
       margin: 0 auto 40px;
     }
     .envelope {
-      position: relative;
       width: 100%;
-      height: 240px;
+      height: 250px;
       background: ${envelopeColor};
-      border-radius: 12px;
-      box-shadow: 
-        0 8px 20px rgba(30, 64, 175, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
       overflow: hidden;
-    }
-    .envelope:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
     .envelope-flap {
       position: absolute;
@@ -109,20 +78,17 @@ export function generateEnvelopeEmailTemplate({
       height: 60px;
       background: #1e3a8a;
       clip-path: polygon(0 0, 50% 100%, 100% 0);
-      transform-origin: top;
     }
     .recipient-name {
-      position: relative;
-      z-index: 2;
       color: white;
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 600;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       font-family: 'Georgia', 'Times New Roman', serif;
-      letter-spacing: 0.5px;
-      padding: 0 24px;
+      letter-spacing: 1px;
+      padding: 0 30px;
       text-align: center;
       width: 100%;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     .message {
       font-size: 18px;
@@ -134,30 +100,21 @@ export function generateEnvelopeEmailTemplate({
       margin-right: auto;
     }
     .cta-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+      display: inline-block;
       background-color: #3b82f6;
       color: white;
       text-decoration: none;
-      padding: 18px 40px;
-      border-radius: 12px;
+      padding: 18px 50px;
       font-size: 18px;
       font-weight: 600;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
       transition: all 0.3s ease;
       border: none;
       cursor: pointer;
-      min-width: 220px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
     .cta-button:hover {
       background-color: #2563eb;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    }
-    .cta-button:active {
-      transform: translateY(0);
     }
     .security-note {
       margin-top: 24px;
@@ -165,13 +122,12 @@ export function generateEnvelopeEmailTemplate({
       color: #6b7280;
       background-color: #f9fafb;
       padding: 12px 20px;
-      border-radius: 8px;
       display: inline-block;
       border-left: 4px solid #3b82f6;
     }
     .footer {
       background-color: #f1f5f9;
-      padding: 28px;
+      padding: 30px;
       text-align: center;
       color: #64748b;
       font-size: 14px;
@@ -188,45 +144,25 @@ export function generateEnvelopeEmailTemplate({
     .footer a:hover {
       text-decoration: underline;
     }
-    .stamp {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: white;
-      border-radius: 50%;
-      border: 2px dashed #ef4444;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #ef4444;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      z-index: 3;
-    }
     .invitation-type {
       display: inline-block;
       background-color: #dbeafe;
       color: #1e40af;
-      padding: 6px 16px;
-      border-radius: 20px;
+      padding: 8px 20px;
       font-size: 14px;
       font-weight: 600;
       margin-bottom: 24px;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
     }
     @media only screen and (max-width: 600px) {
       body {
         padding: 20px 12px;
       }
       .header {
-        padding: 24px 16px;
+        padding: 30px 16px;
       }
       .header h1 {
-        font-size: 22px;
+        font-size: 24px;
       }
       .content {
         padding: 32px 20px;
@@ -235,22 +171,16 @@ export function generateEnvelopeEmailTemplate({
         height: 200px;
       }
       .recipient-name {
-        font-size: 26px;
+        font-size: 28px;
       }
       .message {
         font-size: 16px;
       }
       .cta-button {
-        padding: 16px 32px;
+        padding: 16px 40px;
         font-size: 16px;
-        min-width: auto;
         width: 100%;
         max-width: 280px;
-      }
-      .stamp {
-        width: 50px;
-        height: 50px;
-        font-size: 10px;
       }
     }
   </style>
@@ -259,12 +189,7 @@ export function generateEnvelopeEmailTemplate({
   <div class="email-container">
     <!-- Header -->
     <div class="header">
-      <div class="header-content">
-        <div class="header-icon">✉️</div>
-        <div>
-          <h1>Invitation Personnelle</h1>
-        </div>
-      </div>
+      <h1>EVERBLUEVELOPE</h1>
     </div>
 
     <!-- Content -->
@@ -275,7 +200,6 @@ export function generateEnvelopeEmailTemplate({
       <div class="envelope-container">
         <div class="envelope">
           <div class="envelope-flap"></div>
-          <div class="stamp">IMPORTANT</div>
           <div class="recipient-name">${recipientName}</div>
         </div>
       </div>
@@ -288,8 +212,7 @@ export function generateEnvelopeEmailTemplate({
 
       <!-- Bouton CTA -->
       <a href="${invitationUrl}" class="cta-button">
-        <span>🎉</span>
-        Ouvrir l'Invitation
+        OPEN CARD
       </a>
       
       <div class="security-note">

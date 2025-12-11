@@ -6,7 +6,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-// Force recompile
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,12 +34,23 @@ import {
 import { EventModal } from "@/components/EventModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useEvents } from "@/hooks/useEvents";
-import type { Event, CreateEventPayload, EventStatus } from "@/api/services/eventService";
+import type {
+  Event,
+  CreateEventPayload,
+  EventStatus,
+} from "@/api/services/eventService";
 import { toast } from "@/components/ui/sonner";
 
 export default function Events() {
-  const { events, loading, error, createEvent, updateEvent, deleteEvent, updateEventStatus } =
-    useEvents();
+  const {
+    events,
+    loading,
+    error,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+    updateEventStatus,
+  } = useEvents();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | EventStatus>("all");
@@ -57,7 +67,8 @@ export default function Events() {
       event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.location?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = filterStatus === "all" || event.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || event.status === filterStatus;
 
     return matchesSearch && matchesStatus;
   });
@@ -150,7 +161,9 @@ export default function Events() {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Actif</Badge>;
       case "draft":
-        return <Badge className="bg-yellow-100 text-yellow-800">Brouillon</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Brouillon</Badge>
+        );
       case "archived":
         return <Badge className="bg-gray-100 text-gray-800">Archivé</Badge>;
       default:
@@ -176,7 +189,7 @@ export default function Events() {
         {/* En-tête */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Événements</h1>
+            <h1 className="text-3xl font-bold text-foreground">Événements</h1>
             <p className="text-gray-600 mt-1">
               Gérez vos événements et envoyez des invitations
             </p>
@@ -194,7 +207,9 @@ export default function Events() {
         {error && (
           <Alert className="bg-red-50 border-red-200">
             <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">{error}</AlertDescription>
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -212,22 +227,21 @@ export default function Events() {
                 />
               </div>
               <div className="flex gap-2">
-                {(["all", "active", "draft", "archived"] as const).map((status) => (
-                  <Button
-                    key={status}
-                    variant={filterStatus === status ? "default" : "outline"}
-                    onClick={() => setFilterStatus(status)}
-                    size="sm"
-                  >
-                    {status === "all"
-                      ? "Tous"
-                      : status === "active"
-                      ? "Actifs"
-                      : status === "draft"
-                      ? "Brouillons"
-                      : "Archivés"}
-                  </Button>
-                ))}
+                {(["all", "active", "draft", "archived"] as const).map(
+                  (status) => (
+                    <Button
+                      key={status}
+                      variant={filterStatus === status ? "default" : "outline"}
+                      onClick={() => setFilterStatus(status)}
+                      size="sm"
+                    >
+                      {status === "all" && "Tous"}
+                      {status === "active" && "Actifs"}
+                      {status === "draft" && "Brouillons"}
+                      {status === "archived" && "Archivés"}
+                    </Button>
+                  )
+                )}
               </div>
             </div>
           </CardContent>
@@ -269,9 +283,11 @@ export default function Events() {
                     {/* Contenu principal */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-3 mb-2">
-                        <div className="pt-1">{getStatusIcon(event.status)}</div>
+                        <div className="pt-1">
+                          {getStatusIcon(event.status)}
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          <h3 className="text-lg font-semibold text-foreground truncate">
                             {event.title}
                           </h3>
                           {event.description && (
@@ -324,7 +340,9 @@ export default function Events() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditEvent(event)}>
+                          <DropdownMenuItem
+                            onClick={() => handleEditEvent(event)}
+                          >
                             <Edit className="h-4 w-4 mr-2" />
                             Modifier
                           </DropdownMenuItem>
@@ -333,7 +351,9 @@ export default function Events() {
 
                           {event.status !== "active" && (
                             <DropdownMenuItem
-                              onClick={() => handleStatusChange(event, "active")}
+                              onClick={() =>
+                                handleStatusChange(event, "active")
+                              }
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Activer
@@ -351,7 +371,9 @@ export default function Events() {
 
                           {event.status !== "archived" && (
                             <DropdownMenuItem
-                              onClick={() => handleStatusChange(event, "archived")}
+                              onClick={() =>
+                                handleStatusChange(event, "archived")
+                              }
                             >
                               <Archive className="h-4 w-4 mr-2" />
                               Archiver

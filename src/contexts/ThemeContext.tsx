@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 type Theme = "light" | "dark";
 
@@ -11,48 +10,50 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = "kiro:theme";
-
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Récupérer le thème depuis localStorage
-    const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (saved) return saved;
+  const [theme, setThemeState] = useState<Theme>("light");
 
-    // Vérifier la préférence système
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
-    return "light";
-  });
-
-  // Appliquer le thème au document
   useEffect(() => {
-    const root = document.documentElement;
-    
-    // Appliquer la classe au root
-    if (theme === "dark") {
-      root.classList.add("dark");
+    // 1. Vérifier localStorage
+    const savedTheme = localStorage.getItem("app_theme") as Theme;
+    if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
+      setThemeState(savedTheme);
+      applyTheme(savedTheme);
     } else {
-      root.classList.remove("dark");
+      // 2. Sinon, détecter la préférence système
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      const defaultTheme = prefersDark ? "dark" : "light";
+      setThemeState(defaultTheme);
+      applyTheme(defaultTheme);
     }
-    
-    // Sauvegarder dans localStorage
-    localStorage.setItem(STORAGE_KEY, theme);
-    
-    // Mettre à jour l'attribut data pour les CSS variables
-    root.setAttribute("data-theme", theme);
-  }, [theme]);
+  }, []);
+
+  const applyTheme = (newTheme: Theme) => {
+    const root = document.documentElement;
+
+    // Retirer les classes précédentes
+    root.classList.remove("light", "dark");
+
+    // Ajouter la nouvelle classe
+    root.classList.add(newTheme);
+
+    // Attribut data-theme pour CSS
+    root.setAttribute("data-theme", newTheme);
+  };
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    toast.success(`Theme applied: ${newTheme}`);
+    applyTheme(newTheme);
+    localStorage.setItem("app_theme", newTheme);
   };
 
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
   };
 
   return (

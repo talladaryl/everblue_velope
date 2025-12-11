@@ -74,7 +74,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
       <Card className="border-dashed border-2">
         <CardContent className="p-12 text-center">
           <p className="text-muted-foreground mb-4">Aucun template trouvé</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Créez votre premier template pour commencer
           </p>
         </CardContent>
@@ -86,7 +86,8 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
     <div className="space-y-6">
       {/* Résumé */}
       <div className="text-sm text-gray-600">
-        {templates.length} template{templates.length > 1 ? "s" : ""} trouvé{templates.length > 1 ? "s" : ""}
+        {templates.length} template{templates.length > 1 ? "s" : ""} trouvé
+        {templates.length > 1 ? "s" : ""}
       </div>
 
       {/* Grille des templates */}
@@ -128,7 +129,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
               {/* Contenu */}
               <div className="p-4 space-y-3">
                 <div>
-                  <h3 className="font-semibold text-gray-900 line-clamp-1">
+                  <h3 className="font-semibold text-foreground line-clamp-1">
                     {template.title}
                   </h3>
                   <p className="text-sm text-gray-600 line-clamp-2 mt-1">
@@ -137,7 +138,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                 </div>
 
                 {/* Date */}
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
                   {new Date(template.created_at).toLocaleDateString("fr-FR")}
                 </div>

@@ -6,6 +6,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -69,8 +70,8 @@ const PreviewModel12 = withCardFix(OriginalModel12);
 // Constantes pour le style du papier
 const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
-const AVAILABLE_MODELS = [
-  { id: "default", name: "Aperçu Simple", description: "Affichage basique" },
+const getAvailableModels = (t: (key: string) => string) => [
+  { id: "default", name: t("preview.models.default.name"), description: t("preview.models.default.description") },
   { id: "model1", name: "Modèle 1", description: "Simple and Basic" },
   { id: "model2", name: "Modèle 2", description: "Elegant Design" },
   { id: "model3", name: "Modèle 3", description: "Modern Style" },
@@ -86,6 +87,7 @@ const AVAILABLE_MODELS = [
 ];
 
 export default function StepPreviewImproved({ ctx }: { ctx: any }) {
+  const { t } = useLanguage();
   const {
     guests = [],
     previewGuestId,
@@ -106,6 +108,9 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
   const setSelectedModel = setSelectedModelId || ((v: string) => {});
   const [previewItems, setPreviewItems] = useState<any[]>([]);
   const [activeDevice, setActiveDevice] = useState("desktop"); // "mobile", "tablet", "desktop"
+
+  // Obtenir les modèles avec traductions
+  const AVAILABLE_MODELS = getAvailableModels(t);
 
   // Trouver l'invité sélectionné
   const guest = guests.find((g: any) => g.id === previewGuestId) ?? guests[0];
@@ -174,10 +179,14 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
     // Dimensions selon l'appareil sélectionné
     const getModelScale = () => {
       switch (activeDevice) {
-        case "mobile": return 0.5;
-        case "tablet": return 0.7;
-        case "desktop": return 0.9;
-        default: return 0.8;
+        case "mobile":
+          return 0.5;
+        case "tablet":
+          return 0.7;
+        case "desktop":
+          return 0.9;
+        default:
+          return 0.8;
       }
     };
 
@@ -209,9 +218,9 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
       default:
         return (
           <div className="flex items-center justify-center p-8">
-            <div className="text-center text-gray-500">
+            <div className="text-center text-muted-foreground">
               <Eye className="h-12 w-12 mx-auto mb-4 opacity-40" />
-              <p className="text-lg font-medium">Sélectionnez un modèle</p>
+              <p className="text-lg font-medium">{t("preview.models.selectModel")}</p>
             </div>
           </div>
         );
@@ -321,13 +330,12 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité trouvé. Veuillez retourner à l'étape précédente pour
-            ajouter des invités.
+            {t("preview.noGuest.title")}. {t("preview.noGuest.description")}
           </AlertDescription>
         </Alert>
         <div className="flex justify-between">
           <Button variant="outline" onClick={() => setStep(1)}>
-            ← Retour
+            {t("preview.noGuest.backButton")}
           </Button>
         </div>
       </div>
@@ -338,11 +346,11 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
     <div className="max-w-7xl mx-auto space-y-6 animate-enter">
       {/* En-tête simplifié */}
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold text-gray-900">
-          Prévisualisation de l'invitation
+        <h2 className="text-3xl font-bold text-foreground">
+          {t("preview.title")}
         </h2>
         <p className="text-gray-600">
-          Vérifiez comment votre invitation s'affichera pour chaque invité
+          {t("preview.subtitle")}
         </p>
       </div>
 
@@ -355,17 +363,17 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Layout className="h-5 w-5 text-blue-600" />
-                Configuration
+                {t("preview.configuration.title")}
               </CardTitle>
               <CardDescription>
-                Sélectionnez un invité et un modèle
+                {t("preview.configuration.subtitle")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Sélection de l'invité */}
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-gray-700">
-                  Invité ({guestIndex + 1} / {guests.length})
+                  {t("preview.configuration.guestLabel")} ({guestIndex + 1} / {guests.length})
                 </label>
                 <Select value={guest.id} onValueChange={setPreviewGuestId}>
                   <SelectTrigger>
@@ -379,10 +387,10 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                             {index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
+                            <p className="font-medium text-foreground truncate">
                               {g.name}
                             </p>
-                            <p className="text-xs text-gray-500 truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                               {g.email}
                             </p>
                           </div>
@@ -396,7 +404,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
               {/* Sélection du modèle */}
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-gray-700">
-                  Modèle de design
+                  {t("preview.configuration.modelLabel")}
                 </label>
                 <Select value={selectedModel} onValueChange={setSelectedModel}>
                   <SelectTrigger>
@@ -406,10 +414,10 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                     {AVAILABLE_MODELS.map((model) => (
                       <SelectItem key={model.id} value={model.id}>
                         <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">
+                          <span className="font-medium text-foreground">
                             {model.name}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {model.description}
                           </span>
                         </div>
@@ -423,13 +431,13 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
               {selectedModel !== "default" && (
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-gray-700">
-                    Aperçu sur
+                    {t("preview.configuration.deviceLabel")}
                   </label>
                   <div className="flex gap-2 p-1 bg-gray-100">
                     {[
-                      { id: "mobile", icon: Smartphone, label: "Mobile" },
-                      { id: "tablet", icon: Tablet, label: "Tablette" },
-                      { id: "desktop", icon: Monitor, label: "Desktop" },
+                      { id: "mobile", icon: Smartphone, label: t("preview.configuration.devices.mobile") },
+                      { id: "tablet", icon: Tablet, label: t("preview.configuration.devices.tablet") },
+                      { id: "desktop", icon: Monitor, label: t("preview.configuration.devices.desktop") },
                     ].map((device) => {
                       const Icon = device.icon;
                       const isActive = activeDevice === device.id;
@@ -440,7 +448,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                           className={`flex-1 flex flex-col items-center gap-1 p-3 ${
                             isActive
                               ? "bg-white text-blue-600"
-                              : "text-gray-500 hover:text-gray-700"
+                              : "text-muted-foreground hover:text-gray-700"
                           }`}
                         >
                           <Icon className="h-4 w-4" />
@@ -461,7 +469,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <CardHeader>
               <CardTitle className="text-blue-900 flex items-center gap-2">
                 <Eye className="h-5 w-5" />
-                Informations de l'invité
+                {t("preview.guestInfo.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -483,7 +491,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                     <div className="flex items-center gap-2 text-sm text-blue-800">
                       <div className="w-2 h-2 bg-blue-500"></div>
                       <span>
-                        <strong>Lieu:</strong> {guest.location}
+                        <strong>{t("preview.guestInfo.location")}</strong> {guest.location}
                       </span>
                     </div>
                   )}
@@ -491,7 +499,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                     <div className="flex items-center gap-2 text-sm text-blue-800">
                       <div className="w-2 h-2 bg-blue-500"></div>
                       <span>
-                        <strong>Date:</strong>{" "}
+                        <strong>{t("preview.guestInfo.date")}</strong>{" "}
                         {new Date(guest.date).toLocaleDateString("fr-FR")}
                       </span>
                     </div>
@@ -500,7 +508,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
                     <div className="flex items-center gap-2 text-sm text-blue-800">
                       <div className="w-2 h-2 bg-blue-500"></div>
                       <span>
-                        <strong>Heure:</strong> {guest.time}
+                        <strong>{t("preview.guestInfo.time")}</strong> {guest.time}
                       </span>
                     </div>
                   )}
@@ -517,7 +525,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <Alert className="bg-orange-50 border-orange-200">
               <AlertCircle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
-                <strong>Attention:</strong> {validation.errors.join(" ")}
+                <strong>{t("preview.validation.warning")}</strong> {validation.errors.join(" ")}
               </AlertDescription>
             </Alert>
           )}
@@ -526,8 +534,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                <strong>Parfait!</strong> Toutes les variables ont été
-                remplacées avec succès pour cet invité.
+                <strong>{t("preview.validation.success")}</strong>
               </AlertDescription>
             </Alert>
           )}
@@ -537,31 +544,37 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <Card className="border-0 shadow-none bg-transparent">
               <CardHeader className="bg-gray-900 text-white rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Aperçu en direct</CardTitle>
+                  <CardTitle>{t("preview.livePreview.title")}</CardTitle>
                   <Badge variant="secondary" className="bg-white/20 text-white">
                     {AVAILABLE_MODELS.find((m) => m.id === selectedModel)?.name}
                   </Badge>
                 </div>
                 <CardDescription className="text-gray-300">
-                  Visualisation sur{" "}
+                  {t("preview.livePreview.description")}{" "}
                   {activeDevice === "mobile"
-                    ? "mobile"
+                    ? t("preview.configuration.devices.mobile")
                     : activeDevice === "tablet"
-                    ? "tablette"
-                    : "desktop"}
+                    ? t("preview.configuration.devices.tablet")
+                    : t("preview.configuration.devices.desktop")}
                 </CardDescription>
               </CardHeader>
-              <CardContent 
+              <CardContent
                 className="p-6"
                 style={{ backgroundColor: "transparent" }}
               >
                 <div className="flex justify-center items-center">
                   {/* Conteneur principal - UNIQUEMENT la carte, pas de fond */}
-                  <div 
+                  <div
                     className="flex items-center justify-center"
                     style={{
-                      width: activeDevice === "mobile" ? "320px" : activeDevice === "tablet" ? "600px" : "100%",
-                      maxWidth: activeDevice === "desktop" ? "800px" : undefined,
+                      width:
+                        activeDevice === "mobile"
+                          ? "320px"
+                          : activeDevice === "tablet"
+                          ? "600px"
+                          : "100%",
+                      maxWidth:
+                        activeDevice === "desktop" ? "800px" : undefined,
                       backgroundColor: "transparent",
                     }}
                   >
@@ -578,15 +591,15 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
             <Button
               variant="outline"
               onClick={() => setStep(1)}
-              className="w-full md:w-auto px-8 py-3 border border-gray-300"
+              className="w-full md:w-auto px-8 py-3 border border"
             >
-              ← Retour aux détails
+              {t("preview.navigation.backToDetails")}
             </Button>
             <Button
               onClick={() => setStep(3)}
               className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-3"
             >
-              <span>Continuer vers l'envoi</span>
+              <span>{t("preview.navigation.continueToSend")}</span>
               <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
@@ -601,7 +614,7 @@ export default function StepPreviewImproved({ ctx }: { ctx: any }) {
           bgImage={bgImage}
           guest={guest}
           onClose={() => setShowFullPreview(false)}
-          title="Aperçu complet de l'invitation"
+          title={t("preview.fullPreview.title")}
           showGuestInfo={true}
         />
       )}

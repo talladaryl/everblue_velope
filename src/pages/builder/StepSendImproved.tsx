@@ -6,6 +6,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,23 +70,19 @@ interface Guest {
   countryCode?: string;
 }
 
-// Templates de messages
-const MESSAGE_TEMPLATES = {
+// Fonction pour obtenir les templates de messages traduits
+const getMessageTemplates = (t: (key: string) => string) => ({
   whatsapp: {
-    casual:
-      "Salut {name} ! Je t'invite à mon événement le {date}. Réponds-moi pour confirmer !",
-    formal:
-      "Bonjour {name}, vous êtes cordialement invité(e) à notre événement du {date}. Nous espérons vous y voir.",
-    reminder: "Rappel : {name}, n'oubliez pas notre événement demain !",
+    casual: t("send.defaults.messageTemplates.whatsapp.casual"),
+    formal: t("send.defaults.messageTemplates.whatsapp.formal"),
+    reminder: t("send.defaults.messageTemplates.whatsapp.reminder"),
   },
   email: {
-    casual: "Salut {name},\n\nTu es invité à mon événement !\n\nÀ bientôt !",
-    formal:
-      "Madame, Monsieur {name},\n\nNous avons le plaisir de vous convier à notre événement.\n\nCordialement,",
-    invitation:
-      "Cher(e) {name},\n\nC'est avec plaisir que je vous invite à rejoindre cet événement spécial.",
+    casual: t("send.defaults.messageTemplates.email.casual"),
+    formal: t("send.defaults.messageTemplates.email.formal"),
+    invitation: t("send.defaults.messageTemplates.email.invitation"),
   },
-};
+});
 
 // Import des composants de prévisualisation des modèles
 import {
@@ -104,6 +101,19 @@ import {
 } from "./modelPreviews";
 
 export default function StepSendImproved({ ctx }: StepSendProps) {
+  const { t } = useLanguage();
+  
+  // Fonction utilitaire pour remplacer les paramètres dans les traductions
+  const tWithParams = (key: string, params: Record<string, string> = {}) => {
+    let text = t(key);
+    Object.entries(params).forEach(([param, value]) => {
+      text = text.replace(new RegExp(`{{${param}}}`, 'g'), value);
+    });
+    return text;
+  };
+
+  // Obtenir les templates de messages traduits
+  const MESSAGE_TEMPLATES = getMessageTemplates(t);
   const {
     guests = [],
     setStep,
@@ -174,6 +184,16 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
       })
     : [];
 
+  // Initialiser les valeurs traduites
+  useEffect(() => {
+    setTemplateTitle(t("send.defaults.invitationTitle"));
+    setEmailSubject(t("send.defaults.emailSubject"));
+    setGroupMessage(prev => ({
+      ...prev,
+      subject: t("send.defaults.emailSubject")
+    }));
+  }, [t]);
+
   // Initialiser les messages personnalisés
   useEffect(() => {
     if (guests && guests.length > 0) {
@@ -232,7 +252,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                   ${groupMessage.whatsapp.replace(/\n/g, "<br>")}
                 </div>
                 <div style="margin-top: 16px; font-size: 12px; color: #666; text-align: center;">
-                  Ce message sera envoyé via WhatsApp
+                  ${t("send.defaults.whatsappWillBeSent")}
                 </div>
               </div>
             </div>
@@ -279,7 +299,7 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
                   <div style="margin-top: 16px; font-size: 12px; color: #666; text-align: center;">
                     ${customizedGuests.length} message${
               customizedGuests.length > 1 ? "s" : ""
-            } personnalisé${customizedGuests.length > 1 ? "s" : ""} à envoyer
+            } ${t("send.defaults.personalizedToSend")}
                   </div>
                 </div>
               </div>
@@ -289,8 +309,8 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
           return `
             <div style="font-family: system-ui, -apple-system, sans-serif; padding: 40px; text-align: center; color: #666; background: #f9fafb; border-radius: 12px;">
               <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
-              <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">Aucun message personnalisé</div>
-              <div style="font-size: 14px;">Activez la personnalisation pour voir l'aperçu</div>
+              <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">${t("send.defaults.noPersonalizedMessage")}</div>
+              <div style="font-size: 14px;">${t("send.defaults.enablePersonalization")}</div>
             </div>
           `;
         }
@@ -380,15 +400,15 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
   const validateRequiredFields = (): { valid: boolean; error?: string } => {
     // Vérifier channel
     if (!sendMethod) {
-      return { valid: false, error: "Veuillez sélectionner un canal d'envoi" };
+      return { valid: false, error: t("send.defaults.selectChannelError") };
     }
 
     // Vérifier subject (obligatoire pour tous les canaux)
     const subject =
-      sendMode === "group" ? groupMessage.subject : "Vous êtes invité!";
+      sendMode === "group" ? groupMessage.subject : t("send.defaults.emailSubject");
 
     if (!subject || !subject.trim()) {
-      return { valid: false, error: "Le sujet est requis" };
+      return { valid: false, error: t("send.defaults.subjectRequired") };
     }
 
     return { valid: true };
@@ -453,174 +473,180 @@ export default function StepSendImproved({ ctx }: StepSendProps) {
     }
   };
 
-const handleSendBulk = async () => {
-  // Validation minimale
-  if (!sendMethod) {
-    toast.error("Sélectionnez un canal d'envoi");
-    return;
-  }
-
-  if (validGuests.length === 0) {
-    toast.error("Aucun invité valide");
-    return;
-  }
-
-  console.log("🚀 Début envoi - Template URL:", window.location.href);
-
-  try {
-    // ========================================
-    // 1. PAYLOAD MINIMAL SANS ERREUR
-    // ========================================
-    const payload: any = {
-      channel: sendMethod,
-      subject: "Vous êtes invité à notre événement",
-      body: "Bonjour, vous êtes invité à notre événement. Voir les détails ci-dessous.",
-    };
-
-    // ========================================
-    // 2. GÉNÉRER L'HTML AVEC ENVELOPPE
-    // ========================================
-    if (sendMethod === "email") {
-      // Importer les fonctions du template email
-      const { 
-        generateEnvelopeEmailTemplate, 
-        generateInvitationToken, 
-        generateInvitationUrl 
-      } = await import("@/utils/emailTemplates");
-      
-      // Générer un token unique pour cette invitation
-      const token = generateInvitationToken();
-      const invitationUrl = generateInvitationUrl(token);
-      
-      // Prendre le premier invité pour l'exemple d'enveloppe
-      const firstRecipient = validGuests[0] || {
-        name: "Invité",
-        email: "invite@example.com",
-      };
-      
-      // Utiliser le template avec enveloppe
-      payload.html = generateEnvelopeEmailTemplate({
-        recipientName: firstRecipient.name || "Invité",
-        invitationUrl: invitationUrl,
-        envelopeColor: "#26452b", // Vert par défaut
-      });
-      
-      console.log("✅ Email avec enveloppe généré:", payload.html.length, "caractères");
-      console.log("🔗 URL invitation:", invitationUrl);
-      console.log("🎫 Token:", token);
-      
-      // Sauvegarder l'invitation (API ou localStorage)
-      try {
-        const { invitationService } = await import("@/api/services/invitationService");
-        
-        await invitationService.create({
-          token,
-          recipientName: firstRecipient.name || "Invité",
-          recipientEmail: firstRecipient.email || "",
-          items: items,
-          bgColor: bgColor,
-          bgImage: bgImage,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
-        });
-        
-        console.log("✅ Invitation sauvegardée avec succès");
-      } catch (invError: any) {
-        console.warn("⚠️ Erreur sauvegarde invitation:", invError.message);
-        // Ne pas bloquer l'envoi si la sauvegarde échoue
-      }
-    }
-
-    // ========================================
-    // 3. AJOUTER LES DESTINATAIRES
-    // ========================================
-    if (sendMethod === "email") {
-      payload.emails = validGuests
-        .filter((guest: Guest) => guest.email && guest.email.includes("@"))
-        .slice(0, 10) // Limiter à 10 pour tester
-        .map((guest: Guest) => ({
-          email: guest.email || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-
-      console.log("📧 Destinataires email:", payload.emails.length);
-    } else if (sendMethod === "whatsapp") {
-      payload.contacts = validGuests
-        .filter(
-          (guest: Guest) =>
-            guest.phone && guest.phone.replace(/\D/g, "").length >= 10
-        )
-        .slice(0, 10)
-        .map((guest: Guest) => ({
-          phone: guest.phone || "",
-          name: guest.full_name || guest.name || "Invité",
-        }));
-
-      console.log("📱 Destinataires WhatsApp:", payload.contacts.length);
-    }
-
-    // Vérifier qu'on a au moins 1 destinataire
-    if (
-      (sendMethod === "email" &&
-        (!payload.emails || payload.emails.length === 0)) ||
-      (sendMethod === "whatsapp" &&
-        (!payload.contacts || payload.contacts.length === 0))
-    ) {
-      toast.error("Aucun destinataire valide");
+  const handleSendBulk = async () => {
+    // Validation minimale
+    if (!sendMethod) {
+      toast.error("Sélectionnez un canal d'envoi");
       return;
     }
 
-    // ========================================
-    // 4. ENVOYER SIMPLEMENT
-    // ========================================
-    console.log("📤 Envoi payload minimal:", {
-      channel: payload.channel,
-      destinataires: payload.emails?.length || payload.contacts?.length || 0,
-      hasHtml: !!payload.html,
-    });
-
-    const response = await sendBulk(payload);
-
-    // Succès
-    toast.success(
-      `Message envoyé à ${
-        payload.emails?.length || payload.contacts?.length || 0
-      } personne(s)`
-    );
-
-    setTotalCount(response.total_recipients || 0);
-    setSentCount(response.sent_count || 0);
-    setFailedCount(response.failed_count || 0);
-    setPendingCount(response.pending_count || 0);
-
-    if (response.messages) {
-      const converted = convertToMessageStatus(response.messages, sendMethod);
-      setStatusMessages(converted);
+    if (validGuests.length === 0) {
+      toast.error("Aucun invité valide");
+      return;
     }
 
-    setShowStatusModal(true);
-  } catch (error: any) {
-    console.error("❌ ERREUR FINALE:", error);
+    console.log("🚀 Début envoi - Template URL:", window.location.href);
 
-    // Afficher l'erreur exacte
-    const errorMsg =
-      error.response?.data?.message || error.message || "Erreur inconnue";
+    try {
+      // ========================================
+      // 1. PAYLOAD MINIMAL SANS ERREUR
+      // ========================================
+      const payload: any = {
+        channel: sendMethod,
+        subject: t("send.defaults.defaultSubject"),
+        body: t("send.defaults.defaultBody"),
+      };
 
-    toast.error(`Échec envoi: ${errorMsg}`);
+      // ========================================
+      // 2. GÉNÉRER L'HTML AVEC ENVELOPPE
+      // ========================================
+      if (sendMethod === "email") {
+        // Importer les fonctions du template email
+        const {
+          generateEnvelopeEmailTemplate,
+          generateInvitationToken,
+          generateInvitationUrl,
+        } = await import("@/utils/emailTemplates");
 
-    // Log détaillé
-    if (error.response?.data) {
-      console.error("📋 Détails erreur backend:", error.response.data);
+        // Générer un token unique pour cette invitation
+        const token = generateInvitationToken();
+        const invitationUrl = generateInvitationUrl(token);
+
+        // Prendre le premier invité pour l'exemple d'enveloppe
+        const firstRecipient = validGuests[0] || {
+          name: "Invité",
+          email: "invite@example.com",
+        };
+
+        // Utiliser le template avec enveloppe
+        payload.html = generateEnvelopeEmailTemplate({
+          recipientName: firstRecipient.name || "Invité",
+          invitationUrl: invitationUrl,
+          envelopeColor: "#26452b", // Vert par défaut
+        });
+
+        console.log(
+          "✅ Email avec enveloppe généré:",
+          payload.html.length,
+          "caractères"
+        );
+        console.log("🔗 URL invitation:", invitationUrl);
+        console.log("🎫 Token:", token);
+
+        // Sauvegarder l'invitation (API ou localStorage)
+        try {
+          const { invitationService } = await import(
+            "@/api/services/invitationService"
+          );
+
+          await invitationService.create({
+            token,
+            recipientName: firstRecipient.name || "Invité",
+            recipientEmail: firstRecipient.email || "",
+            items: items,
+            bgColor: bgColor,
+            bgImage: bgImage,
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+          });
+
+          console.log("✅ Invitation sauvegardée avec succès");
+        } catch (invError: any) {
+          console.warn("⚠️ Erreur sauvegarde invitation:", invError.message);
+          // Ne pas bloquer l'envoi si la sauvegarde échoue
+        }
+      }
+
+      // ========================================
+      // 3. AJOUTER LES DESTINATAIRES
+      // ========================================
+      if (sendMethod === "email") {
+        payload.emails = validGuests
+          .filter((guest: Guest) => guest.email && guest.email.includes("@"))
+          .slice(0, 10) // Limiter à 10 pour tester
+          .map((guest: Guest) => ({
+            email: guest.email || "",
+            name: guest.full_name || guest.name || "Invité",
+          }));
+
+        console.log("📧 Destinataires email:", payload.emails.length);
+      } else if (sendMethod === "whatsapp") {
+        payload.contacts = validGuests
+          .filter(
+            (guest: Guest) =>
+              guest.phone && guest.phone.replace(/\D/g, "").length >= 10
+          )
+          .slice(0, 10)
+          .map((guest: Guest) => ({
+            phone: guest.phone || "",
+            name: guest.full_name || guest.name || "Invité",
+          }));
+
+        console.log("📱 Destinataires WhatsApp:", payload.contacts.length);
+      }
+
+      // Vérifier qu'on a au moins 1 destinataire
+      if (
+        (sendMethod === "email" &&
+          (!payload.emails || payload.emails.length === 0)) ||
+        (sendMethod === "whatsapp" &&
+          (!payload.contacts || payload.contacts.length === 0))
+      ) {
+        toast.error("Aucun destinataire valide");
+        return;
+      }
+
+      // ========================================
+      // 4. ENVOYER SIMPLEMENT
+      // ========================================
+      console.log("📤 Envoi payload minimal:", {
+        channel: payload.channel,
+        destinataires: payload.emails?.length || payload.contacts?.length || 0,
+        hasHtml: !!payload.html,
+      });
+
+      const response = await sendBulk(payload);
+
+      // Succès
+      toast.success(
+        `Message envoyé à ${
+          payload.emails?.length || payload.contacts?.length || 0
+        } personne(s)`
+      );
+
+      setTotalCount(response.total_recipients || 0);
+      setSentCount(response.sent_count || 0);
+      setFailedCount(response.failed_count || 0);
+      setPendingCount(response.pending_count || 0);
+
+      if (response.messages) {
+        const converted = convertToMessageStatus(response.messages, sendMethod);
+        setStatusMessages(converted);
+      }
+
+      setShowStatusModal(true);
+    } catch (error: any) {
+      console.error("❌ ERREUR FINALE:", error);
+
+      // Afficher l'erreur exacte
+      const errorMsg =
+        error.response?.data?.message || error.message || "Erreur inconnue";
+
+      toast.error(`Échec envoi: ${errorMsg}`);
+
+      // Log détaillé
+      if (error.response?.data) {
+        console.error("📋 Détails erreur backend:", error.response.data);
+      }
     }
-  }
-};
+  };
   const getChannelLabel = (channel: string): string => {
     switch (channel) {
       case "email":
-        return "Email";
+        return t("send.channels.email");
       case "mms":
-        return "MMS";
+        return t("send.channels.mms");
       case "whatsapp":
-        return "WhatsApp";
+        return t("send.channels.whatsapp");
       default:
         return channel;
     }
@@ -717,8 +743,7 @@ const handleSendBulk = async () => {
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité trouvé. Veuillez retourner à l'étape précédente pour
-            ajouter des invités.
+            {t("send.noGuests")}
           </AlertDescription>
         </Alert>
       )}
@@ -727,9 +752,7 @@ const handleSendBulk = async () => {
         <Alert className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            Aucun invité valide trouvé pour le canal{" "}
-            {getChannelLabel(sendMethod)}. Veuillez vérifier les données de vos
-            invités.
+            {t("send.noValidGuests")} {getChannelLabel(sendMethod)}.
           </AlertDescription>
         </Alert>
       )}
@@ -737,43 +760,45 @@ const handleSendBulk = async () => {
       {/* Statistiques */}
       <Card>
         <CardHeader>
-          <CardTitle>Résumé de l'envoi</CardTitle>
+          <CardTitle>{t("send.summary.title")}</CardTitle>
           <CardDescription>
-            Vérifiez les informations avant d'envoyer
+            {t("send.summary.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Éléments</p>
-              <p className="text-2xl font-bold text-blue-600">{items.length}</p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-muted-foreground">{t("send.summary.elements")}</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {items.length}
+              </p>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Invités valides</p>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-muted-foreground">{t("send.summary.validGuests")}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {validGuests.length}
               </p>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Variables</p>
-              <p className="text-2xl font-bold text-purple-600">
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+              <p className="text-sm text-muted-foreground">{t("send.summary.variables")}</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {extractVariables().length}
               </p>
             </div>
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Mode d'envoi</p>
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+              <p className="text-sm text-muted-foreground">{t("send.summary.sendMode")}</p>
               <Badge className="mt-2 gap-1">
                 {sendMode === "group" ? (
                   <Users className="h-3 w-3" />
                 ) : (
                   <User className="h-3 w-3" />
                 )}
-                {sendMode === "group" ? "Groupé" : "Personnalisé"}
+                {sendMode === "group" ? t("send.summary.group") : t("send.summary.personalizedMode")}
               </Badge>
             </div>
-            <div className="bg-cyan-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Personnalisés</p>
-              <p className="text-2xl font-bold text-cyan-600">
+            <div className="bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800">
+              <p className="text-sm text-muted-foreground">{t("send.summary.personalized")}</p>
+              <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
                 {stats.personalized}
               </p>
             </div>
@@ -786,10 +811,10 @@ const handleSendBulk = async () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send className="h-5 w-5" />
-            Mode d'envoi
+            {t("send.sendMode.title")}
           </CardTitle>
           <CardDescription>
-            Choisissez entre envoi groupé ou personnalisé par invité
+            {t("send.sendMode.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -801,14 +826,14 @@ const handleSendBulk = async () => {
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="group" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Envoi groupé
+                {t("send.sendMode.group.title")}
               </TabsTrigger>
               <TabsTrigger
                 value="personalized"
                 className="flex items-center gap-2"
               >
                 <User className="h-4 w-4" />
-                Personnalisé
+                {t("send.sendMode.personalized.title")}
               </TabsTrigger>
             </TabsList>
 
@@ -816,10 +841,9 @@ const handleSendBulk = async () => {
             <TabsContent value="group" className="space-y-4 pt-4">
               <Alert>
                 <Users className="h-4 w-4" />
-                <AlertTitle>Envoi groupé</AlertTitle>
+                <AlertTitle>{t("send.sendMode.group.title")}</AlertTitle>
                 <AlertDescription>
-                  Envoyez le même message à tous les invités d'un canal
-                  spécifique.
+                  {t("send.sendMode.group.description")}
                 </AlertDescription>
               </Alert>
 
@@ -827,7 +851,7 @@ const handleSendBulk = async () => {
                 <div>
                   <Label className="flex items-center gap-2 mb-2">
                     <Settings className="h-4 w-4" />
-                    Canal d'envoi groupé
+                    {t("send.sendMode.group.channelLabel")}
                   </Label>
                   <RadioGroup
                     value={groupMessage.channel}
@@ -843,7 +867,7 @@ const handleSendBulk = async () => {
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <MessageSquare className="h-4 w-4" />
-                        WhatsApp ({stats.whatsapp} invités)
+                        {t("send.sendMode.group.whatsapp")} ({stats.whatsapp} {t("send.preview.guests")})
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -853,14 +877,14 @@ const handleSendBulk = async () => {
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <Mail className="h-4 w-4" />
-                        Email ({stats.email} invités)
+                        {t("send.sendMode.group.email")} ({stats.email} {t("send.preview.guests")})
                       </Label>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div>
-                  <Label htmlFor="group-subject">Sujet</Label>
+                  <Label htmlFor="group-subject">{t("send.sendMode.group.subjectLabel")}</Label>
                   <Input
                     id="group-subject"
                     value={groupMessage.subject}
@@ -870,7 +894,7 @@ const handleSendBulk = async () => {
                         subject: e.target.value,
                       })
                     }
-                    placeholder="Vous êtes invité!"
+                    placeholder={t("send.defaults.subjectPlaceholder")}
                     className="mt-2"
                   />
                 </div>
@@ -897,7 +921,7 @@ const handleSendBulk = async () => {
                       [groupMessage.channel]: e.target.value,
                     })
                   }
-                  placeholder={`Écrivez votre message ${
+                  placeholder={`${t("send.defaults.messagePlaceholder")} ${
                     groupMessage.channel === "whatsapp" ? "WhatsApp" : "email"
                   }...`}
                   className="min-h-[150px]"
@@ -915,7 +939,7 @@ const handleSendBulk = async () => {
                       });
                     }}
                   >
-                    Template informel
+                    {t("send.sendMode.group.templates.casual")}
                   </Button>
                   <Button
                     size="sm"
@@ -929,7 +953,7 @@ const handleSendBulk = async () => {
                       });
                     }}
                   >
-                    Template formel
+                    {t("send.sendMode.group.templates.formal")}
                   </Button>
                 </div>
               </div>
@@ -939,20 +963,17 @@ const handleSendBulk = async () => {
             <TabsContent value="personalized" className="pt-4">
               <Alert>
                 <User className="h-4 w-4" />
-                <AlertTitle>Personnalisation par invité</AlertTitle>
+                <AlertTitle>{t("send.sendMode.personalized.title")}</AlertTitle>
                 <AlertDescription>
-                  Activez la personnalisation pour chaque invité, puis cliquez
-                  sur la flèche pour éditer le message.
+                  {t("send.sendMode.personalized.description")}
                 </AlertDescription>
               </Alert>
 
               {validGuests.length > 0 ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600">
-                      {stats.personalized} message
-                      {stats.personalized !== 1 ? "s" : ""} personnalisé
-                      {stats.personalized !== 1 ? "s" : ""}
+                    <p className="text-sm text-muted-foreground">
+                      {stats.personalized} {t("send.sendMode.personalized.personalizedCount")}
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -967,7 +988,7 @@ const handleSendBulk = async () => {
                           });
                         }}
                       >
-                        Personnaliser tous
+                        {t("send.sendMode.personalized.personalizeAll")}
                       </Button>
                       <Button
                         variant="outline"
@@ -981,7 +1002,7 @@ const handleSendBulk = async () => {
                           });
                         }}
                       >
-                        Tout standard
+                        {t("send.sendMode.personalized.standardAll")}
                       </Button>
                     </div>
                   </div>
@@ -993,14 +1014,14 @@ const handleSendBulk = async () => {
                         className="border rounded-lg overflow-hidden hover:border-gray-400 transition-colors"
                       >
                         {/* En-tête de l'invité */}
-                        <div className="p-4 bg-gray-50 flex items-center justify-between hover:bg-gray-100">
+                        <div className="p-4 bg-secondary flex items-center justify-between hover:bg-accent transition-colors">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-100 flex items-center justify-center text-blue-800 font-bold rounded-full">
+                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-800 dark:text-blue-400 font-bold rounded-full">
                               {guest.name?.charAt(0) || "?"}
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <h4 className="font-medium text-gray-900">
+                                <h4 className="font-medium text-foreground">
                                   {guest.name}
                                 </h4>
                                 <Badge variant="outline" className="text-xs">
@@ -1014,11 +1035,11 @@ const handleSendBulk = async () => {
                                 {personalizedMessages[guest.id!]
                                   ?.customized && (
                                   <Badge className="bg-purple-100 text-purple-800 text-xs">
-                                    Personnalisé
+                                    {t("send.sendMode.personalized.personalizedBadge")}
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-muted-foreground">
                                 {guest.channel === "whatsapp"
                                   ? guest.phone
                                   : guest.email}
@@ -1056,20 +1077,20 @@ const handleSendBulk = async () => {
                         {/* Zone d'édition du message (visible quand expandée ET personnalisée) */}
                         {expandedGuests[guest.id!] &&
                           personalizedMessages[guest.id!]?.customized && (
-                            <div className="p-4 bg-white border-t">
+                            <div className="p-4 bg-background border-t">
                               <div className="space-y-4">
                                 <div>
                                   <Label
                                     htmlFor={`subject-${guest.id}`}
                                     className="text-sm font-medium"
                                   >
-                                    Sujet du message
+                                    {t("send.sendMode.personalized.subjectLabel")}
                                   </Label>
                                   <Input
                                     id={`subject-${guest.id}`}
                                     value={
                                       personalizedMessages[guest.id!]
-                                        ?.subject || "Vous êtes invité!"
+                                        ?.subject || t("send.defaults.emailSubject")
                                     }
                                     onChange={(e) =>
                                       updatePersonalizedMessage(guest.id!, {
@@ -1077,7 +1098,7 @@ const handleSendBulk = async () => {
                                       })
                                     }
                                     className="mt-1"
-                                    placeholder="Sujet du message"
+                                    placeholder={t("send.sendMode.personalized.subjectLabel")}
                                   />
                                 </div>
 
@@ -1087,36 +1108,36 @@ const handleSendBulk = async () => {
                                       htmlFor={`message-${guest.id}`}
                                       className="text-sm font-medium"
                                     >
-                                      Message personnalisé pour {guest.name}
+                                      {t("send.sendMode.personalized.messageLabel")} {guest.name}
                                     </Label>
                                     <div className="flex gap-1">
                                       <Button
-                                        size="xs"
+                                        size="sm"
                                         variant="ghost"
                                         onClick={() =>
                                           applyTemplate(guest.id!, "casual")
                                         }
                                       >
-                                        Informel
+                                        {t("send.sendMode.personalized.templates.casual")}
                                       </Button>
                                       <Button
-                                        size="xs"
+                                        size="sm"
                                         variant="ghost"
                                         onClick={() =>
                                           applyTemplate(guest.id!, "formal")
                                         }
                                       >
-                                        Formel
+                                        {t("send.sendMode.personalized.templates.formal")}
                                       </Button>
                                       {guest.channel === "whatsapp" && (
                                         <Button
-                                          size="xs"
+                                          size="sm"
                                           variant="ghost"
                                           onClick={() =>
                                             applyTemplate(guest.id!, "reminder")
                                           }
                                         >
-                                          Rappel
+                                          {t("send.sendMode.personalized.templates.reminder")}
                                         </Button>
                                       )}
                                     </div>
@@ -1134,7 +1155,7 @@ const handleSendBulk = async () => {
                                       })
                                     }
                                     className="min-h-[120px] mt-1"
-                                    placeholder={`Écrivez votre message personnalisé pour ${guest.name}...`}
+                                    placeholder={`${t("send.sendMode.personalized.messagePlaceholder")} ${guest.name}...`}
                                   />
                                 </div>
                               </div>
@@ -1148,7 +1169,7 @@ const handleSendBulk = async () => {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Aucun invité valide pour personnaliser les messages.
+                    {t("send.sendMode.personalized.noValidGuests")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -1160,21 +1181,21 @@ const handleSendBulk = async () => {
       {/* Paramètres d'envoi - SELECT DIRECT POUR ÉVÉNEMENT */}
       <Card>
         <CardHeader>
-          <CardTitle>Paramètres d'envoi</CardTitle>
+          <CardTitle>{t("send.settings.title")}</CardTitle>
           <CardDescription>
-            Configurez les détails techniques de l'envoi
+            {t("send.settings.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="send-method">Canal technique d'envoi</Label>
+              <Label htmlFor="send-method">{t("send.settings.channelLabel")}</Label>
               <Select
                 value={sendMethod}
                 onValueChange={(value: any) => setSendMethod(value)}
               >
                 <SelectTrigger id="send-method" className="mt-2">
-                  <SelectValue placeholder="Sélectionner un canal" />
+                  <SelectValue placeholder={t("send.defaults.selectChannel")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="email">
@@ -1201,14 +1222,14 @@ const handleSendBulk = async () => {
 
             <div>
               <Label htmlFor="email-subject">
-                {sendMode === "group" ? "Sujet de l'email" : "Sujet par défaut"}
+                {sendMode === "group" ? t("send.settings.subjectLabel") : t("send.settings.defaultSubjectLabel")}
               </Label>
               <Input
                 id="email-subject"
                 value={
                   sendMode === "group"
                     ? groupMessage.subject
-                    : "Vous êtes invité!"
+                    : t("send.defaults.emailSubject")
                 }
                 onChange={(e) => {
                   if (sendMode === "group") {
@@ -1218,7 +1239,7 @@ const handleSendBulk = async () => {
                     });
                   }
                 }}
-                placeholder="Ex: Vous êtes invité à notre mariage!"
+                placeholder={t("send.settings.subjectPlaceholder")}
                 className="mt-2"
               />
             </div>
@@ -1233,10 +1254,10 @@ const handleSendBulk = async () => {
                   <SelectValue placeholder="Sélectionner un événement" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">Créer un nouvel événement</SelectItem>
-                  <SelectItem value="1">Événement 1</SelectItem>
-                  <SelectItem value="2">Événement 2</SelectItem>
-                  <SelectItem value="3">Événement 3</SelectItem>
+                  <SelectItem value="new">{t("send.settings.eventOptions.new")}</SelectItem>
+                  <SelectItem value="1">{t("send.settings.eventOptions.event1")}</SelectItem>
+                  <SelectItem value="2">{t("send.settings.eventOptions.event2")}</SelectItem>
+                  <SelectItem value="3">{t("send.settings.eventOptions.event3")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1245,7 +1266,7 @@ const handleSendBulk = async () => {
           {/* Variables disponibles */}
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-blue-900 mb-2">
-              Variables disponibles:
+              {t("send.settings.variablesTitle")}
             </p>
             <div className="flex flex-wrap gap-2">
               {extractVariables().map((variable) => (
@@ -1267,16 +1288,16 @@ const handleSendBulk = async () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
-            Aperçu du message
+            {t("send.preview.title")}
           </CardTitle>
           <CardDescription>
-            Voici ce qui sera envoyé à vos invités
+            {t("send.preview.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* En-tête info */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
                   {sendMode === "group" ? (
@@ -1286,12 +1307,12 @@ const handleSendBulk = async () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-foreground">
                     {sendMode === "group"
-                      ? "Envoi groupé"
-                      : "Envoi personnalisé"}
+                      ? t("send.preview.groupSend")
+                      : t("send.preview.personalizedSend")}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {sendMode === "group" ? (
                       groupMessage.channel === "email" ? (
                         <span className="flex items-center gap-1">
@@ -1366,11 +1387,11 @@ const handleSendBulk = async () => {
             </div>
 
             {/* Légende */}
-            <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
+            <div className="text-sm text-muted-foreground p-3 bg-secondary rounded-lg">
               <p className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 {selectedModelId !== "default"
-                  ? `Ce modèle de carte (${selectedModelId}) sera envoyé à vos invités avec les variables personnalisées`
+                  ? `${t("send.defaults.modelWillBeSent")} (${selectedModelId})`
                   : sendMode === "group"
                   ? groupMessage.channel === "email"
                     ? "Ce modèle d'invitation sera envoyé par email avec les variables remplacées"
@@ -1385,8 +1406,8 @@ const handleSendBulk = async () => {
       {/* Bouton d'envoi DIRECT - PAS DE MODALE INTERMÉDIAIRE */}
       <Card>
         <CardHeader>
-          <CardTitle>Action d'envoi</CardTitle>
-          <CardDescription>Lancez l'envoi de vos invitations</CardDescription>
+          <CardTitle>{t("send.action.title")}</CardTitle>
+          <CardDescription>{t("send.action.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -1397,20 +1418,18 @@ const handleSendBulk = async () => {
             {sending ? (
               <>
                 <Loader2 className="h-5 w-5 mr-3 animate-spin" />
-                Envoi en cours...
+                {t("send.action.sending")}
               </>
             ) : (
               <>
                 <Send className="h-5 w-5 mr-3" />
                 {sendMode === "group"
-                  ? `Envoyer groupé à ${
+                  ? `${t("send.action.sendButton")} ${
                       validGuests.filter(
                         (g: Guest) => g.channel === groupMessage.channel
                       ).length
-                    } invités`
-                  : `Envoyer ${stats.personalized} message${
-                      stats.personalized !== 1 ? "s" : ""
-                    } personnalisé${stats.personalized !== 1 ? "s" : ""}`}
+                    } ${t("send.preview.guests")}`
+                  : `${t("send.action.sendPersonalized")} ${stats.personalized}`}
               </>
             )}
           </Button>
@@ -1419,8 +1438,7 @@ const handleSendBulk = async () => {
             <Alert className="mt-4 bg-red-50 border-red-200">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Le nombre de destinataires dépasse 500. Veuillez réduire le
-                nombre d'invités.
+                {t("send.action.maxRecipientsError")}
               </AlertDescription>
             </Alert>
           )}
@@ -1442,10 +1460,10 @@ const handleSendBulk = async () => {
       {/* Navigation */}
       <div className="flex justify-between gap-4">
         <Button variant="outline" onClick={() => setStep(2)}>
-          ← Retour Prévisualisation
+          {t("send.navigation.backToPreview")}
         </Button>
         <Button variant="outline" onClick={() => setStep(0)}>
-          Accueil
+          {t("send.navigation.home")}
         </Button>
       </div>
     </div>

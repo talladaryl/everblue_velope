@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Elements } from '@stripe/react-stripe-js';
-import stripePromise from '@/lib/stripe';
-import StripePayment from './StripePayment';
+import { Elements } from "@stripe/react-stripe-js";
+import stripePromise from "@/lib/stripe";
+import StripePayment from "./StripePayment";
 import {
   X,
   CreditCard,
@@ -163,7 +163,7 @@ export const PaymentMethodModal = ({
               <X className="h-4 w-4" />
             )}
           </Button>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-bold text-foreground">
             {selectedMethod === "paypal"
               ? "Paiement via PayPal"
               : "Choisissez votre moyen de paiement"}
@@ -184,7 +184,7 @@ export const PaymentMethodModal = ({
                   <button
                     key={method.id}
                     onClick={() => handleMethodSelect(method.id)}
-                    className={`p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all duration-200 text-left group bg-gradient-to-br ${method.color} text-white`}
+                    className={`p-4 rounded-xl border-2 border hover:border-blue-500 hover:shadow-lg transition-all duration-200 text-left group bg-gradient-to-br ${method.color} text-white`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -201,7 +201,7 @@ export const PaymentMethodModal = ({
                 ))}
               </div>
 
-              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+              <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
                 <Shield className="h-4 w-4" />
                 <span>Paiement 100% sécurisé et chiffré</span>
               </div>

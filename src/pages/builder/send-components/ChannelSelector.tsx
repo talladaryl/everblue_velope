@@ -1,5 +1,11 @@
 import { Mail, MessageSquare, Send } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
@@ -8,7 +14,10 @@ interface ChannelSelectorProps {
   setSendMethod: (method: "email" | "sms" | "whatsapp") => void;
 }
 
-export function ChannelSelector({ sendMethod, setSendMethod }: ChannelSelectorProps) {
+export function ChannelSelector({
+  sendMethod,
+  setSendMethod,
+}: ChannelSelectorProps) {
   const channels = [
     {
       id: "email",
@@ -43,15 +52,20 @@ export function ChannelSelector({ sendMethod, setSendMethod }: ChannelSelectorPr
           <Send className="h-5 w-5 text-blue-600" />
           Canal d'envoi
         </CardTitle>
-        <CardDescription>Choisissez comment envoyer vos invitations</CardDescription>
+        <CardDescription>
+          Choisissez comment envoyer vos invitations
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <RadioGroup value={sendMethod || ""} onValueChange={(value) => setSendMethod(value as any)}>
+        <RadioGroup
+          value={sendMethod || ""}
+          onValueChange={(value) => setSendMethod(value as any)}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {channels.map((channel) => {
               const Icon = channel.icon;
               const isSelected = sendMethod === channel.id;
-              
+
               return (
                 <div key={channel.id} className="relative">
                   <RadioGroupItem
@@ -64,15 +78,27 @@ export function ChannelSelector({ sendMethod, setSendMethod }: ChannelSelectorPr
                     className={`flex flex-col items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
                       isSelected
                         ? "border-blue-500 bg-blue-50 shadow-md"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        : "border hover:border hover:bg-accent"
                     }`}
                   >
-                    <div className={`p-3 rounded-full ${isSelected ? channel.bgColor : "bg-gray-100"}`}>
-                      <Icon className={`h-6 w-6 ${isSelected ? channel.color : "text-gray-600"}`} />
+                    <div
+                      className={`p-3 rounded-full ${
+                        isSelected ? channel.bgColor : "bg-gray-100"
+                      }`}
+                    >
+                      <Icon
+                        className={`h-6 w-6 ${
+                          isSelected ? channel.color : "text-gray-600"
+                        }`}
+                      />
                     </div>
                     <div className="text-center">
-                      <p className="font-semibold text-gray-900">{channel.label}</p>
-                      <p className="text-xs text-gray-500">{channel.description}</p>
+                      <p className="font-semibold text-foreground">
+                        {channel.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {channel.description}
+                      </p>
                     </div>
                   </Label>
                 </div>

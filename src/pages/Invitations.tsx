@@ -113,7 +113,7 @@ export default function Invitations() {
         {/* En-tête */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <Users className="h-8 w-8 text-blue-600" />
               Gestion des invitations
             </h1>
@@ -130,7 +130,7 @@ export default function Invitations() {
             className={`px-4 py-2 font-medium transition-colors ${
               activeTab === "guests"
                 ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                : "text-gray-600 hover:text-foreground"
             }`}
           >
             Invités ({guests.length})
@@ -140,7 +140,7 @@ export default function Invitations() {
             className={`px-4 py-2 font-medium transition-colors ${
               activeTab === "stats"
                 ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                : "text-gray-600 hover:text-foreground"
             }`}
           >
             Statistiques
@@ -220,7 +220,7 @@ export default function Invitations() {
               <Card>
                 <CardContent className="pt-12 pb-12 text-center">
                   <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
+                  <p className="text-muted-foreground text-lg">
                     {searchTerm
                       ? "Aucun invité ne correspond à votre recherche"
                       : "Aucun invité pour le moment"}
@@ -239,7 +239,7 @@ export default function Invitations() {
                         {/* Infos principales */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-foreground">
                               {guest.full_name}
                             </h3>
                             {getStatusBadge(guest)}
@@ -250,7 +250,7 @@ export default function Invitations() {
                             {guest.plus_one_allowed && (
                               <p className="text-purple-600">✓ +1 autorisé</p>
                             )}
-                            <p className="text-xs text-gray-500 mt-2">
+                            <p className="text-xs text-muted-foreground mt-2">
                               Ajouté le {formatDate(guest.created_at)}
                             </p>
                           </div>

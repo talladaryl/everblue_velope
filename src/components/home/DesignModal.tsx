@@ -254,7 +254,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
       <DialogContent className="max-w-7xl w-full max-h-[90vh] overflow-hidden rounded-3xl p-0 border-0 shadow-2xl">
         <DialogHeader className="p-6 border-b bg-gradient-to-r from-slate-50 to-blue-50">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
+            <DialogTitle className="text-2xl font-bold text-foreground">
               {editCard.name}
             </DialogTitle>
             <Button
@@ -344,7 +344,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                           className={`w-12 h-12 rounded-2xl border-4 transition-all hover:scale-110 ${
                             selectedColor === color
                               ? "border-blue-500 scale-110 ring-4 ring-blue-200"
-                              : "border-gray-200 shadow-lg"
+                              : "border shadow-lg"
                           }`}
                           style={{ backgroundColor: color }}
                           onClick={() => {
@@ -411,7 +411,7 @@ const DesignModal: React.FC<DesignModalProps> = ({
                           className={
                             editCard.hasEnvelope
                               ? "bg-green-600 text-white"
-                              : "bg-gray-500 text-white"
+                              : "bg-secondary0 text-white"
                           }
                         >
                           {editCard.hasEnvelope ? "Incluse" : "Non incluse"}

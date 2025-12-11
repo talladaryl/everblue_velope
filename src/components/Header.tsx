@@ -16,7 +16,7 @@ export const Header = ({ onOpenLogin, user }: HeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div
@@ -110,7 +110,7 @@ export const Header = ({ onOpenLogin, user }: HeaderProps) => {
 
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border">
               <a
                 href="/"
                 className="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors duration-200"
@@ -135,7 +135,7 @@ export const Header = ({ onOpenLogin, user }: HeaderProps) => {
               >
                 Aide
               </a>
-              <div className="pt-4 pb-3 border-t border-gray-200 space-y-3">
+              <div className="pt-4 pb-3 border-t border space-y-3">
                 {user ? (
                   <Button
                     variant="ghost"

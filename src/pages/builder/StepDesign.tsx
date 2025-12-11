@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Palette, Eye, ArrowLeft, ArrowRight, Download } from "lucide-react";
 
 // Sous-composants
-import  { EditCard }  from "./design-steps/EditCard";
+import { EditCard } from "./design-steps/EditCard";
 // import { EditEnvelope } from "./design-steps/EditEnvelope";
 
 export default function StepDesign({ ctx }: { ctx: any }) {
@@ -74,12 +74,12 @@ export default function StepDesign({ ctx }: { ctx: any }) {
         {" "}
         <div>
           {" "}
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             {" "}
             <Palette className="h-6 w-6 text-blue-600" />
             Création de l'invitation{" "}
           </h2>{" "}
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Personnalisez votre carte et votre enveloppe{" "}
           </p>{" "}
         </div>
@@ -118,7 +118,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                 currentSubStep === "card"
                   ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
-                  : "bg-white border-2 border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600"
+                  : "bg-white border-2 border text-muted-foreground group-hover:border-blue-400 group-hover:text-blue-600"
               }`}
             >
               1
@@ -127,7 +127,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
               className={`text-sm font-medium transition-all ${
                 currentSubStep === "card"
                   ? "text-blue-600"
-                  : "text-gray-600 group-hover:text-blue-600"
+                  : "text-muted-foreground group-hover:text-blue-600"
               }`}
             >
               Modifier la carte
@@ -146,7 +146,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                 currentSubStep === "envelope"
                   ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
-                  : "bg-white border-2 border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600"
+                  : "bg-white border-2 border text-muted-foreground group-hover:border-blue-400 group-hover:text-blue-600"
               }`}
             >
               2
@@ -155,7 +155,7 @@ export default function StepDesign({ ctx }: { ctx: any }) {
               className={`text-sm font-medium transition-all ${
                 currentSubStep === "envelope"
                   ? "text-blue-600"
-                  : "text-gray-600 group-hover:text-blue-600"
+                  : "text-muted-foreground group-hover:text-blue-600"
               }`}
             >
               Personnaliser l'enveloppe

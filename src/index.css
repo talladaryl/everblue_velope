@@ -2,12 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+  On va utiliser TON système HSL existant
+  On l'adapte juste pour notre gestion de thème
 */
 
 @layer base {
-  :root {
+  :root,
+  [data-theme='light'] {
+    /* Ton système HSL existant */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -39,23 +42,42 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Variables pour notre système de thème (compatibilité) */
+    --color-primary: 222.2 47.4% 11.2%; /* en HSL pour compatibilité */
+    --color-primary-hover: 222.2 47.4% 15%;
+    --color-secondary: 210 40% 96.1%;
+    
+    --bg-primary: 0 0% 100%;
+    --bg-secondary: 249 100% 98%;
+    --bg-tertiary: 240 4.8% 95.9%;
+    
+    --text-primary: 222.2 84% 4.9%;
+    --text-secondary: 215.4 16.3% 46.9%;
+    --text-tertiary: 215 20.2% 65.1%;
+    
+    --border-primary: 214.3 31.8% 91.4%;
+    --border-secondary: 220 13% 91%;
+    
+    /* Tokens de design */
+    --brand: 226 70% 55%;
+    --brand-contrast: 210 40% 98%;
+    --primary-glow: 226 85% 70%;
+    --gradient-primary: linear-gradient(135deg, hsl(var(--brand)), hsl(var(--primary-glow)));
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--brand) / 0.30);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.35);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .dark {
+  [data-theme='dark'] {
+    /* Variables dark mode */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -83,6 +105,7 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -91,31 +114,24 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-/* Additional design tokens */
-@layer base {
-  :root {
-    --brand: 226 70% 55%;
-    --brand-contrast: 210 40% 98%;
-    --primary-glow: 226 85% 70%;
-    --gradient-primary: linear-gradient(135deg, hsl(var(--brand)), hsl(var(--primary-glow)));
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--brand) / 0.30);
-    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.35);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .dark {
+    /* Variables pour notre système de thème (dark) */
+    --color-primary: 210 40% 98%;
+    --color-primary-hover: 210 40% 90%;
+    --color-secondary: 217.2 32.6% 17.5%;
+    
+    --bg-primary: 222.2 84% 4.9%;
+    --bg-secondary: 240 5.9% 10%;
+    --bg-tertiary: 217.2 32.6% 17.5%;
+    
+    --text-primary: 210 40% 98%;
+    --text-secondary: 215 20.2% 65.1%;
+    --text-tertiary: 217.2 32.6% 17.5%;
+    
+    --border-primary: 217.2 32.6% 17.5%;
+    --border-secondary: 240 3.7% 15.9%;
+    
+    /* Tokens de design dark */
     --brand: 224 85% 60%;
     --brand-contrast: 222.2 47.4% 11.2%;
     --primary-glow: 224 85% 70%;
@@ -123,6 +139,34 @@ All colors MUST be HSL.
     --shadow-elegant: 0 10px 30px -10px hsl(var(--brand) / 0.35);
     --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
   }
+
+  /* Application des variables aux éléments */
+  * {
+    @apply border-border; /* Ça devrait fonctionner maintenant */
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Transition douce pour le changement de thème */
+* {
+  transition: background-color 0.2s ease, 
+              color 0.2s ease, 
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+/* 
+  RESTE DE TON CODE CSS EXISTANT
+  (toutes les animations, utilities, etc.)
+  Garde tout ce qui est en dessous de @layer base
+*/
+
+/* Additional design tokens */
+@layer base {
+  /* Ces variables sont déjà définies dans :root et .dark plus haut */
 }
 
 /* Utilities for signature interactions */
@@ -354,3 +398,54 @@ All colors MUST be HSL.
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Animation pour l'ellipse de chargement */
+@keyframes ellipse-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ellipse-spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-ellipse-spin {
+  animation: ellipse-spin 1s linear infinite;
+}
+
+.animate-ellipse-spin-reverse {
+  animation: ellipse-spin-reverse 1s linear infinite;
+  animation-delay: 0.5s;
+}
+
+/* Overlay de chargement */
+.loading-overlay {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}/* A
+nimation pour l'ellipse de chargement */
+@keyframes ellipse-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ellipse-spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-ellipse-spin {
+  animation: ellipse-spin 1s linear infinite;
+}
+
+.animate-ellipse-spin-reverse {
+  animation: e}x);
+ur(4plter: bl-fibackdropbkit-  -weblur(4px);
+ter: op-filckdray {
+  baerling-ovoadent */
+.le chargemverlay d* O
+
+/
+}elay: 0.5s;nimation-dnite;
+  anfiear iinse 1s ln-rever-spillipse

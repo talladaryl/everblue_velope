@@ -185,7 +185,7 @@ export default function Pricing() {
               Plans flexibles
             </Badge>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
               Des tarifs adaptés à
               <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 vos besoins
@@ -202,8 +202,8 @@ export default function Pricing() {
               <span
                 className={`text-lg font-medium ${
                   billingPeriod === "monthly"
-                    ? "text-gray-900"
-                    : "text-gray-500"
+                    ? "text-foreground"
+                    : "text-muted-foreground"
                 }`}
               >
                 Mensuel
@@ -226,8 +226,8 @@ export default function Pricing() {
                 <span
                   className={`text-lg font-medium ${
                     billingPeriod === "yearly"
-                      ? "text-gray-900"
-                      : "text-gray-500"
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   }`}
                 >
                   Annuel
@@ -251,7 +251,7 @@ export default function Pricing() {
                   className={`relative border-2 transition-all duration-300 hover:shadow-xl ${
                     plan.popular
                       ? "border-blue-500 shadow-lg scale-105"
-                      : "border-gray-200 hover:border-blue-300"
+                      : "border hover:border-blue-300"
                   }`}
                 >
                   {plan.popular && (
@@ -264,14 +264,14 @@ export default function Pricing() {
                   )}
 
                   <CardHeader className="text-center pb-6">
-                    <CardTitle className="text-2xl font-bold text-gray-900">
+                    <CardTitle className="text-2xl font-bold text-foreground">
                       {plan.name}
                     </CardTitle>
                     <p className="text-gray-600 mt-2">{plan.description}</p>
 
                     <div className="mt-6">
                       <div className="flex items-baseline justify-center">
-                        <span className="text-4xl font-bold text-gray-900">
+                        <span className="text-4xl font-bold text-foreground">
                           {planPrice.price}
                         </span>
                         {plan.price !== "Gratuit" && (
@@ -282,7 +282,7 @@ export default function Pricing() {
                       </div>
                       {billingPeriod === "yearly" &&
                         plan.price !== "Gratuit" && (
-                          <p className="text-sm text-gray-500 mt-2">
+                          <p className="text-sm text-muted-foreground mt-2">
                             Soit {plan.price}€ par mois
                           </p>
                         )}
@@ -313,7 +313,7 @@ export default function Pricing() {
                           <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <Check className="h-4 w-4 text-gray-400" />
                           </div>
-                          <span className="text-gray-500 text-sm line-through">
+                          <span className="text-muted-foreground text-sm line-through">
                             {feature}
                           </span>
                         </div>
@@ -332,7 +332,7 @@ export default function Pricing() {
                     </Button>
 
                     {plan.id === "starter" && (
-                      <p className="text-center text-sm text-gray-500">
+                      <p className="text-center text-sm text-muted-foreground">
                         Aucune carte de crédit requise
                       </p>
                     )}
@@ -347,7 +347,7 @@ export default function Pricing() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Tout inclus dans chaque forfait
             </h2>
             <p className="text-xl text-gray-600">
@@ -361,7 +361,7 @@ export default function Pricing() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold text-foreground mb-3">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
@@ -373,11 +373,11 @@ export default function Pricing() {
         </div>
       </section>
 
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-secondary">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Questions fréquentes
               </h2>
               <p className="text-xl text-gray-600">
@@ -413,7 +413,7 @@ export default function Pricing() {
                   className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    <h3 className="text-lg font-semibold text-foreground mb-3">
                       {faq.question}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">

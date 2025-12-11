@@ -193,9 +193,9 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             className="absolute right-4 top-4 h-8 w-8 p-0 hover:bg-gray-100"
             disabled={isLoading}
           >
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-muted-foreground" />
           </Button>
-          <CardTitle className="text-3xl font-extrabold text-gray-900 mt-2">
+          <CardTitle className="text-3xl font-extrabold text-foreground mt-2">
             {is2FA ? "Code 2FA Requis" : isLogin ? "Connexion" : "Inscription"}
           </CardTitle>
           <p className="text-gray-600 mt-2">
@@ -232,7 +232,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                         placeholder="Votre nom"
                         value={formData.name}
                         onChange={handleChange}
-                        className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                        className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500 transition duration-150"
                         required={!isLogin}
                         disabled={isLoading}
                       />
@@ -257,7 +257,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                       placeholder="votre@email.com"
                       value={formData.email}
                       onChange={handleChange}
-                      className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                      className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500 transition duration-150"
                       required
                       disabled={isLoading}
                     />
@@ -281,7 +281,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={handleChange}
-                      className="pl-10 pr-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                      className="pl-10 pr-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500 transition duration-150"
                       required
                       disabled={isLoading}
                     />
@@ -321,7 +321,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                     placeholder="Entrez votre code à 6 chiffres"
                     value={twoFactorCode}
                     onChange={(e) => setTwoFactorCode(e.target.value)}
-                    className="pl-4 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                    className="pl-4 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500 transition duration-150"
                     required
                     disabled={isLoading}
                     autoFocus
@@ -344,7 +344,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border text-blue-600 focus:ring-blue-500"
                     name="remember"
                     disabled={isLoading}
                   />

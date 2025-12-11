@@ -64,5 +64,412 @@
   "notifications": {
     "themeApplied": "Thème appliqué avec succès",
     "languageApplied": "Langue changée avec succès"
+  },
+  "editCard": {
+    "title": "Éditeur de Carte Professionnelle",
+    "subtitle": "Créez des designs époustouflants en quelques clics",
+    "dragToMove": "Glissez pour déplacer",
+    "emptyCanvas": {
+      "title": "Carte vierge",
+      "description": "Commencez par ajouter du contenu ou choisissez un modèle professionnel"
+    },
+    "tabs": {
+      "elements": "Éléments",
+      "background": "Fond",
+      "properties": "Propriétés"
+    },
+    "elements": {
+      "text": "Texte",
+      "image": "Image",
+      "video": "Vidéo",
+      "gif": "GIF",
+      "textVariables": "Variables de texte ({{nom}}, {{email}}, etc.)"
+    },
+    "background": {
+      "backgroundColor": "Couleur de fond",
+      "professionalTemplates": "Modèles Professionnels",
+      "customBackground": "Image de fond personnalisée"
+    },
+    "properties": {
+      "title": "Propriétés",
+      "selectedType": "sélectionné",
+      "noSelection": {
+        "title": "Aucun élément sélectionné",
+        "description": "Cliquez sur un élément dans l'éditeur pour modifier ses propriétés"
+      },
+      "text": {
+        "content": "Contenu",
+        "text": "Texte",
+        "size": "Taille",
+        "color": "Couleur",
+        "font": "Police (60+ disponibles)",
+        "textShadow": "Ombre du texte",
+        "alignment": "Alignement",
+        "weight": "Poids",
+        "shadowOptions": {
+          "none": "Aucune",
+          "light": "Légère",
+          "medium": "Moyenne",
+          "strong": "Forte",
+          "veryStrong": "Très forte",
+          "whiteGlow": "Lueur blanche",
+          "goldGlow": "Lueur dorée",
+          "blackOutline": "Contour noir",
+          "goldOutline": "Contour doré"
+        },
+        "alignmentOptions": {
+          "left": "Gauche",
+          "center": "Centre",
+          "right": "Droite"
+        },
+        "weightOptions": {
+          "normal": "Normal",
+          "bold": "Gras",
+          "lighter": "Fin"
+        }
+      },
+      "media": {
+        "base": "Base",
+        "width": "Largeur",
+        "height": "Hauteur",
+        "opacity": "Opacité",
+        "rotation": "Rotation",
+        "flip": "Flip",
+        "horizontal": "Horizontal",
+        "vertical": "Vertical",
+        "style": "Style",
+        "borderRadius": "Bordure arrondie",
+        "borderColor": "Couleur bordure",
+        "thickness": "Épaisseur",
+        "shadows": "Ombres",
+        "enableShadow": "Activer l'ombre",
+        "shadowColor": "Couleur ombre",
+        "blur": "Flou",
+        "offsetX": "Décalage X",
+        "offsetY": "Décalage Y",
+        "filters": "Filtres",
+        "brightness": "Luminosité",
+        "contrast": "Contraste",
+        "saturation": "Saturation",
+        "grayscale": "Niveaux de gris",
+        "mediaControls": "Contrôles Média",
+        "play": "Lecture",
+        "pause": "Pause",
+        "sound": "Son",
+        "mute": "Mute",
+        "autoPlay": "Lecture auto",
+        "loop": "Boucle",
+        "useAsBackground": "Utiliser comme fond d'écran"
+      },
+      "deleteElement": "Supprimer l'élément"
+    },
+    "chat": {
+      "title": "Assistant Design",
+      "subtitle": "IA créative",
+      "placeholder": "Décrivez votre carte ou demandez des améliorations...",
+      "examples": "💡 Exemples : \"carte d'anniversaire\" ou \"améliore mon design avec un style moderne\"",
+      "assistant": "Assistant IA",
+      "you": "Vous",
+      "apply": "✅ Appliquer",
+      "cancel": "↩️ Annuler"
+    },
+    "templates": {
+      "title": "🎨 Modèles Professionnels",
+      "subtitle": "20+ designs avec images, bordures variées et effet papier réaliste",
+      "categories": {
+        "all": "Tous",
+        "birthday": "Anniversaire",
+        "wedding": "Mariage",
+        "baptism": "Baptême",
+        "easter": "Pâques",
+        "christmas": "Noël",
+        "elegant": "Élégant",
+        "nature": "Nature",
+        "minimal": "Minimal"
+      },
+      "close": "Fermer"
+    }
+  },
+  "guests": {
+    "title": "Gestion des invités",
+    "subtitle": "Ajoutez et gérez vos invités pour l'envoi des invitations",
+    "stats": {
+      "total": "Total",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "valid": "Valides"
+    },
+    "alerts": {
+      "noGuests": "Commencez par ajouter des invités ou importer une liste.",
+      "noValidGuests": "Aucun invité valide. Veuillez corriger les informations.",
+      "validGuests": "invité(s) prêt(s) à recevoir l'invitation."
+    },
+    "search": {
+      "placeholder": "Rechercher un invité...",
+      "filterAll": "Tous les canaux",
+      "filterWhatsapp": "WhatsApp uniquement",
+      "filterEmail": "Email uniquement"
+    },
+    "import": {
+      "title": "Importer des invités",
+      "csv": "CSV",
+      "google": "Google",
+      "excel": "Excel",
+      "icloud": "iCloud",
+      "csvDescription": "Format attendu : Nom, Email ou Téléphone",
+      "connectGoogle": "Se connecter à Google Contacts",
+      "connectIcloud": "Se connecter à iCloud Contacts",
+      "excelNotAvailable": "L'import Excel sera disponible dans la prochaine version. Utilisez l'export CSV pour le moment.",
+      "serviceWillBeImplemented": "Fonctionnalité d'import depuis",
+      "importSuccess": "invités importés avec succès !",
+      "importError": "Erreur lors de l'import. Vérifiez le format du fichier.",
+      "noGuestsToExport": "Aucun invité à exporter"
+    },
+    "table": {
+      "title": "Liste des invités",
+      "description": "invité(s) trouvé(s)",
+      "descriptionFiltered": "invité(s) trouvé(s)",
+      "headers": {
+        "status": "Statut",
+        "channel": "Canal",
+        "name": "Nom & Prénom",
+        "contact": "Téléphone / Email",
+        "countryCode": "Indicatif",
+        "actions": "Actions"
+      },
+      "status": {
+        "new": "Nouveau",
+        "valid": "✓ Valide",
+        "invalid": "✗ Invalide"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "email": "Email"
+      },
+      "placeholders": {
+        "name": "Jean Dupont",
+        "phone": "XX XX XX XX XX",
+        "email": "jean@example.com"
+      },
+      "actions": {
+        "add": "Ajouter",
+        "edit": "Modifier (double-clic)",
+        "delete": "Supprimer",
+        "save": "Sauvegarder",
+        "cancel": "Annuler"
+      },
+      "empty": {
+        "noResults": "Aucun invité ne correspond à vos filtres",
+        "noGuests": "Aucun invité pour le moment. Ajoutez votre premier invité ci-dessus."
+      }
+    },
+    "form": {
+      "validation": {
+        "nameRequired": "Veuillez entrer un nom",
+        "invalidPhone": "Numéro de téléphone invalide. Format: +XX XXX XX XX XX",
+        "invalidEmail": "Adresse email invalide"
+      },
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet invité ?"
+    },
+    "navigation": {
+      "backToDesign": "← Retour au design",
+      "continueToPreview": "Continuer vers la prévisualisation →"
+    }
+  },
+  "preview": {
+    "title": "Prévisualisation de l'invitation",
+    "subtitle": "Vérifiez comment votre invitation s'affichera pour chaque invité",
+    "noGuest": {
+      "title": "Aucun invité trouvé",
+      "description": "Veuillez retourner à l'étape précédente pour ajouter des invités.",
+      "backButton": "← Retour"
+    },
+    "configuration": {
+      "title": "Configuration",
+      "subtitle": "Sélectionnez un invité et un modèle",
+      "guestLabel": "Invité",
+      "modelLabel": "Modèle de design",
+      "deviceLabel": "Aperçu sur",
+      "devices": {
+        "mobile": "Mobile",
+        "tablet": "Tablette",
+        "desktop": "Desktop"
+      }
+    },
+    "guestInfo": {
+      "title": "Informations de l'invité",
+      "location": "Lieu:",
+      "date": "Date:",
+      "time": "Heure:"
+    },
+    "validation": {
+      "warning": "Attention:",
+      "success": "Parfait! Toutes les variables ont été remplacées avec succès pour cet invité."
+    },
+    "livePreview": {
+      "title": "Aperçu en direct",
+      "description": "Visualisation sur"
+    },
+    "models": {
+      "default": {
+        "name": "Aperçu Simple",
+        "description": "Affichage basique"
+      },
+      "selectModel": "Sélectionnez un modèle"
+    },
+    "navigation": {
+      "backToDetails": "← Retour aux détails",
+      "continueToSend": "Continuer vers l'envoi"
+    },
+    "fullPreview": {
+      "title": "Aperçu complet de l'invitation"
+    }
+  },
+  "send": {
+    "title": "Envoi des invitations",
+    "subtitle": "Configurez et envoyez vos invitations aux invités",
+    "noGuests": "Aucun invité trouvé. Veuillez retourner à l'étape précédente pour ajouter des invités.",
+    "noValidGuests": "Aucun invité valide trouvé pour le canal. Veuillez vérifier les données de vos invités.",
+    "summary": {
+      "title": "Résumé de l'envoi",
+      "subtitle": "Vérifiez les informations avant d'envoyer",
+      "elements": "Éléments",
+      "validGuests": "Invités valides",
+      "variables": "Variables",
+      "sendMode": "Mode d'envoi",
+      "personalized": "Personnalisés",
+      "group": "Groupé",
+      "personalizedMode": "Personnalisé"
+    },
+    "sendMode": {
+      "title": "Mode d'envoi",
+      "subtitle": "Choisissez entre envoi groupé ou personnalisé par invité",
+      "group": {
+        "title": "Envoi groupé",
+        "description": "Envoyez le même message à tous les invités d'un canal spécifique.",
+        "channelLabel": "Canal d'envoi groupé",
+        "whatsapp": "WhatsApp",
+        "email": "Email",
+        "subjectLabel": "Sujet",
+        "messageLabel": "Message groupé",
+        "messagePlaceholder": "Écrivez votre message...",
+        "templates": {
+          "casual": "Template informel",
+          "formal": "Template formel"
+        }
+      },
+      "personalized": {
+        "title": "Personnalisation par invité",
+        "description": "Activez la personnalisation pour chaque invité, puis cliquez sur la flèche pour éditer le message.",
+        "personalizedCount": "message(s) personnalisé(s)",
+        "personalizeAll": "Personnaliser tous",
+        "standardAll": "Tout standard",
+        "personalizedBadge": "Personnalisé",
+        "subjectLabel": "Sujet du message",
+        "messageLabel": "Message personnalisé pour",
+        "messagePlaceholder": "Écrivez votre message personnalisé pour...",
+        "templates": {
+          "casual": "Informel",
+          "formal": "Formel",
+          "reminder": "Rappel"
+        },
+        "noValidGuests": "Aucun invité valide pour personnaliser les messages."
+      }
+    },
+    "settings": {
+      "title": "Paramètres d'envoi",
+      "subtitle": "Configurez les détails techniques de l'envoi",
+      "channelLabel": "Canal technique d'envoi",
+      "subjectLabel": "Sujet de l'email",
+      "defaultSubjectLabel": "Sujet par défaut",
+      "subjectPlaceholder": "Ex: Vous êtes invité à notre mariage!",
+      "eventLabel": "Événement associé",
+      "eventOptions": {
+        "new": "Créer un nouvel événement",
+        "event1": "Événement 1",
+        "event2": "Événement 2",
+        "event3": "Événement 3"
+      },
+      "variablesTitle": "Variables disponibles:"
+    },
+    "preview": {
+      "title": "Aperçu du message",
+      "subtitle": "Voici ce qui sera envoyé à vos invités",
+      "groupSend": "Envoi groupé",
+      "personalizedSend": "Envoi personnalisé",
+      "emailTo": "Email à",
+      "whatsappTo": "WhatsApp à",
+      "guests": "invités",
+      "completePreview": "APERÇU COMPLET",
+      "modelDescription": "Ce modèle de carte sera envoyé à vos invités avec les variables personnalisées",
+      "emailDescription": "Ce modèle d'invitation sera envoyé par email avec les variables remplacées",
+      "whatsappDescription": "Ce message texte sera envoyé par WhatsApp à tous les contacts",
+      "personalizedDescription": "Les messages seront personnalisés pour chaque invité selon vos paramètres"
+    },
+    "action": {
+      "title": "Action d'envoi",
+      "subtitle": "Lancez l'envoi de vos invitations",
+      "sendButton": "Envoyer groupé à",
+      "sendPersonalized": "Envoyer message(s) personnalisé(s)",
+      "sending": "Envoi en cours...",
+      "maxRecipientsError": "Le nombre de destinataires dépasse 500. Veuillez réduire le nombre d'invités."
+    },
+    "navigation": {
+      "backToPreview": "← Retour Prévisualisation",
+      "home": "Accueil"
+    },
+    "channels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "mms": "MMS"
+    },
+    "defaults": {
+      "invitationTitle": "Mon invitation",
+      "emailSubject": "Vous êtes invité!",
+      "defaultSubject": "Vous êtes invité à notre événement",
+      "defaultBody": "Bonjour, vous êtes invité à notre événement. Voir les détails ci-dessous.",
+      "subjectPlaceholder": "Vous êtes invité!",
+      "messagePlaceholder": "Écrivez votre message...",
+      "selectChannel": "Sélectionner un canal",
+      "selectChannelError": "Veuillez sélectionner un canal d'envoi",
+      "subjectRequired": "Le sujet est requis",
+      "modelWillBeSent": "Ce modèle de carte ({{model}}) sera envoyé à vos invités avec les variables personnalisées",
+      "personalizedToSend": "message(s) personnalisé(s) à envoyer",
+      "noPersonalizedMessage": "Aucun message personnalisé",
+      "enablePersonalization": "Activez la personnalisation pour voir l'aperçu",
+      "whatsappWillBeSent": "Ce message sera envoyé via WhatsApp",
+      "messageTemplates": {
+        "whatsapp": {
+          "casual": "Salut {name} ! Je t'invite à mon événement le {date}. Réponds-moi pour confirmer !",
+          "formal": "Bonjour {name}, vous êtes cordialement invité(e) à notre événement du {date}. Nous espérons vous y voir.",
+          "reminder": "Rappel : {name}, n'oubliez pas notre événement demain !"
+        },
+        "email": {
+          "casual": "Salut {name},\n\nTu es invité à mon événement !\n\nÀ bientôt !",
+          "formal": "Madame, Monsieur {name},\n\nNous avons le plaisir de vous convier à notre événement.\n\nCordialement,",
+          "invitation": "Cher(e) {name},\n\nC'est avec plaisir que je vous invite à rejoindre cet événement spécial."
+        }
+      }
+    }
+  },
+  "builder": {
+    "title": "Création de l'invitation",
+    "subtitle": "Personnalisez votre carte et votre enveloppe",
+    "editor": "Éditeur",
+    "steps": {
+      "design": "Design",
+      "details": "Détails",
+      "preview": "Prévisualisation", 
+      "send": "Envoi"
+    },
+    "actions": {
+      "save": "Sauvegarder",
+      "saving": "Sauvegarde...",
+      "saveModel": "Sauvegarder le modèle",
+      "back": "Retour"
+    },
+    "defaults": {
+      "yourTextHere": "Votre texte ici"
+    }
   }
 }

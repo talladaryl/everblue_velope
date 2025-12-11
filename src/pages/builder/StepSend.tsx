@@ -246,7 +246,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
               onValueChange={(v: any) => setSendMode(v)}
               className="flex flex-col sm:flex-row gap-6"
             >
-              <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition">
+              <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-accent transition">
                 <RadioGroupItem value="all" id="all" className="mt-1" />
                 <Label htmlFor="all" className="cursor-pointer font-medium">
                   <div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ export default function StepSend({ ctx }: { ctx: any }) {
                   </p>
                 </Label>
               </div>
-              <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition">
+              <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-accent transition">
                 <RadioGroupItem
                   value="personalize"
                   id="personalize"

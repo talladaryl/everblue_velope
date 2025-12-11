@@ -81,7 +81,7 @@ export const PaymentFormModal = ({
                   placeholder="6 XX XX XX XX"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -115,7 +115,7 @@ export const PaymentFormModal = ({
                   placeholder="votre@email.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -149,7 +149,7 @@ export const PaymentFormModal = ({
                   placeholder="1234 5678 9012 3456"
                   value={formData.cardNumber}
                   onChange={handleChange}
-                  className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -172,7 +172,7 @@ export const PaymentFormModal = ({
                     placeholder="MM/AA"
                     value={formData.expiry}
                     onChange={handleChange}
-                    className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -194,7 +194,7 @@ export const PaymentFormModal = ({
                     placeholder="123"
                     value={formData.cvv}
                     onChange={handleChange}
-                    className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
                 </div>
@@ -217,7 +217,7 @@ export const PaymentFormModal = ({
                   placeholder="JOHN DOE"
                   value={formData.cardName}
                   onChange={handleChange}
-                  className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 h-12 rounded-xl border focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -256,7 +256,7 @@ export const PaymentFormModal = ({
           >
             <X className="h-4 w-4" />
           </Button>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-bold text-foreground">
             Paiement sécurisé
           </CardTitle>
           <div className="space-y-1">
@@ -275,7 +275,7 @@ export const PaymentFormModal = ({
           <form onSubmit={handleSubmit} className="space-y-6">
             {renderForm()}
 
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-green-500" />
               <span>Transactions sécurisées avec chiffrement SSL</span>
             </div>
@@ -288,7 +288,7 @@ export const PaymentFormModal = ({
               {selectedPlan.period}
             </Button>
 
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-xs text-muted-foreground">
               En cliquant sur "Payer", vous acceptez nos conditions générales de
               vente et notre politique de confidentialité.
             </p>

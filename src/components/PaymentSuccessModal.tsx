@@ -35,7 +35,7 @@ export const PaymentSuccessModal = ({
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
 
-          <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+          <CardTitle className="text-2xl font-bold text-foreground mb-2">
             Paiement réussi !
           </CardTitle>
 
@@ -45,7 +45,7 @@ export const PaymentSuccessModal = ({
             activé avec succès.
           </p>
 
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             Un email de confirmation a été envoyé à votre adresse.
           </p>
 

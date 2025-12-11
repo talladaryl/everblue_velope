@@ -129,7 +129,10 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             plus_one_allowed:
               row.plus_one_allowed === "true" || row.plus_one_allowed === "1",
           }))
-          .filter((g: any) => g.name.length > 0 && (g.email.length > 0 || g.phone.length > 0));
+          .filter(
+            (g: any) =>
+              g.name.length > 0 && (g.email.length > 0 || g.phone.length > 0)
+          );
 
         if (newGuests.length === 0) {
           toast.error("Aucun invité valide trouvé dans le fichier");
@@ -292,7 +295,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all">
+            <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all">
               <Upload className="h-4 w-4" />
               <span className="text-sm font-medium">Importer CSV</span>
               <input
@@ -336,7 +339,8 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                 <TableBody>
                   {guests.map((guest) => {
                     const isValid = guest.email || guest.phone;
-                    const displayName = guest.full_name || guest.name || "Sans nom";
+                    const displayName =
+                      guest.full_name || guest.name || "Sans nom";
                     return (
                       <TableRow key={guest.id}>
                         <TableCell className="font-medium">

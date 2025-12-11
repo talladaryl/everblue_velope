@@ -64,5 +64,130 @@
   "notifications": {
     "themeApplied": "Design erfolgreich angewendet",
     "languageApplied": "Sprache erfolgreich geändert"
+  },
+  "editCard": {
+    "title": "Professioneller Karten-Editor",
+    "subtitle": "Erstellen Sie atemberaubende Designs mit nur wenigen Klicks",
+    "dragToMove": "Ziehen zum Bewegen",
+    "emptyCanvas": {
+      "title": "Leere Karte",
+      "description": "Beginnen Sie mit dem Hinzufügen von Inhalten oder wählen Sie eine professionelle Vorlage"
+    },
+    "tabs": {
+      "elements": "Elemente",
+      "background": "Hintergrund",
+      "properties": "Eigenschaften"
+    },
+    "elements": {
+      "text": "Text",
+      "image": "Bild",
+      "video": "Video",
+      "gif": "GIF",
+      "textVariables": "Textvariablen ({{name}}, {{email}}, etc.)"
+    },
+    "background": {
+      "backgroundColor": "Hintergrundfarbe",
+      "professionalTemplates": "Professionelle Vorlagen",
+      "customBackground": "Benutzerdefiniertes Hintergrundbild"
+    },
+    "properties": {
+      "title": "Eigenschaften",
+      "selectedType": "ausgewählt",
+      "noSelection": {
+        "title": "Kein Element ausgewählt",
+        "description": "Klicken Sie auf ein Element im Editor, um seine Eigenschaften zu ändern"
+      },
+      "text": {
+        "content": "Inhalt",
+        "text": "Text",
+        "size": "Größe",
+        "color": "Farbe",
+        "font": "Schriftart (60+ verfügbar)",
+        "textShadow": "Textschatten",
+        "alignment": "Ausrichtung",
+        "weight": "Gewicht",
+        "shadowOptions": {
+          "none": "Keine",
+          "light": "Leicht",
+          "medium": "Mittel",
+          "strong": "Stark",
+          "veryStrong": "Sehr stark",
+          "whiteGlow": "Weißes Leuchten",
+          "goldGlow": "Goldenes Leuchten",
+          "blackOutline": "Schwarzer Umriss",
+          "goldOutline": "Goldener Umriss"
+        },
+        "alignmentOptions": {
+          "left": "Links",
+          "center": "Mitte",
+          "right": "Rechts"
+        },
+        "weightOptions": {
+          "normal": "Normal",
+          "bold": "Fett",
+          "lighter": "Leicht"
+        }
+      },
+      "media": {
+        "base": "Basis",
+        "width": "Breite",
+        "height": "Höhe",
+        "opacity": "Deckkraft",
+        "rotation": "Drehung",
+        "flip": "Spiegeln",
+        "horizontal": "Horizontal",
+        "vertical": "Vertikal",
+        "style": "Stil",
+        "borderRadius": "Randradius",
+        "borderColor": "Randfarbe",
+        "thickness": "Dicke",
+        "shadows": "Schatten",
+        "enableShadow": "Schatten aktivieren",
+        "shadowColor": "Schattenfarbe",
+        "blur": "Unschärfe",
+        "offsetX": "Versatz X",
+        "offsetY": "Versatz Y",
+        "filters": "Filter",
+        "brightness": "Helligkeit",
+        "contrast": "Kontrast",
+        "saturation": "Sättigung",
+        "grayscale": "Graustufen",
+        "mediaControls": "Mediensteuerung",
+        "play": "Abspielen",
+        "pause": "Pause",
+        "sound": "Ton",
+        "mute": "Stumm",
+        "autoPlay": "Automatische Wiedergabe",
+        "loop": "Schleife",
+        "useAsBackground": "Als Hintergrund verwenden"
+      },
+      "deleteElement": "Element löschen"
+    },
+    "chat": {
+      "title": "Design-Assistent",
+      "subtitle": "Kreative KI",
+      "placeholder": "Beschreiben Sie Ihre Karte oder bitten Sie um Verbesserungen...",
+      "examples": "💡 Beispiele: \"Geburtstagskarte\" oder \"verbessere mein Design mit einem modernen Stil\"",
+      "assistant": "KI-Assistent",
+      "you": "Sie",
+      "apply": "✅ Anwenden",
+      "cancel": "↩️ Abbrechen"
+    },
+    "templates": {
+      "title": "🎨 Professionelle Vorlagen",
+      "subtitle": "20+ Designs mit Bildern, verschiedenen Rändern und realistischem Papiereffekt",
+      "categories": {
+        "all": "Alle",
+        "birthday": "Geburtstag",
+        "wedding": "Hochzeit",
+        "baptism": "Taufe",
+        "easter": "Ostern",
+        "christmas": "Weihnachten",
+        "elegant": "Elegant",
+        "nature": "Natur",
+        "minimal": "Minimal"
+      },
+      "close": "Schließen"
+    }
   }
 }

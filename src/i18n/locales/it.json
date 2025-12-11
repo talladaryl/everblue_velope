@@ -64,5 +64,130 @@
   "notifications": {
     "themeApplied": "Tema applicato con successo",
     "languageApplied": "Lingua cambiata con successo"
+  },
+  "editCard": {
+    "title": "Editor di Carte Professionali",
+    "subtitle": "Crea design straordinari con pochi clic",
+    "dragToMove": "Trascina per spostare",
+    "emptyCanvas": {
+      "title": "Carta vuota",
+      "description": "Inizia aggiungendo contenuto o scegli un modello professionale"
+    },
+    "tabs": {
+      "elements": "Elementi",
+      "background": "Sfondo",
+      "properties": "Proprietà"
+    },
+    "elements": {
+      "text": "Testo",
+      "image": "Immagine",
+      "video": "Video",
+      "gif": "GIF",
+      "textVariables": "Variabili di testo ({{nome}}, {{email}}, ecc.)"
+    },
+    "background": {
+      "backgroundColor": "Colore di sfondo",
+      "professionalTemplates": "Modelli Professionali",
+      "customBackground": "Immagine di sfondo personalizzata"
+    },
+    "properties": {
+      "title": "Proprietà",
+      "selectedType": "selezionato",
+      "noSelection": {
+        "title": "Nessun elemento selezionato",
+        "description": "Clicca su un elemento nell'editor per modificare le sue proprietà"
+      },
+      "text": {
+        "content": "Contenuto",
+        "text": "Testo",
+        "size": "Dimensione",
+        "color": "Colore",
+        "font": "Font (60+ disponibili)",
+        "textShadow": "Ombra del testo",
+        "alignment": "Allineamento",
+        "weight": "Peso",
+        "shadowOptions": {
+          "none": "Nessuna",
+          "light": "Leggera",
+          "medium": "Media",
+          "strong": "Forte",
+          "veryStrong": "Molto forte",
+          "whiteGlow": "Bagliore bianco",
+          "goldGlow": "Bagliore dorato",
+          "blackOutline": "Contorno nero",
+          "goldOutline": "Contorno dorato"
+        },
+        "alignmentOptions": {
+          "left": "Sinistra",
+          "center": "Centro",
+          "right": "Destra"
+        },
+        "weightOptions": {
+          "normal": "Normale",
+          "bold": "Grassetto",
+          "lighter": "Leggero"
+        }
+      },
+      "media": {
+        "base": "Base",
+        "width": "Larghezza",
+        "height": "Altezza",
+        "opacity": "Opacità",
+        "rotation": "Rotazione",
+        "flip": "Capovolgi",
+        "horizontal": "Orizzontale",
+        "vertical": "Verticale",
+        "style": "Stile",
+        "borderRadius": "Raggio del bordo",
+        "borderColor": "Colore del bordo",
+        "thickness": "Spessore",
+        "shadows": "Ombre",
+        "enableShadow": "Abilita ombra",
+        "shadowColor": "Colore ombra",
+        "blur": "Sfocatura",
+        "offsetX": "Offset X",
+        "offsetY": "Offset Y",
+        "filters": "Filtri",
+        "brightness": "Luminosità",
+        "contrast": "Contrasto",
+        "saturation": "Saturazione",
+        "grayscale": "Scala di grigi",
+        "mediaControls": "Controlli Media",
+        "play": "Riproduci",
+        "pause": "Pausa",
+        "sound": "Suono",
+        "mute": "Muto",
+        "autoPlay": "Riproduzione automatica",
+        "loop": "Loop",
+        "useAsBackground": "Usa come sfondo"
+      },
+      "deleteElement": "Elimina elemento"
+    },
+    "chat": {
+      "title": "Assistente Design",
+      "subtitle": "IA creativa",
+      "placeholder": "Descrivi la tua carta o chiedi miglioramenti...",
+      "examples": "💡 Esempi: \"carta di compleanno\" o \"migliora il mio design con uno stile moderno\"",
+      "assistant": "Assistente IA",
+      "you": "Tu",
+      "apply": "✅ Applica",
+      "cancel": "↩️ Annulla"
+    },
+    "templates": {
+      "title": "🎨 Modelli Professionali",
+      "subtitle": "20+ design con immagini, bordi vari ed effetto carta realistico",
+      "categories": {
+        "all": "Tutti",
+        "birthday": "Compleanno",
+        "wedding": "Matrimonio",
+        "baptism": "Battesimo",
+        "easter": "Pasqua",
+        "christmas": "Natale",
+        "elegant": "Elegante",
+        "nature": "Natura",
+        "minimal": "Minimale"
+      },
+      "close": "Chiudi"
+    }
   }
 }

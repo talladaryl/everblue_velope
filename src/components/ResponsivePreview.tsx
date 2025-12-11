@@ -246,7 +246,7 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
 
           {/* Informations sur les variables */}
           {Object.keys(variables).length > 0 && (
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-secondary p-4 rounded-lg">
               <h4 className="font-semibold text-sm mb-3">
                 Variables remplacées:
               </h4>
@@ -254,7 +254,7 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({
                 {Object.entries(variables).map(([key, value]) => (
                   <div key={key} className="text-xs md:text-sm break-words">
                     <span className="font-mono text-gray-600">{key}:</span>
-                    <span className="ml-2 text-gray-900 font-medium truncate">
+                    <span className="ml-2 text-foreground font-medium truncate">
                       {String(value || "—")}
                     </span>
                   </div>

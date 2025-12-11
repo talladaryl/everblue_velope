@@ -25,13 +25,14 @@ import {
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AuthModal } from "@/components/AuthModal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-// Images réelles de Pexels/Pinterest pour chaque catégorie
-const mockCards = [
+// Fonction pour obtenir les données traduites
+const getMockCards = (t: (key: string) => string) => [
   {
     id: "1",
-    title: "Mariage Élégant",
-    category: "Mariage",
+    titleKey: "template.elegant_wedding",
+    categoryKey: "category.wedding",
     featured: true,
     premium: true,
     image:
@@ -40,8 +41,8 @@ const mockCards = [
   },
   {
     id: "2",
-    title: "Anniversaire Festif",
-    category: "Anniversaire",
+    titleKey: "template.festive_birthday",
+    categoryKey: "category.birthday",
     featured: false,
     premium: false,
     image:
@@ -50,8 +51,8 @@ const mockCards = [
   },
   {
     id: "3",
-    title: "Événement d'Entreprise",
-    category: "Professionnel",
+    titleKey: "template.corporate_event",
+    categoryKey: "category.professional",
     featured: true,
     premium: true,
     image:
@@ -60,8 +61,8 @@ const mockCards = [
   },
   {
     id: "4",
-    title: "Célébration de Noël",
-    category: "Noël",
+    titleKey: "template.christmas_celebration",
+    categoryKey: "category.christmas",
     featured: false,
     premium: false,
     image:
@@ -70,8 +71,8 @@ const mockCards = [
   },
   {
     id: "5",
-    title: "Soirée Élégante",
-    category: "Soirée",
+    titleKey: "template.elegant_party",
+    categoryKey: "category.party",
     featured: true,
     premium: true,
     image:
@@ -80,8 +81,8 @@ const mockCards = [
   },
   {
     id: "6",
-    title: "Baptême Angélique",
-    category: "Baptême",
+    titleKey: "template.angelic_baptism",
+    categoryKey: "category.baptism",
     featured: false,
     premium: false,
     image:
@@ -90,8 +91,8 @@ const mockCards = [
   },
   {
     id: "7",
-    title: "Réunion d'Affaires",
-    category: "Professionnel",
+    titleKey: "template.business_meeting",
+    categoryKey: "category.professional",
     featured: false,
     premium: false,
     image:
@@ -100,8 +101,8 @@ const mockCards = [
   },
   {
     id: "8",
-    title: "Mariage Romantique",
-    category: "Mariage",
+    titleKey: "template.romantic_wedding",
+    categoryKey: "category.wedding",
     featured: true,
     premium: true,
     image:
@@ -110,42 +111,43 @@ const mockCards = [
   },
 ];
 
-const categories = [
-  "Tous",
-  "Mariage",
-  "Anniversaire",
-  "Professionnel",
-  "Noël",
-  "Baptême",
-  "Soirée",
+const getCategoryKeys = () => [
+  "category.all",
+  "category.wedding",
+  "category.birthday",
+  "category.professional",
+  "category.christmas",
+  "category.baptism",
+  "category.party",
 ];
 
-const features = [
+const getFeatures = (t: (key: string) => string) => [
   {
     icon: Palette,
-    title: "Design Personnalisable",
-    description: "Modifiez chaque détail pour créer une invitation unique",
+    title: t("features.design.title"),
+    description: t("features.design.desc"),
   },
   {
     icon: Zap,
-    title: "Création Rapide",
-    description: "Générez des invitations professionnelles en quelques minutes",
+    title: t("features.speed.title"),
+    description: t("features.speed.desc"),
   },
   {
     icon: Download,
-    title: "Téléchargement Illimité",
-    description: "Accédez à tous vos designs en haute qualité",
+    title: t("features.download.title"),
+    description: t("features.download.desc"),
   },
   {
     icon: Share2,
-    title: "Partage Facile",
-    description: "Envoyez vos invitations par email ou réseaux sociaux",
+    title: t("features.share.title"),
+    description: t("features.share.desc"),
   },
 ];
 
 const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
   const navigate = useNavigate();
-  
+  const { t } = useLanguage();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-100/50 via-transparent to-transparent"></div>
@@ -158,20 +160,19 @@ const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
             <div className="space-y-6">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-sm font-medium">
                 <Sparkles className="h-4 w-4 mr-2" />
-                Plateforme premium d'invitations
+                {t("hero.badge")}
               </div>
 
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
-                Créez des
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
+                {t("hero.title_part1")}
                 <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  invitations
+                  {t("hero.title_part2")}
                 </span>
-                exceptionnelles
+                {t("hero.title_part3")}
               </h1>
 
               <p className="text-xl text-gray-600 max-w-lg leading-relaxed">
-                Transformez vos événements avec des invitations personnalisées
-                conçues par des experts. Simple, rapide et professionnel.
+                {t("hero.description")}
               </p>
             </div>
 
@@ -181,7 +182,7 @@ const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
                 className="h-14 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 group"
                 onClick={() => navigate("/designs")}
               >
-                Commencer gratuitement
+                {t("hero.start_free")}
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
 
@@ -195,24 +196,24 @@ const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
               >
-                Voir les modèles
+                {t("hero.view_templates")}
               </Button>
             </div>
 
             <div className="flex items-center space-x-8 pt-8">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">500+</div>
-                <div className="text-sm text-gray-600">Modèles Premium</div>
+                <div className="text-sm text-gray-600">{t("hero.stats.templates")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">25k+</div>
-                <div className="text-sm text-gray-600">Clients satisfaits</div>
+                <div className="text-sm text-gray-600">{t("hero.stats.clients")}</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center text-2xl font-bold text-yellow-500">
                   4.9 <Star className="h-5 w-5 ml-1 fill-current" />
                 </div>
-                <div className="text-sm text-gray-600">Avis clients</div>
+                <div className="text-sm text-gray-600">{t("hero.stats.reviews")}</div>
               </div>
             </div>
           </div>
@@ -221,29 +222,29 @@ const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
             <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
                 <div className="text-center mb-6">
-                  <div className="text-2xl font-bold mb-2">Sophie & Thomas</div>
+                  <div className="text-2xl font-bold mb-2">{t("hero.invitation.title")}</div>
                   <div className="text-blue-100">
-                    vous invitent à célébrer leur union
+                    {t("hero.invitation.subtitle")}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="text-center">
                     <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-200" />
-                    <div className="font-semibold">15 Juin 2024</div>
-                    <div className="text-sm text-blue-200">18h30</div>
+                    <div className="font-semibold">{t("hero.invitation.date")}</div>
+                    <div className="text-sm text-blue-200">{t("hero.invitation.time")}</div>
                   </div>
                   <div className="text-center">
                     <MapPin className="h-6 w-6 mx-auto mb-2 text-blue-200" />
-                    <div className="font-semibold">Château de Versailles</div>
-                    <div className="text-sm text-blue-200">Salle des Fêtes</div>
+                    <div className="font-semibold">{t("hero.invitation.venue")}</div>
+                    <div className="text-sm text-blue-200">{t("hero.invitation.room")}</div>
                   </div>
                 </div>
 
                 <div className="text-center">
                   <Users className="h-6 w-6 mx-auto mb-2 text-blue-200" />
                   <div className="text-sm text-blue-200">
-                    Code vestimentaire : Tenue de soirée
+                    {t("hero.invitation.dress_code")}
                   </div>
                 </div>
               </div>
@@ -260,16 +261,18 @@ const HeroSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
 };
 
 const FeaturesSection = () => {
+  const { t } = useLanguage();
+  const features = getFeatures(t);
+  
   return (
     <section id="features" className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Pourquoi choisir Everblue ?
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t("features.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Découvrez les fonctionnalités qui font de notre plateforme la
-            solution idéale pour vos invitations
+            {t("features.subtitle")}
           </p>
         </div>
 
@@ -283,7 +286,7 @@ const FeaturesSection = () => {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600">{feature.description}</p>
@@ -311,6 +314,7 @@ const InvitationCard = ({
   image: string;
   onOpenLogin: () => void;
 }) => {
+  const { t } = useLanguage();
   return (
     <Card className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden">
       <CardContent className="p-0">
@@ -325,7 +329,7 @@ const InvitationCard = ({
             <div className="absolute top-3 left-3">
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-500 text-white text-xs font-medium">
                 <Sparkles className="h-3 w-3 mr-1" />
-                Populaire
+                {t("catalog.popular")}
               </span>
             </div>
           )}
@@ -334,7 +338,7 @@ const InvitationCard = ({
             <div className="absolute top-3 right-3">
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium">
                 <Crown className="h-3 w-3 mr-1" />
-                Premium
+                {t("catalog.premium")}
               </span>
             </div>
           )}
@@ -343,10 +347,10 @@ const InvitationCard = ({
             <div className="flex space-x-2">
               <Button
                 size="sm"
-                className="bg-white/90 backdrop-blur-sm text-gray-900 hover:bg-white"
+                className="bg-white/90 backdrop-blur-sm text-foreground hover:bg-white"
               >
                 <Eye className="h-4 w-4 mr-1" />
-                Aperçu
+                {t("catalog.preview")}
               </Button>
               <Button
                 size="sm"
@@ -354,7 +358,7 @@ const InvitationCard = ({
                 onClick={onOpenLogin}
               >
                 <Edit3 className="h-4 w-4 mr-1" />
-                Personnaliser
+                {t("catalog.customize")}
               </Button>
             </div>
           </div>
@@ -362,7 +366,7 @@ const InvitationCard = ({
 
         <div className="p-6">
           <div className="flex items-start justify-between mb-3">
-            <h3 className="font-bold text-gray-900 text-lg line-clamp-1">
+            <h3 className="font-bold text-foreground text-lg line-clamp-1">
               {title}
             </h3>
             <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
@@ -394,29 +398,34 @@ const InvitationCard = ({
 };
 
 const CatalogSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Tous");
+  const [selectedCategory, setSelectedCategory] = useState("category.all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  
+  const mockCards = getMockCards(t);
+  const categoryKeys = getCategoryKeys();
 
   const filteredCards = mockCards.filter((card) => {
-    const matchesSearch = card.title
+    const cardTitle = t(card.titleKey);
+    const cardCategory = t(card.categoryKey);
+    const matchesSearch = cardTitle
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "Tous" || card.category === selectedCategory;
+      selectedCategory === "category.all" || card.categoryKey === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   return (
-    <section id="catalog" className="py-20 bg-gray-50">
+    <section id="catalog" className="py-20 bg-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Nos modèles d'invitations
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t("catalog.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Découvrez notre collection de modèles premium conçus par des
-            designers professionnels pour tous vos événements spéciaux
+            {t("catalog.subtitle")}
           </p>
         </div>
 
@@ -426,29 +435,29 @@ const CatalogSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Rechercher un modèle..."
+                  placeholder={t("catalog.search")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 rounded-xl border-gray-300 focus:border-blue-500"
+                  className="pl-10 h-12 rounded-xl border focus:border-blue-500"
                 />
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
+                {categoryKeys.map((categoryKey) => (
                   <Button
-                    key={category}
+                    key={categoryKey}
                     variant={
-                      selectedCategory === category ? "default" : "outline"
+                      selectedCategory === categoryKey ? "default" : "outline"
                     }
                     size="sm"
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => setSelectedCategory(categoryKey)}
                     className={
-                      selectedCategory === category
+                      selectedCategory === categoryKey
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
                     }
                   >
-                    {category}
+                    {t(categoryKey)}
                   </Button>
                 ))}
               </div>
@@ -477,15 +486,14 @@ const CatalogSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
 
         <div className="flex items-center justify-between mb-8">
           <p className="text-gray-600">
-            {filteredCards.length} modèle{filteredCards.length !== 1 ? "s" : ""}{" "}
-            trouvé{filteredCards.length !== 1 ? "s" : ""}
+            {filteredCards.length} {t("catalog.results")}
           </p>
           <Button
             variant="outline"
             className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
           >
             <Filter className="h-4 w-4 mr-2" />
-            Plus de filtres
+            {t("catalog.filters")}
           </Button>
         </div>
 
@@ -502,7 +510,12 @@ const CatalogSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
               className="animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <InvitationCard {...card} onOpenLogin={onOpenLogin} />
+              <InvitationCard 
+                {...card} 
+                title={t(card.titleKey)}
+                category={t(card.categoryKey)}
+                onOpenLogin={onOpenLogin} 
+              />
             </div>
           ))}
         </div>
@@ -513,7 +526,7 @@ const CatalogSection = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl px-8"
             onClick={onOpenLogin}
           >
-            Voir tous les modèles
+            {t("catalog.view_all")}
           </Button>
         </div>
       </div>

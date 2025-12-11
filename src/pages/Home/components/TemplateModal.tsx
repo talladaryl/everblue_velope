@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { X, ChevronLeft, ChevronRight, Heart, Share2, Pencil, Trash2, Eye } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Share2,
+  Pencil,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { CardDesigns } from "./CardDesigns";
 import { useNavigate } from "react-router-dom";
 import { useTemplates } from "@/hooks/useTemplates";
@@ -39,7 +48,8 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
   const handleDelete = async () => {
     if (!currentTemplate.isCustom) {
       toast.error("Ce template ne peut pas être supprimé", {
-        description: "Seuls les templates personnalisés peuvent être supprimés."
+        description:
+          "Seuls les templates personnalisés peuvent être supprimés.",
       });
       setShowDeleteConfirm(false);
       return;
@@ -49,18 +59,18 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
       // Utiliser apiId en priorité pour les templates API, sinon l'ID
       const templateId = currentTemplate.apiId || currentTemplate.id;
       console.log("🗑️ Tentative de suppression du template:", templateId);
-      
+
       // Appeler l'API de suppression via le hook
       await deleteTemplate(templateId);
-      
+
       toast.success("Template supprimé avec succès", {
-        description: `"${currentTemplate.title}" a été supprimé définitivement.`
+        description: `"${currentTemplate.title}" a été supprimé définitivement.`,
       });
-      
+
       // Fermer les modals
       setShowDeleteConfirm(false);
       onClose();
-      
+
       // Recharger la page pour mettre à jour la liste
       setTimeout(() => {
         window.location.reload();
@@ -68,7 +78,9 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
     } catch (error: any) {
       console.error("❌ Erreur suppression:", error);
       toast.error("Erreur lors de la suppression", {
-        description: error.response?.data?.message || "Impossible de supprimer le template. Vérifiez la console pour plus de détails."
+        description:
+          error.response?.data?.message ||
+          "Impossible de supprimer le template. Vérifiez la console pour plus de détails.",
       });
       setShowDeleteConfirm(false);
     }
@@ -105,17 +117,18 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
 
     // Si le template a des données personnalisées (API ou local)
     if (currentTemplate.data) {
-      const data = typeof currentTemplate.data === "string" 
-        ? JSON.parse(currentTemplate.data) 
-        : currentTemplate.data;
-      
+      const data =
+        typeof currentTemplate.data === "string"
+          ? JSON.parse(currentTemplate.data)
+          : currentTemplate.data;
+
       return {
         items: data.items || [],
         bgColor: data.bgColor || "#ffffff",
         bgImage: data.bgImage || null,
       };
     }
-    
+
     // Sinon, retourner des valeurs par défaut
     return {
       items: [],
@@ -124,19 +137,25 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
     };
   };
 
-  const templateData = currentTemplate ? getTemplateData() : { items: [], bgColor: "#ffffff", bgImage: null };
+  const templateData = currentTemplate
+    ? getTemplateData()
+    : { items: [], bgColor: "#ffffff", bgImage: null };
 
-  const currentIndex = allTemplates.findIndex((t) => t.id === currentTemplate?.id);
+  const currentIndex = allTemplates.findIndex(
+    (t) => t.id === currentTemplate?.id
+  );
 
   const handlePrevious = () => {
-    const prevIndex = currentIndex > 0 ? currentIndex - 1 : allTemplates.length - 1;
+    const prevIndex =
+      currentIndex > 0 ? currentIndex - 1 : allTemplates.length - 1;
     const prevTemplate = allTemplates[prevIndex];
     setCurrentTemplate(prevTemplate);
     setSelectedColors(prevTemplate.colors);
   };
 
   const handleNext = () => {
-    const nextIndex = currentIndex < allTemplates.length - 1 ? currentIndex + 1 : 0;
+    const nextIndex =
+      currentIndex < allTemplates.length - 1 ? currentIndex + 1 : 0;
     const nextTemplate = allTemplates[nextIndex];
     setCurrentTemplate(nextTemplate);
     setSelectedColors(nextTemplate.colors);
@@ -164,19 +183,19 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
       <div className="h-full flex items-center justify-center p-4">
         <div className="bg-white shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row">
           {/* Left: Card Preview */}
-          <div className="w-full md:w-1/2 bg-gray-50 p-6 flex items-center justify-center">
+          <div className="w-full md:w-1/2 bg-secondary p-6 flex items-center justify-center">
             <div className="w-full max-w-sm">
               {/* Carte avec effet d'ombre double décalée */}
               <div className="relative aspect-[3/4]">
                 {/* Ombre décalée - 2ème niveau */}
-                <div 
+                <div
                   className="absolute top-3 left-3 w-full h-full bg-neutral-300/40"
-                  style={{ filter: 'blur(2px)' }}
+                  style={{ filter: "blur(2px)" }}
                 />
                 {/* Ombre décalée - 1er niveau */}
-                <div 
+                <div
                   className="absolute top-1.5 left-1.5 w-full h-full bg-neutral-400/50"
-                  style={{ filter: 'blur(1px)' }}
+                  style={{ filter: "blur(1px)" }}
                 />
                 {/* Carte principale avec texture papier premium */}
                 <div className="relative w-full h-full overflow-hidden premium-paper-texture shadow-xl">
@@ -189,8 +208,14 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                 </div>
               </div>
               {/* Backside supported badge */}
-              <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M9 11l3 3L22 4" />
                   <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
                 </svg>
@@ -205,7 +230,9 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
             <div className="p-6 border-b flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold text-gray-900">{currentTemplate.title}</h2>
+                  <h2 className="text-xl font-bold text-foreground">
+                    {currentTemplate.title}
+                  </h2>
                   <button className="p-1 hover:bg-gray-100 rounded transition-colors">
                     <Heart className="w-5 h-5 text-gray-400" />
                   </button>
@@ -213,7 +240,9 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                     <Share2 className="w-5 h-5 text-gray-400" />
                   </button>
                 </div>
-                <p className="text-sm text-gray-500">{currentTemplate.designer}</p>
+                <p className="text-sm text-muted-foreground">
+                  {currentTemplate.designer}
+                </p>
               </div>
               <button
                 onClick={onClose}
@@ -242,16 +271,16 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                         title={`Changer la couleur ${index + 1}`}
                       />
                       <button
-                        className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm transition-transform hover:scale-110 hover:border-gray-400"
+                        className="w-10 h-10 rounded-full border-2 border shadow-sm transition-transform hover:scale-110 hover:border-gray-400"
                         style={{ backgroundColor: color }}
                       />
                     </div>
                   ))}
-                  <button 
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center bg-gradient-to-br from-red-500 via-yellow-500 to-blue-500 hover:scale-110 transition-transform"
+                  <button
+                    className="w-10 h-10 rounded-full border-2 border flex items-center justify-center bg-gradient-to-br from-red-500 via-yellow-500 to-blue-500 hover:scale-110 transition-transform"
                     onClick={() => {
                       // Ajouter une nouvelle couleur
-                      setSelectedColors([...selectedColors, '#000000']);
+                      setSelectedColors([...selectedColors, "#000000"]);
                     }}
                   >
                     <span className="text-white text-xs font-bold">+</span>
@@ -295,15 +324,19 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
               <div className="flex items-start gap-2 text-sm text-gray-600">
                 <Pencil className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <p>
-                  Vous aurez la possibilité de personnaliser entièrement le texte, l'arrière-plan et l'enveloppe de la carte.
+                  Vous aurez la possibilité de personnaliser entièrement le
+                  texte, l'arrière-plan et l'enveloppe de la carte.
                 </p>
               </div>
             </div>
 
             {/* Footer Description */}
-            <div className="p-6 border-t bg-gray-50">
+            <div className="p-6 border-t bg-secondary">
               <p className="text-xs text-gray-600 leading-relaxed">
-                Des touches modernes de couleurs texturées donnent à cette carte photo de vacances une ambiance artistique et bohème, tandis que le texte métallique disposé de manière moderne la garde fraîche pour la famille qui est "la plus joyeuse de toutes".
+                Des touches modernes de couleurs texturées donnent à cette carte
+                photo de vacances une ambiance artistique et bohème, tandis que
+                le texte métallique disposé de manière moderne la garde fraîche
+                pour la famille qui est "la plus joyeuse de toutes".
               </p>
             </div>
           </div>

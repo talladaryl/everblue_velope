@@ -25,7 +25,8 @@ export const SendingStats: React.FC<SendingStatsProps> = ({
   pendingCount,
   successRate = 0,
 }) => {
-  const percentage = totalRecipients > 0 ? (sentCount / totalRecipients) * 100 : 0;
+  const percentage =
+    totalRecipients > 0 ? (sentCount / totalRecipients) * 100 : 0;
 
   return (
     <div className="space-y-4">
@@ -42,7 +43,7 @@ export const SendingStats: React.FC<SendingStatsProps> = ({
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <p className="text-sm text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-foreground">
                 {totalRecipients}
               </p>
             </div>
@@ -81,7 +82,9 @@ export const SendingStats: React.FC<SendingStatsProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-blue-600 font-medium">En attente</p>
-                <p className="text-3xl font-bold text-blue-700">{pendingCount}</p>
+                <p className="text-3xl font-bold text-blue-700">
+                  {pendingCount}
+                </p>
               </div>
               <Clock className="h-8 w-8 text-blue-600 opacity-50" />
             </div>

@@ -132,7 +132,7 @@ export default function ImagePickerModal({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <div className="border-2 border-dashed border rounded-lg p-8 text-center">
                     <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <Label htmlFor="image-upload" className="cursor-pointer">
                       <div className="space-y-2">

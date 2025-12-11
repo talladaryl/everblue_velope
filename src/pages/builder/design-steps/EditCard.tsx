@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Plus,
   Image as ImageIcon,
@@ -39,7 +40,11 @@ import {
 } from "lucide-react";
 import { TextVariablesPanel } from "./components/TextVariablesPanel";
 import { useGroqChat } from "@/hooks/useGroqChat";
-import { PROFESSIONAL_TEMPLATES, BORDER_STYLES, IMAGES } from "@/constants/designConstants";
+import {
+  PROFESSIONAL_TEMPLATES,
+  BORDER_STYLES,
+  IMAGES,
+} from "@/constants/designConstants";
 
 // Templates unifiés
 const UNIFIED_TEMPLATES = [
@@ -157,6 +162,7 @@ const UNIFIED_TEMPLATES = [
 ];
 
 export function EditCard({ ctx }: { ctx: any }) {
+  const { t } = useLanguage();
   const {
     canvasRef,
     onMouseMove,
@@ -350,12 +356,12 @@ export function EditCard({ ctx }: { ctx: any }) {
   const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
   const paperStyle = {
-    backgroundColor: bgImage ? "transparent" : (bgColor || "#FAF8F4"),
+    backgroundColor: bgImage ? "transparent" : bgColor || "#FAF8F4",
     backgroundImage: bgImage
-    ? `url(${bgImage}), ${PAPER_TEXTURE}`
-    : bgColor.includes("gradient")
-    ? `${bgColor}, ${PAPER_TEXTURE}`
-    : `${bgColor || "#FAF8F4"}, ${PAPER_TEXTURE}`,
+      ? `url(${bgImage}), ${PAPER_TEXTURE}`
+      : bgColor.includes("gradient")
+      ? `${bgColor}, ${PAPER_TEXTURE}`
+      : `${bgColor || "#FAF8F4"}, ${PAPER_TEXTURE}`,
     backgroundBlendMode: bgImage ? "overlay, multiply" : "normal, multiply",
     backgroundSize: bgImage ? "cover, auto" : "cover, auto",
     width: "95%",
@@ -467,17 +473,17 @@ export function EditCard({ ctx }: { ctx: any }) {
                   <Sparkles className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-gray-900">
-                    Éditeur de Carte Professionnelle
+                  <CardTitle className="text-xl font-bold text-foreground">
+                    {t("editCard.title")}
                   </CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Créez des designs époustouflants en quelques clics
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("editCard.subtitle")}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/80 px-3 py-2 rounded-full border">
                 <Move className="h-4 w-4" />
-                <span className="hidden sm:inline">Glissez pour déplacer</span>
+                <span className="hidden sm:inline">{t("editCard.dragToMove")}</span>
               </div>
             </div>
           </CardHeader>
@@ -558,7 +564,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                         whiteSpace: "pre-wrap",
                       }}
                     >
-                      {it.text || "Texte"}
+                      {it.text || t("editCard.elements.text")}
                     </div>
                   ) : it.type === "video" ? (
                     <div className="relative">
@@ -618,15 +624,14 @@ export function EditCard({ ctx }: { ctx: any }) {
               ))}
 
               {items.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gradient-to-br from-transparent to-white/50">
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground bg-gradient-to-br from-transparent to-white/50">
                   <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60">
-                    <ImageIcon2 className="h-16 w-16 mx-auto mb-4 opacity-60 text-gray-400" />
-                    <p className="text-lg font-medium text-gray-600 mb-2">
-                      Carte vierge
+                    <ImageIcon2 className="h-16 w-16 mx-auto mb-4 opacity-60 text-muted-foreground" />
+                    <p className="text-lg font-medium text-muted-foreground mb-2">
+                      {t("editCard.emptyCanvas.title")}
                     </p>
-                    <p className="text-sm text-gray-500 max-w-xs">
-                      Commencez par ajouter du contenu ou choisissez un modèle
-                      professionnel
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                      {t("editCard.emptyCanvas.description")}
                     </p>
                   </div>
                 </div>
@@ -652,21 +657,21 @@ export function EditCard({ ctx }: { ctx: any }) {
                     className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all"
                   >
                     <Zap className="h-4 w-4 mr-2" />
-                    Éléments
+                    {t("editCard.tabs.elements")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="background"
                     className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all"
                   >
                     <Palette className="h-4 w-4 mr-2" />
-                    Fond
+                    {t("editCard.tabs.background")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="properties"
                     className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all"
                   >
                     <Settings className="h-4 w-4 mr-2" />
-                    Propriétés
+                    {t("editCard.tabs.properties")}
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -679,19 +684,19 @@ export function EditCard({ ctx }: { ctx: any }) {
                   <Button
                     variant="outline"
                     onClick={addText}
-                    className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 rounded-xl"
+                    className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 rounded-xl"
                   >
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Type className="h-5 w-5 text-blue-600" />
                     </div>
-                    <span className="text-sm font-medium">Texte</span>
+                    <span className="text-sm font-medium">{t("editCard.elements.text")}</span>
                   </Button>
 
-                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all duration-200">
+                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border rounded-xl cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all duration-200">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <ImageIcon className="h-5 w-5 text-green-600" />
                     </div>
-                    <span className="text-sm font-medium">Image</span>
+                    <span className="text-sm font-medium">{t("editCard.elements.image")}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -700,11 +705,11 @@ export function EditCard({ ctx }: { ctx: any }) {
                     />
                   </label>
 
-                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
+                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <Video className="h-5 w-5 text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium">Vidéo</span>
+                    <span className="text-sm font-medium">{t("editCard.elements.video")}</span>
                     <input
                       type="file"
                       accept="video/*"
@@ -713,11 +718,11 @@ export function EditCard({ ctx }: { ctx: any }) {
                     />
                   </label>
 
-                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-all duration-200">
+                  <label className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border rounded-xl cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-all duration-200">
                     <div className="p-2 bg-pink-100 rounded-lg">
                       <ImageIcon2 className="h-5 w-5 text-pink-600" />
                     </div>
-                    <span className="text-sm font-medium">GIF</span>
+                    <span className="text-sm font-medium">{t("editCard.elements.gif")}</span>
                     <input
                       type="file"
                       accept="image/gif"
@@ -735,15 +740,13 @@ export function EditCard({ ctx }: { ctx: any }) {
                         setActiveTab("properties");
                       }
                     }}
-                    className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 rounded-xl col-span-2"
+                    className="flex flex-col items-center gap-2 h-auto py-4 border-2 border-dashed border hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 rounded-xl col-span-2"
                   >
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <Plus className="h-5 w-5 text-orange-600" />
                     </div>
                     <span className="text-sm font-medium">
-                      Variables de texte ({"{"}
-                      {"{"}nom{"}"}, {"{"}
-                      {"{"}email{"}"}, etc.)
+                      {t("editCard.elements.textVariables")}
                     </span>
                   </Button>
                 </div>
@@ -755,7 +758,7 @@ export function EditCard({ ctx }: { ctx: any }) {
               >
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
-                    Couleur de fond
+                    {t("editCard.background.backgroundColor")}
                   </Label>
                   <div className="flex gap-2">
                     <div className="relative">
@@ -766,7 +769,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                           setBgColor(e.target.value);
                           setBgImage?.(null);
                         }}
-                        className="h-12 w-12 rounded-xl border-2 border-gray-200 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+                        className="h-12 w-12 rounded-xl border-2 border cursor-pointer shadow-sm hover:shadow-md transition-shadow"
                       />
                     </div>
                     <Input
@@ -776,7 +779,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                         setBgImage?.(null);
                       }}
                       placeholder="#ffffff"
-                      className="flex-1 h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500"
+                      className="flex-1 h-12 rounded-xl border-2 border focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -786,13 +789,13 @@ export function EditCard({ ctx }: { ctx: any }) {
                   className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   <Layout className="h-4 w-4 mr-2" />
-                  Modèles Professionnels
+                  {t("editCard.background.professionalTemplates")}
                 </Button>
 
-                <label className="flex items-center justify-center gap-3 w-full h-12 py-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200">
-                  <ImageIcon className="h-4 w-4 text-gray-600" />
+                <label className="flex items-center justify-center gap-3 w-full h-12 py-2 border-2 border-dashed border rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200">
+                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-gray-700">
-                    Image de fond personnalisée
+                    {t("editCard.background.customBackground")}
                   </span>
                   <input
                     type="file"
@@ -820,11 +823,11 @@ export function EditCard({ ctx }: { ctx: any }) {
                   <div className="h-[460px] overflow-y-auto">
                     {/* En-tête des propriétés */}
                     <div className="border-b pb-3">
-                      <h3 className="font-bold text-lg text-gray-900">
-                        Propriétés
+                      <h3 className="font-bold text-lg text-foreground">
+                        {t("editCard.properties.title")}
                       </h3>
-                      <p className="text-sm text-gray-600 capitalize">
-                        {selected.type} sélectionné
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {selected.type} {t("editCard.properties.selectedType")}
                       </p>
                     </div>
 
@@ -833,25 +836,25 @@ export function EditCard({ ctx }: { ctx: any }) {
                         {/* SECTION TEXTE */}
                         <div className="space-y-4">
                           <h4 className="font-semibold text-md text-gray-800 border-l-4 border-blue-500 pl-2">
-                            Contenu
+                            {t("editCard.properties.text.content")}
                           </h4>
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Texte
+                              {t("editCard.properties.text.text")}
                             </Label>
                             <Input
                               value={selected.text || ""}
                               onChange={(e) =>
                                 updateItemProperty("text", e.target.value)
                               }
-                              className="h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500"
+                              className="h-12 rounded-xl border-2 border focus:border-blue-500"
                             />
                           </div>
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Taille
+                                {t("editCard.properties.text.size")}
                               </Label>
                               <Input
                                 type="number"
@@ -862,12 +865,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500"
+                                className="h-12 rounded-xl border-2 border focus:border-blue-500"
                               />
                             </div>
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Couleur
+                                {t("editCard.properties.text.color")}
                               </Label>
                               <div className="relative">
                                 <input
@@ -876,7 +879,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                   onChange={(e) =>
                                     updateItemProperty("color", e.target.value)
                                   }
-                                  className="h-12 w-full rounded-xl border-2 border-gray-200 cursor-pointer"
+                                  className="h-12 w-full rounded-xl border-2 border cursor-pointer"
                                 />
                               </div>
                             </div>
@@ -884,7 +887,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Police (60+ disponibles)
+                              {t("editCard.properties.text.font")}
                             </Label>
                             <select
                               value={
@@ -893,7 +896,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                               onChange={(e) =>
                                 updateItemProperty("fontFamily", e.target.value)
                               }
-                              className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                              className="w-full h-12 rounded-xl border-2 border bg-background px-3 py-2 text-sm focus:border-blue-500"
                               style={{
                                 fontFamily:
                                   selected.fontFamily || "'Inter', sans-serif",
@@ -1120,39 +1123,39 @@ export function EditCard({ ctx }: { ctx: any }) {
                           {/* Ombre du texte */}
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Ombre du texte
+                              {t("editCard.properties.text.textShadow")}
                             </Label>
                             <select
                               value={selected.textShadow || "none"}
                               onChange={(e) =>
                                 updateItemProperty("textShadow", e.target.value)
                               }
-                              className="w-full h-10 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                              className="w-full h-10 rounded-xl border-2 border bg-background px-3 py-2 text-sm focus:border-blue-500"
                             >
-                              <option value="none">Aucune</option>
+                              <option value="none">{t("editCard.properties.text.shadowOptions.none")}</option>
                               <option value="1px 1px 2px rgba(0,0,0,0.3)">
-                                Légère
+                                {t("editCard.properties.text.shadowOptions.light")}
                               </option>
                               <option value="2px 2px 4px rgba(0,0,0,0.4)">
-                                Moyenne
+                                {t("editCard.properties.text.shadowOptions.medium")}
                               </option>
                               <option value="3px 3px 6px rgba(0,0,0,0.5)">
-                                Forte
+                                {t("editCard.properties.text.shadowOptions.strong")}
                               </option>
                               <option value="4px 4px 8px rgba(0,0,0,0.6)">
-                                Très forte
+                                {t("editCard.properties.text.shadowOptions.veryStrong")}
                               </option>
                               <option value="0 0 10px rgba(255,255,255,0.8)">
-                                Lueur blanche
+                                {t("editCard.properties.text.shadowOptions.whiteGlow")}
                               </option>
                               <option value="0 0 10px rgba(255,215,0,0.8)">
-                                Lueur dorée
+                                {t("editCard.properties.text.shadowOptions.goldGlow")}
                               </option>
                               <option value="2px 2px 0px #000000">
-                                Contour noir
+                                {t("editCard.properties.text.shadowOptions.blackOutline")}
                               </option>
                               <option value="3px 3px 0px #FFD700">
-                                Contour doré
+                                {t("editCard.properties.text.shadowOptions.goldOutline")}
                               </option>
                             </select>
                           </div>
@@ -1160,7 +1163,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Alignement
+                                {t("editCard.properties.text.alignment")}
                               </Label>
                               <select
                                 value={selected.textAlign || "left"}
@@ -1170,16 +1173,16 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     e.target.value
                                   )
                                 }
-                                className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                                className="w-full h-12 rounded-xl border-2 border bg-background px-3 py-2 text-sm focus:border-blue-500"
                               >
-                                <option value="left">Gauche</option>
-                                <option value="center">Centre</option>
-                                <option value="right">Droite</option>
+                                <option value="left">{t("editCard.properties.text.alignmentOptions.left")}</option>
+                                <option value="center">{t("editCard.properties.text.alignmentOptions.center")}</option>
+                                <option value="right">{t("editCard.properties.text.alignmentOptions.right")}</option>
                               </select>
                             </div>
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Poids
+                                {t("editCard.properties.text.weight")}
                               </Label>
                               <select
                                 value={selected.fontWeight || "normal"}
@@ -1189,11 +1192,11 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     e.target.value
                                   )
                                 }
-                                className="w-full h-12 rounded-xl border-2 border-gray-200 bg-background px-3 py-2 text-sm focus:border-blue-500"
+                                className="w-full h-12 rounded-xl border-2 border bg-background px-3 py-2 text-sm focus:border-blue-500"
                               >
-                                <option value="normal">Normal</option>
-                                <option value="bold">Gras</option>
-                                <option value="lighter">Fin</option>
+                                <option value="normal">{t("editCard.properties.text.weightOptions.normal")}</option>
+                                <option value="bold">{t("editCard.properties.text.weightOptions.bold")}</option>
+                                <option value="lighter">{t("editCard.properties.text.weightOptions.lighter")}</option>
                               </select>
                             </div>
                           </div>
@@ -1205,13 +1208,13 @@ export function EditCard({ ctx }: { ctx: any }) {
                         {/* PROPRIÉTÉS DE BASE */}
                         <div className="space-y-4">
                           <h4 className="font-semibold text-md text-gray-800 border-l-4 border-green-500 pl-2">
-                            Base
+                            {t("editCard.properties.media.base")}
                           </h4>
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Largeur
+                                {t("editCard.properties.media.width")}
                               </Label>
                               <Input
                                 type="number"
@@ -1222,12 +1225,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                className="h-10 rounded-lg border-2 border focus:border-blue-500"
                               />
                             </div>
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Hauteur
+                                {t("editCard.properties.media.height")}
                               </Label>
                               <Input
                                 type="number"
@@ -1238,14 +1241,14 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                className="h-10 rounded-lg border-2 border focus:border-blue-500"
                               />
                             </div>
                           </div>
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Opacité
+                              {t("editCard.properties.media.opacity")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1261,7 +1264,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.opacity || 100}%
                               </span>
                             </div>
@@ -1269,7 +1272,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Rotation
+                              {t("editCard.properties.media.rotation")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1285,7 +1288,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.rotation || 0}°
                               </span>
                             </div>
@@ -1293,7 +1296,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Flip
+                              {t("editCard.properties.media.flip")}
                             </Label>
                             <div className="flex gap-2">
                               <Button
@@ -1305,7 +1308,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 className="flex-1 h-10"
                               >
                                 <FlipHorizontal className="h-4 w-4 mr-2" />
-                                Horizontal
+                                {t("editCard.properties.media.horizontal")}
                               </Button>
                               <Button
                                 variant={selected.flipY ? "default" : "outline"}
@@ -1316,7 +1319,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 className="flex-1 h-10"
                               >
                                 <FlipVertical className="h-4 w-4 mr-2" />
-                                Vertical
+                                {t("editCard.properties.media.vertical")}
                               </Button>
                             </div>
                           </div>
@@ -1325,12 +1328,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                         {/* STYLE ET BORDURES */}
                         <div className="space-y-4">
                           <h4 className="font-semibold text-md text-gray-800 border-l-4 border-purple-500 pl-2">
-                            Style
+                            {t("editCard.properties.media.style")}
                           </h4>
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Bordure arrondie
+                              {t("editCard.properties.media.borderRadius")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1346,7 +1349,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.borderRadius || 0}px
                               </span>
                             </div>
@@ -1355,7 +1358,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Couleur bordure
+                                {t("editCard.properties.media.borderColor")}
                               </Label>
                               <input
                                 type="color"
@@ -1366,12 +1369,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     e.target.value
                                   )
                                 }
-                                className="h-10 w-full rounded-lg border-2 border-gray-200 cursor-pointer"
+                                className="h-10 w-full rounded-lg border-2 border cursor-pointer"
                               />
                             </div>
                             <div>
                               <Label className="text-sm font-medium mb-2 block">
-                                Épaisseur
+                                {t("editCard.properties.media.thickness")}
                               </Label>
                               <Input
                                 type="number"
@@ -1384,7 +1387,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                className="h-10 rounded-lg border-2 border focus:border-blue-500"
                               />
                             </div>
                           </div>
@@ -1393,12 +1396,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                         {/* OMBRES */}
                         <div className="space-y-4">
                           <h4 className="font-semibold text-md text-gray-800 border-l-4 border-yellow-500 pl-2">
-                            Ombres
+                            {t("editCard.properties.media.shadows")}
                           </h4>
 
                           <div className="flex items-center justify-between">
                             <Label className="text-sm font-medium">
-                              Activer l'ombre
+                              {t("editCard.properties.media.enableShadow")}
                             </Label>
                             <input
                               type="checkbox"
@@ -1409,7 +1412,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                   enabled: e.target.checked,
                                 })
                               }
-                              className="h-4 w-4 rounded border-gray-300"
+                              className="h-4 w-4 rounded border"
                             />
                           </div>
 
@@ -1417,7 +1420,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                             <>
                               <div>
                                 <Label className="text-sm font-medium mb-2 block">
-                                  Couleur ombre
+                                  {t("editCard.properties.media.shadowColor")}
                                 </Label>
                                 <input
                                   type="color"
@@ -1428,14 +1431,14 @@ export function EditCard({ ctx }: { ctx: any }) {
                                       color: e.target.value,
                                     })
                                   }
-                                  className="h-10 w-full rounded-lg border-2 border-gray-200 cursor-pointer"
+                                  className="h-10 w-full rounded-lg border-2 border cursor-pointer"
                                 />
                               </div>
 
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <Label className="text-sm font-medium mb-2 block">
-                                    Flou
+                                    {t("editCard.properties.media.blur")}
                                   </Label>
                                   <Input
                                     type="number"
@@ -1448,12 +1451,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                                         blur: Number(e.target.value),
                                       })
                                     }
-                                    className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                    className="h-10 rounded-lg border-2 border focus:border-blue-500"
                                   />
                                 </div>
                                 <div>
                                   <Label className="text-sm font-medium mb-2 block">
-                                    Décalage X
+                                    {t("editCard.properties.media.offsetX")}
                                   </Label>
                                   <Input
                                     type="number"
@@ -1466,14 +1469,14 @@ export function EditCard({ ctx }: { ctx: any }) {
                                         offsetX: Number(e.target.value),
                                       })
                                     }
-                                    className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                    className="h-10 rounded-lg border-2 border focus:border-blue-500"
                                   />
                                 </div>
                               </div>
 
                               <div>
                                 <Label className="text-sm font-medium mb-2 block">
-                                  Décalage Y
+                                  {t("editCard.properties.media.offsetY")}
                                 </Label>
                                 <Input
                                   type="number"
@@ -1486,7 +1489,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                       offsetY: Number(e.target.value),
                                     })
                                   }
-                                  className="h-10 rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                                  className="h-10 rounded-lg border-2 border focus:border-blue-500"
                                 />
                               </div>
                             </>
@@ -1496,12 +1499,12 @@ export function EditCard({ ctx }: { ctx: any }) {
                         {/* FILTRES */}
                         <div className="space-y-4">
                           <h4 className="font-semibold text-md text-gray-800 border-l-4 border-red-500 pl-2">
-                            Filtres
+                            {t("editCard.properties.media.filters")}
                           </h4>
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Luminosité
+                              {t("editCard.properties.media.brightness")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1517,7 +1520,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.filters?.brightness || 100}%
                               </span>
                             </div>
@@ -1525,7 +1528,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Contraste
+                              {t("editCard.properties.media.contrast")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1541,7 +1544,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.filters?.contrast || 100}%
                               </span>
                             </div>
@@ -1549,7 +1552,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Saturation
+                              {t("editCard.properties.media.saturation")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1565,7 +1568,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.filters?.saturation || 100}%
                               </span>
                             </div>
@@ -1589,7 +1592,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.filters?.blur || 0}px
                               </span>
                             </div>
@@ -1597,7 +1600,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                           <div>
                             <Label className="text-sm font-medium mb-2 block">
-                              Niveaux de gris
+                              {t("editCard.properties.media.grayscale")}
                             </Label>
                             <div className="flex items-center gap-3">
                               <input
@@ -1613,7 +1616,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 }
                                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                               />
-                              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded-lg">
+                              <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.filters?.grayscale || 0}%
                               </span>
                             </div>
@@ -1625,7 +1628,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                           selected.type === "gif") && (
                           <div className="space-y-4">
                             <h4 className="font-semibold text-md text-gray-800 border-l-4 border-blue-500 pl-2">
-                              Contrôles Média
+                              {t("editCard.properties.media.mediaControls")}
                             </h4>
 
                             <div className="grid grid-cols-2 gap-3">
@@ -1641,7 +1644,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                 ) : (
                                   <Play className="h-4 w-4 mr-2" />
                                 )}
-                                {selected.playing ? "Pause" : "Lecture"}
+                                {selected.playing ? t("editCard.properties.media.pause") : t("editCard.properties.media.play")}
                               </Button>
 
                               {selected.type === "video" && (
@@ -1657,7 +1660,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                   ) : (
                                     <Volume2 className="h-4 w-4 mr-2" />
                                   )}
-                                  {selected.muted ? "Son" : "Mute"}
+                                  {selected.muted ? t("editCard.properties.media.sound") : t("editCard.properties.media.mute")}
                                 </Button>
                               )}
                             </div>
@@ -1666,7 +1669,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                               <>
                                 <div className="flex items-center justify-between">
                                   <Label className="text-sm font-medium">
-                                    Lecture auto
+                                    {t("editCard.properties.media.autoPlay")}
                                   </Label>
                                   <input
                                     type="checkbox"
@@ -1677,13 +1680,13 @@ export function EditCard({ ctx }: { ctx: any }) {
                                         e.target.checked
                                       )
                                     }
-                                    className="h-4 w-4 rounded border-gray-300"
+                                    className="h-4 w-4 rounded border"
                                   />
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                   <Label className="text-sm font-medium">
-                                    Boucle
+                                    {t("editCard.properties.media.loop")}
                                   </Label>
                                   <input
                                     type="checkbox"
@@ -1694,7 +1697,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                                         e.target.checked
                                       )
                                     }
-                                    className="h-4 w-4 rounded border-gray-300"
+                                    className="h-4 w-4 rounded border"
                                   />
                                 </div>
                               </>
@@ -1708,7 +1711,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                           className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                         >
                           <Layout className="h-4 w-4 mr-2" />
-                          Utiliser comme fond d'écran
+                          {t("editCard.properties.media.useAsBackground")}
                         </Button>
                       </>
                     )}
@@ -1720,19 +1723,18 @@ export function EditCard({ ctx }: { ctx: any }) {
                       className="w-full h-12 mt-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Supprimer l'élément
+                      {t("editCard.properties.deleteElement")}
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border-gray-200 h-full flex items-center justify-center">
+                  <div className="text-center py-8 text-muted-foreground bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border h-full flex items-center justify-center">
                     <div>
-                      <Settings className="h-12 w-12 mx-auto mb-3 opacity-40 text-gray-400" />
-                      <p className="text-base font-medium text-gray-600 mb-1">
-                        Aucun élément sélectionné
+                      <Settings className="h-12 w-12 mx-auto mb-3 opacity-40 text-muted-foreground" />
+                      <p className="text-base font-medium text-muted-foreground mb-1">
+                        {t("editCard.properties.noSelection.title")}
                       </p>
-                      <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                        Cliquez sur un élément dans l'éditeur pour modifier ses
-                        propriétés
+                      <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                        {t("editCard.properties.noSelection.description")}
                       </p>
                     </div>
                   </div>
@@ -1767,7 +1769,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
       {/* Fenêtre du chatbot */}
       {isChatOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border z-50 flex flex-col overflow-hidden">
           {/* Header du chat */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1775,8 +1777,8 @@ export function EditCard({ ctx }: { ctx: any }) {
                 <Bot className="h-6 w-6" />
               </div>
               <div>
-                <span className="font-bold text-lg">Assistant Design</span>
-                <p className="text-blue-100 text-sm">IA créative</p>
+                <span className="font-bold text-lg">{t("editCard.chat.title")}</span>
+                <p className="text-blue-100 text-sm">{t("editCard.chat.subtitle")}</p>
               </div>
             </div>
             <Button
@@ -1810,7 +1812,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                     className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 ${
                       message.role === "user"
                         ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                        : "bg-white border border-gray-200 text-gray-800 shadow-lg"
+                        : "bg-white border border text-gray-800 shadow-lg"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -1820,7 +1822,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                         <User className="h-4 w-4" />
                       )}
                       <span className="text-xs font-medium opacity-80">
-                        {message.role === "assistant" ? "Assistant IA" : "Vous"}
+                        {message.role === "assistant" ? t("editCard.chat.assistant") : t("editCard.chat.you")}
                       </span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -1835,7 +1837,7 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                     {/* Boutons d'action uniquement sur le dernier message d'amélioration */}
                     {showActionButtons && (
-                      <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex gap-2 mt-3 pt-3 border-t border">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1845,7 +1847,7 @@ export function EditCard({ ctx }: { ctx: any }) {
                           className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 h-auto"
                           size="sm"
                         >
-                          ✅ Appliquer
+                          {t("editCard.chat.apply")}
                         </Button>
                         <Button
                           onClick={(e) => {
@@ -1854,10 +1856,10 @@ export function EditCard({ ctx }: { ctx: any }) {
                             // NE PAS fermer le chat
                           }}
                           variant="outline"
-                          className="flex-1 text-xs py-2 h-auto border-gray-300"
+                          className="flex-1 text-xs py-2 h-auto border"
                           size="sm"
                         >
-                          ↩️ Annuler
+                          {t("editCard.chat.cancel")}
                         </Button>
                       </div>
                     )}
@@ -1867,11 +1869,11 @@ export function EditCard({ ctx }: { ctx: any }) {
             })}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl p-4 bg-white border border-gray-200 shadow-lg">
+                <div className="max-w-[85%] rounded-2xl p-4 bg-white border border shadow-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Bot className="h-4 w-4" />
                     <span className="text-xs font-medium opacity-70">
-                      Assistant IA
+                      {t("editCard.chat.assistant")}
                     </span>
                     <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
                   </div>
@@ -1894,14 +1896,14 @@ export function EditCard({ ctx }: { ctx: any }) {
           </div>
 
           {/* Input du chat */}
-          <div className="p-4 border-t border-gray-200 bg-white">
+          <div className="p-4 border-t border bg-white">
             <div className="flex gap-2">
               <Input
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Décrivez votre carte ou demandez des améliorations..."
-                className="flex-1 h-12 rounded-xl border-2 border-gray-200 focus:border-blue-500 bg-gray-50"
+                placeholder={t("editCard.chat.placeholder")}
+                className="flex-1 h-12 rounded-xl border-2 border focus:border-blue-500 bg-secondary"
                 disabled={isLoading}
               />
               <Button
@@ -1918,8 +1920,7 @@ export function EditCard({ ctx }: { ctx: any }) {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-3 text-center">
-              💡 Exemples : "carte d'anniversaire" ou "améliore mon design avec
-              un style moderne"
+              {t("editCard.chat.examples")}
             </p>
           </div>
         </div>
@@ -1928,15 +1929,14 @@ export function EditCard({ ctx }: { ctx: any }) {
       {/* Modal des modèles professionnels - NOUVEAU */}
       {showBackgroundPicker && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border">
+            <div className="flex justify-between items-center p-6 border-b border bg-gradient-to-r from-gray-50 to-white">
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  🎨 Modèles Professionnels
+                <h3 className="text-2xl font-bold text-foreground">
+                  {t("editCard.templates.title")}
                 </h3>
-                <p className="text-gray-600 mt-1">
-                  20+ designs avec images, bordures variées et effet papier
-                  réaliste
+                <p className="text-muted-foreground mt-1">
+                  {t("editCard.templates.subtitle")}
                 </p>
               </div>
               <Button
@@ -1965,9 +1965,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                 ].map((cat) => (
                   <button
                     key={cat}
-                    className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 hover:bg-blue-100 hover:text-blue-700 transition-colors capitalize"
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-tertiary hover:bg-blue-100 hover:text-blue-700 transition-colors capitalize"
                   >
-                    {cat === "all" ? "Tous" : cat}
+                    {cat === "all" ? t("editCard.templates.categories.all") : t(`editCard.templates.categories.${cat}`)}
                   </button>
                 ))}
               </div>
@@ -2138,17 +2138,17 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                     {/* Info du modèle */}
                     <div className="p-4 bg-white">
-                      <p className="text-lg font-bold text-gray-900">
+                      <p className="text-lg font-bold text-foreground">
                         {template.name}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {template.description}
                       </p>
                       <div className="flex gap-2 mt-2">
-                        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                        <span className="text-xs px-2 py-1 bg-tertiary rounded">
                           {template.layout}
                         </span>
-                        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                        <span className="text-xs px-2 py-1 bg-tertiary rounded">
                           {template.borderStyle}
                         </span>
                       </div>
@@ -2158,14 +2158,14 @@ export function EditCard({ ctx }: { ctx: any }) {
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="p-4 border-t border bg-secondary">
               <div className="flex justify-center">
                 <Button
                   onClick={() => setShowBackgroundPicker(false)}
                   variant="outline"
-                  className="rounded-xl border-2 border-gray-300 hover:border-gray-400"
+                  className="rounded-xl border-2 border hover:border-gray-400"
                 >
-                  Fermer
+                  {t("editCard.templates.close")}
                 </Button>
               </div>
             </div>

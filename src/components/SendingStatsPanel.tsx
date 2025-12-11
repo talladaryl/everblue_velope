@@ -9,12 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CheckCircle,
   XCircle,
@@ -114,7 +109,9 @@ export function SendingStatsPanel({
       case "failed":
         return <Badge className="bg-red-100 text-red-800">Échoué</Badge>;
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>
+        );
       default:
         return null;
     }
@@ -122,7 +119,7 @@ export function SendingStatsPanel({
 
   const handleRetry = async (messageId: string) => {
     if (!onRetry) return;
-    
+
     setRetryingIds((prev) => new Set(prev).add(messageId));
     try {
       await onRetry(messageId);
@@ -135,11 +132,14 @@ export function SendingStatsPanel({
     }
   };
 
-  const sentMessages = messages.filter((m) => m.status === "sent" || m.status === "delivered");
+  const sentMessages = messages.filter(
+    (m) => m.status === "sent" || m.status === "delivered"
+  );
   const failedMessages = messages.filter((m) => m.status === "failed");
   const pendingMessages = messages.filter((m) => m.status === "pending");
 
-  const successRate = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
+  const successRate =
+    totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -150,35 +150,45 @@ export function SendingStatsPanel({
             {getChannelIcon(channel)}
             Statistiques d'envoi - {getChannelLabel(channel)}
           </CardTitle>
-          <CardDescription>
-            Résumé des messages envoyés
-          </CardDescription>
+          <CardDescription>Résumé des messages envoyés</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <p className="text-sm text-gray-600">Total</p>
-              <p className="text-3xl font-bold text-blue-600 mt-2">{totalCount}</p>
+              <p className="text-3xl font-bold text-blue-600 mt-2">
+                {totalCount}
+              </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
               <p className="text-sm text-gray-600">Envoyés</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">{sentCount}</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">
+                {sentCount}
+              </p>
             </div>
             <div className="bg-red-50 p-4 rounded-lg border border-red-200">
               <p className="text-sm text-gray-600">Échoués</p>
-              <p className="text-3xl font-bold text-red-600 mt-2">{failedCount}</p>
+              <p className="text-3xl font-bold text-red-600 mt-2">
+                {failedCount}
+              </p>
             </div>
             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
               <p className="text-sm text-gray-600">En attente</p>
-              <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingCount}</p>
+              <p className="text-3xl font-bold text-yellow-600 mt-2">
+                {pendingCount}
+              </p>
             </div>
           </div>
 
           {/* Taux de réussite */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-700">Taux de réussite</p>
-              <p className="text-2xl font-bold text-green-600">{successRate}%</p>
+              <p className="text-sm font-medium text-gray-700">
+                Taux de réussite
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {successRate}%
+              </p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
@@ -212,23 +222,29 @@ export function SendingStatsPanel({
           <Card>
             <CardContent className="pt-6">
               {sentMessages.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">Aucun message envoyé</p>
+                <p className="text-center text-muted-foreground py-8">
+                  Aucun message envoyé
+                </p>
               ) : (
                 <ScrollArea className="h-96">
                   <div className="space-y-3 pr-4">
                     {sentMessages.map((msg) => (
                       <div
                         key={msg.id}
-                        className="flex items-start gap-4 p-3 border rounded-lg hover:bg-gray-50"
+                        className="flex items-start gap-4 p-3 border rounded-lg hover:bg-accent"
                       >
                         <div className="pt-1">{getStatusIcon(msg.status)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-sm truncate">{msg.name}</p>
+                            <p className="font-medium text-sm truncate">
+                              {msg.name}
+                            </p>
                             {getStatusBadge(msg.status)}
                           </div>
-                          <p className="text-sm text-gray-600 truncate">{msg.recipient}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-sm text-gray-600 truncate">
+                            {msg.recipient}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
                             {new Date(msg.timestamp).toLocaleString("fr-FR")}
                           </p>
                         </div>
@@ -246,7 +262,9 @@ export function SendingStatsPanel({
           <Card>
             <CardContent className="pt-6">
               {failedMessages.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">Aucun message échoué</p>
+                <p className="text-center text-muted-foreground py-8">
+                  Aucun message échoué
+                </p>
               ) : (
                 <ScrollArea className="h-96">
                   <div className="space-y-3 pr-4">
@@ -258,14 +276,20 @@ export function SendingStatsPanel({
                         <div className="pt-1">{getStatusIcon(msg.status)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-sm truncate">{msg.name}</p>
+                            <p className="font-medium text-sm truncate">
+                              {msg.name}
+                            </p>
                             {getStatusBadge(msg.status)}
                           </div>
-                          <p className="text-sm text-gray-600 truncate">{msg.recipient}</p>
+                          <p className="text-sm text-gray-600 truncate">
+                            {msg.recipient}
+                          </p>
                           {msg.error && (
-                            <p className="text-xs text-red-600 mt-1">{msg.error}</p>
+                            <p className="text-xs text-red-600 mt-1">
+                              {msg.error}
+                            </p>
                           )}
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {new Date(msg.timestamp).toLocaleString("fr-FR")}
                           </p>
                         </div>
@@ -296,7 +320,9 @@ export function SendingStatsPanel({
           <Card>
             <CardContent className="pt-6">
               {pendingMessages.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">Aucun message en attente</p>
+                <p className="text-center text-muted-foreground py-8">
+                  Aucun message en attente
+                </p>
               ) : (
                 <ScrollArea className="h-96">
                   <div className="space-y-3 pr-4">
@@ -308,11 +334,15 @@ export function SendingStatsPanel({
                         <div className="pt-1">{getStatusIcon(msg.status)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-sm truncate">{msg.name}</p>
+                            <p className="font-medium text-sm truncate">
+                              {msg.name}
+                            </p>
                             {getStatusBadge(msg.status)}
                           </div>
-                          <p className="text-sm text-gray-600 truncate">{msg.recipient}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-sm text-gray-600 truncate">
+                            {msg.recipient}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
                             {new Date(msg.timestamp).toLocaleString("fr-FR")}
                           </p>
                         </div>
