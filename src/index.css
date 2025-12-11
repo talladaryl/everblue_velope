@@ -440,12 +440,16 @@ nimation pour l'ellipse de chargement */
 }
 
 .animate-ellipse-spin-reverse {
-  animation: e}x);
-ur(4plter: bl-fibackdropbkit-  -weblur(4px);
-ter: op-filckdray {
-  baerling-ovoadent */
-.le chargemverlay d* O
+  animation: ellipse-spin-reverse 1s linear infinite;
+}
 
-/
-}elay: 0.5s;nimation-dnite;
-  anfiear iinse 1s ln-rever-spillipse
+/* Backdrop filter utilities */
+.backdrop-blur {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.backdrop-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  animation-delay: 0.5s;
+}
