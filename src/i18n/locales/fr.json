@@ -7,7 +7,13 @@
     "english": "English",
     "french": "Français",
     "italian": "Italiano",
-    "german": "Deutsch"
+    "german": "Deutsch",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer"
   },
   "header": {
     "home": "Accueil",
@@ -323,7 +329,22 @@
     },
     "fullPreview": {
       "title": "Aperçu complet de l'invitation"
+    },
+    "templatePreview": {
+      "clickToOpen": "✨ Cliquez sur l'enveloppe pour l'ouvrir",
+      "noContent": "⚠️ Ce template n'a pas encore de contenu personnalisé.",
+      "clickEdit": "Cliquez sur \"Modifier\" pour créer votre design.",
+      "closePreview": "Fermer l'aperçu"
     }
+  },
+  "saveTemplate": {
+    "title": "Sauvegarder le template",
+    "description": "Conservez ce design pour une utilisation future",
+    "nameLabel": "Nom du template *",
+    "namePlaceholder": "Ex: Invitation Mariage 2025",
+    "titleRequired": "Le nom du template est requis",
+    "saving": "Sauvegarde...",
+    "save": "Sauvegarder"
   },
   "send": {
     "title": "Envoi des invitations",
@@ -471,5 +492,85 @@
     "defaults": {
       "yourTextHere": "Votre texte ici"
     }
-  }
+  },
+  "homePage": {
+    "search": {
+      "placeholder": "Rechercher un modèle..."
+    },
+    "newTemplate": "Nouveau modèle",
+    "categories": {
+      "all": "Tous",
+      "custom": "Mes Templates",
+      "birthday": "Anniversaire",
+      "wedding": "Mariage",
+      "baptism": "Baptême",
+      "anniversary": "Anniversaire de mariage"
+    },
+    "results": {
+      "found": "résultat(s) trouvé(s)",
+      "noResults": "Aucun modèle trouvé",
+      "tryModifying": "Essayez de modifier votre recherche ou de changer de catégorie"
+    },
+    "loading": "Chargement des templates...",
+    "designers": {
+      "serverTemplates": "Mes Templates (Serveur)",
+      "localTemplates": "Mes Templates (Local)"
+    },
+    "addCard": {
+      "createTemplate": "Créer un modèle",
+      "newTemplate": "Nouveau modèle",
+      "custom": "Personnalisé"
+    },
+    "cardDesigns": {
+      "happyBirthday": "Joyeux",
+      "birthday": "Anniversaire",
+      "weddingInvitation": "Vous êtes invités au mariage de",
+      "baptism": "Baptême",
+      "of": "de",
+      "happyAnniversary": "Joyeux Anniversaire",
+      "years": "Ans",
+      "loveAndHappiness": "d'Amour & de Bonheur",
+      "designNotAvailable": "Design non disponible"
+    },
+    "templateCard": {
+      "viewDetails": "Voir détails"
+    },
+    "templateModal": {
+      "backsideSupported": "Verso supporté",
+      "changeColor": "Changer la couleur",
+      "edit": "Modifier",
+      "preview": "Aperçu",
+      "delete": "Supprimer",
+      "deleteConfirmTitle": "Supprimer le template",
+      "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer ce template ? Cette action est irréversible.",
+      "deleteConfirmButton": "Supprimer",
+      "cancelButton": "Annuler",
+      "cannotDeleteDefault": "Ce template ne peut pas être supprimé",
+      "cannotDeleteDefaultDesc": "Seuls les templates personnalisés peuvent être supprimés.",
+      "deleteSuccess": "Template supprimé avec succès",
+      "deleteSuccessDesc": "Le template a été supprimé définitivement.",
+      "deleteError": "Erreur lors de la suppression",
+      "deleteErrorDesc": "Impossible de supprimer le template. Vérifiez la console pour plus de détails.",
+      "customizationInfo": "Vous aurez la possibilité de personnaliser entièrement le texte, l'arrière-plan et l'enveloppe de la carte.",
+      "footerDescription": "Des touches modernes de couleurs texturées donnent à cette carte photo de vacances une ambiance artistique et bohème, tandis que le texte métallique disposé de manière moderne la garde fraîche pour la famille qui est \"la plus joyeuse de toutes\"."
+    }
+  },
+  "nav": {
+    "designs": "Designs",
+    "invitations": "Invitations",
+    "messages": "Messages",
+    "events": "Événements",
+    "inbox": "Boîte de réception",
+    "organizations": "Organisations"
+  },
+  "menu": {
+    "settings": "Paramètres",
+    "theme": "Thème",
+    "language": "Langue",
+    "main": "Principal"
+  },
+  "subtitle": "Créateur d'invitations",
+  "user": "Utilisateur",
+  "account": "Mon compte",
+  "help": "Aide"
 }

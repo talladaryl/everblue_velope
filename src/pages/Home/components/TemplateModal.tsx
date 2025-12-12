@@ -15,6 +15,7 @@ import { useTemplates } from "@/hooks/useTemplates";
 import { toast } from "@/components/ui/sonner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TemplateModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const { deleteTemplate } = useTemplates();
+  const { t } = useLanguage();
   const [currentTemplate, setCurrentTemplate] = useState(template);
   const [selectedColors, setSelectedColors] = useState(template?.colors || []);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -47,9 +49,8 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
   // Gérer la suppression
   const handleDelete = async () => {
     if (!currentTemplate.isCustom) {
-      toast.error("Ce template ne peut pas être supprimé", {
-        description:
-          "Seuls les templates personnalisés peuvent être supprimés.",
+      toast.error(t("homePage.templateModal.cannotDeleteDefault"), {
+        description: t("homePage.templateModal.cannotDeleteDefaultDesc"),
       });
       setShowDeleteConfirm(false);
       return;
@@ -63,8 +64,8 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
       // Appeler l'API de suppression via le hook
       await deleteTemplate(templateId);
 
-      toast.success("Template supprimé avec succès", {
-        description: `"${currentTemplate.title}" a été supprimé définitivement.`,
+      toast.success(t("homePage.templateModal.deleteSuccess"), {
+        description: t("homePage.templateModal.deleteSuccessDesc"),
       });
 
       // Fermer les modals
@@ -77,10 +78,10 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
       }, 500);
     } catch (error: any) {
       console.error("❌ Erreur suppression:", error);
-      toast.error("Erreur lors de la suppression", {
+      toast.error(t("homePage.templateModal.deleteError"), {
         description:
           error.response?.data?.message ||
-          "Impossible de supprimer le template. Vérifiez la console pour plus de détails.",
+          t("homePage.templateModal.deleteErrorDesc"),
       });
       setShowDeleteConfirm(false);
     }
@@ -219,7 +220,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                   <path d="M9 11l3 3L22 4" />
                   <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
                 </svg>
-                <span>Backside supported</span>
+                <span>{t("homePage.templateModal.backsideSupported")}</span>
               </div>
             </div>
           </div>
@@ -268,7 +269,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                           setSelectedColors(newColors);
                         }}
                         className="absolute inset-0 opacity-0 cursor-pointer"
-                        title={`Changer la couleur ${index + 1}`}
+                        title={`${t("homePage.templateModal.changeColor")} ${index + 1}`}
                       />
                       <button
                         className="w-10 h-10 rounded-full border-2 border shadow-sm transition-transform hover:scale-110 hover:border-gray-400"
@@ -296,7 +297,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                   className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-colors shadow-md flex items-center justify-center gap-2"
                 >
                   <Pencil className="w-5 h-5" />
-                  <span>Modifier</span>
+                  <span>{t("homePage.templateModal.edit")}</span>
                 </button>
 
                 {/* Preview */}
@@ -305,7 +306,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                   className="w-full py-3 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   <Eye className="w-5 h-5" />
-                  <span>Aperçu</span>
+                  <span>{t("homePage.templateModal.preview")}</span>
                 </button>
 
                 {/* Supprimer (seulement pour les templates custom) */}
@@ -315,7 +316,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
                     className="w-full py-3 border-2 border-red-500 text-red-600 hover:bg-red-50 font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Trash2 className="w-5 h-5" />
-                    <span>Supprimer</span>
+                    <span>{t("homePage.templateModal.delete")}</span>
                   </button>
                 )}
               </div>
@@ -324,8 +325,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
               <div className="flex items-start gap-2 text-sm text-gray-600">
                 <Pencil className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <p>
-                  Vous aurez la possibilité de personnaliser entièrement le
-                  texte, l'arrière-plan et l'enveloppe de la carte.
+                  {t("homePage.templateModal.customizationInfo")}
                 </p>
               </div>
             </div>
@@ -333,10 +333,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
             {/* Footer Description */}
             <div className="p-6 border-t bg-secondary">
               <p className="text-xs text-gray-600 leading-relaxed">
-                Des touches modernes de couleurs texturées donnent à cette carte
-                photo de vacances une ambiance artistique et bohème, tandis que
-                le texte métallique disposé de manière moderne la garde fraîche
-                pour la famille qui est "la plus joyeuse de toutes".
+                {t("homePage.templateModal.footerDescription")}
               </p>
             </div>
           </div>
@@ -348,10 +345,10 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({
         open={showDeleteConfirm}
         onCancel={() => setShowDeleteConfirm(false)}
         onConfirm={handleDelete}
-        title="Supprimer le template"
-        description={`Êtes-vous sûr de vouloir supprimer "${currentTemplate.title}" ? Cette action est irréversible.`}
-        confirmText="Supprimer"
-        cancelText="Annuler"
+        title={t("homePage.templateModal.deleteConfirmTitle")}
+        description={t("homePage.templateModal.deleteConfirmDescription")}
+        confirmText={t("homePage.templateModal.deleteConfirmButton")}
+        cancelText={t("homePage.templateModal.cancelButton")}
         isDestructive={true}
       />
 

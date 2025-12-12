@@ -5,6 +5,7 @@ import { HOME_TEMPLATES } from "./data/homeTemplates";
 import { TopBar } from "./components/TopBar";
 import { useTemplates } from "@/hooks/useTemplates";
 import { localTemplateStorage } from "@/utils/localTemplateStorage";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Loader2 } from "lucide-react";
 
 export default function HomePage() {
@@ -12,6 +13,7 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const { templates: apiTemplates, loading, fetchTemplates } = useTemplates();
   const [localTemplates, setLocalTemplates] = useState<any[]>([]);
+  const { t } = useLanguage();
 
   // Recharger les templates au montage du composant
   useEffect(() => {
@@ -26,31 +28,31 @@ export default function HomePage() {
   const allTemplates = [
     ...HOME_TEMPLATES,
     // Templates de l'API
-    ...apiTemplates.map((t) => ({
-      id: `api-${t.id}`,
-      apiId: t.id,
+    ...apiTemplates.map((template) => ({
+      id: `api-${template.id}`,
+      apiId: template.id,
       type: "custom",
-      title: t.title,
-      designer: "Mes Templates (Serveur)",
+      title: template.title,
+      designer: t("homePage.designers.serverTemplates"),
       colors: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"],
       category: "custom",
       isCustom: true,
-      data: t.data,
-      model_preview_id: t.model_preview_id,
+      data: template.data,
+      model_preview_id: template.model_preview_id,
     })),
     // Templates locaux
-    ...localTemplates.map((t) => ({
-      id: t.id,
-      localId: t.id,
+    ...localTemplates.map((template) => ({
+      id: template.id,
+      localId: template.id,
       type: "custom",
-      title: t.title,
-      designer: "Mes Templates (Local)",
+      title: template.title,
+      designer: t("homePage.designers.localTemplates"),
       colors: ["#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"],
       category: "custom",
       isCustom: true,
       isLocal: true,
-      data: t.data,
-      model_preview_id: t.model_preview_id,
+      data: template.data,
+      model_preview_id: template.model_preview_id,
     })),
   ];
 
@@ -75,7 +77,7 @@ export default function HomePage() {
       {/* Affichage du nombre de résultats */}
       {search && (
         <div className="text-sm text-gray-600">
-          {filteredTemplates.length} résultat{filteredTemplates.length > 1 ? 's' : ''} trouvé{filteredTemplates.length > 1 ? 's' : ''}
+          {filteredTemplates.length} {t("homePage.results.found")}
         </div>
       )}
 
@@ -83,7 +85,7 @@ export default function HomePage() {
       {loading && (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Chargement des templates...</span>
+          <span className="ml-2 text-gray-600">{t("homePage.loading")}</span>
         </div>
       )}
 
@@ -92,9 +94,9 @@ export default function HomePage() {
       {/* Message si aucun résultat */}
       {!loading && filteredTemplates.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg mb-2">Aucun modèle trouvé</p>
+          <p className="text-muted-foreground text-lg mb-2">{t("homePage.results.noResults")}</p>
           <p className="text-muted-foreground text-sm">
-            Essayez de modifier votre recherche ou de changer de catégorie
+            {t("homePage.results.tryModifying")}
           </p>
         </div>
       )}

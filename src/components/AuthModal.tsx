@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // 👈 Import de Axios
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ====================================================================
 // ⚠️ CONFIGURATION CLÉ
@@ -31,6 +32,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({

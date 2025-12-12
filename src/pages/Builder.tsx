@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -171,6 +172,7 @@ const defaultTemplates: BuilderTemplate[] = [
 
 function Builder() {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState<Step>(0);
@@ -923,7 +925,11 @@ function Builder() {
     ];
 
     return (
-      <nav className="flex items-center bg-white border border rounded-lg p-0.5 mx-auto w-fit">
+      <nav className={`flex items-center border rounded-lg p-0.5 mx-auto w-fit ${
+        theme === "dark" 
+          ? "bg-gray-800 border-gray-700" 
+          : "bg-white border-gray-200"
+      }`}>
         {labels.map((label, i) => {
           const isActive = step === i;
           const isCompleted = step > i;
@@ -937,8 +943,12 @@ function Builder() {
               min-w-[70px] sm:min-w-[95px]
               ${
                 isActive
-                  ? "bg-gray-900 text-white shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  ? theme === "dark"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "bg-gray-900 text-white shadow-sm"
+                  : theme === "dark"
+                    ? "text-gray-300 hover:text-white hover:bg-gray-700"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }
             `}
               aria-current={isActive ? "step" : undefined}
@@ -959,7 +969,9 @@ function Builder() {
                   ? "text-white"
                   : isCompleted
                   ? "text-green-600"
-                  : "text-muted-foreground"
+                  : theme === "dark"
+                    ? "text-gray-300"
+                    : "text-muted-foreground"
               }
             `}
               >
@@ -1031,8 +1043,12 @@ function Builder() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary">
-      <header className="border-b bg-white px-4 py-3">
+    <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900" : "bg-secondary"}`}>
+      <header className={`border-b px-4 py-3 ${
+        theme === "dark" 
+          ? "bg-gray-800 border-gray-700" 
+          : "bg-white border-gray-200"
+      }`}>
         <div className="container flex items-center justify-between gap-4">
           {/* Retour + Titre réduit */}
           <div className="flex items-center gap-2">
@@ -1045,8 +1061,12 @@ function Builder() {
             >
               <Home className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-gray-300 hidden sm:inline">|</span>
-            <h1 className="text-sm font-medium text-gray-700 hidden sm:inline">
+            <span className={`text-sm hidden sm:inline ${
+              theme === "dark" ? "text-gray-500" : "text-gray-300"
+            }`}>|</span>
+            <h1 className={`text-sm font-medium hidden sm:inline ${
+              theme === "dark" ? "text-gray-200" : "text-gray-700"
+            }`}>
               {t("builder.editor")}
             </h1>
           </div>

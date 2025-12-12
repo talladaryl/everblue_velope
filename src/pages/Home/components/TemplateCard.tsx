@@ -1,6 +1,7 @@
 // components/TemplateCard.jsx
 import React from "react";
 import { CardDesigns } from "./CardDesigns";
+import { useLanguage } from "@/contexts/LanguageContext";;
 
 interface TemplateCardProps {
   template: any;
@@ -10,6 +11,7 @@ interface TemplateCardProps {
 
 export default function TemplateCard({ template, onClick, isLandscape = false }: TemplateCardProps) {
   const { title, designer, colors = [], type, data } = template;
+  const { t } = useLanguage();
 
   return (
     <div 
@@ -28,7 +30,7 @@ export default function TemplateCard({ template, onClick, isLandscape = false }:
           <path d="M9 11l3 3L22 4" />
           <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
         </svg>
-        <span className="uppercase tracking-wider">Backside supported</span>
+        <span className="uppercase tracking-wider">{t("homePage.templateModal.backsideSupported")}</span>
       </div>
 
       {/* Card Design Preview avec effet d'ombre double décalée */}
@@ -54,7 +56,7 @@ export default function TemplateCard({ template, onClick, isLandscape = false }:
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white px-3 py-1.5 text-xs font-semibold shadow-lg rounded-full">
-              Voir détails
+              {t("homePage.templateCard.viewDetails")}
             </span>
           </div>
         </div>

@@ -35,7 +35,7 @@ const getNavigationItems = (t: (key: string) => string) => [
   { to: "/events", label: t("nav.events"), icon: Calendar },
   { to: "/inbox", label: t("nav.inbox"), icon: Inbox },
   { to: "/organizations", label: t("nav.organizations"), icon: Building },
-  { to: "/help", label: t("nav.help"), icon: HelpCircle },
+  { to: "/help", label: t("help"), icon: HelpCircle },
 ];
 
 export default function LayoutWrapper() {
@@ -119,7 +119,7 @@ export default function LayoutWrapper() {
                       Everblue
                     </div>
                     <div className="text-xs font-medium text-muted-foreground">
-                      {t("app.subtitle")}
+                      {t("subtitle")}
                     </div>
                   </div>
                 )}
@@ -248,10 +248,10 @@ export default function LayoutWrapper() {
                 {!collapsed && (
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">
-                      {t("user.guest")}
+                      {t("user")}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t("user.account")}
+                      {t("account")}
                     </div>
                   </div>
                 )}
@@ -281,7 +281,7 @@ export default function LayoutWrapper() {
                 <div>
                   <div className="font-bold text-foreground">Everblue</div>
                   <div className="text-xs text-muted-foreground">
-                    {t("app.subtitle")}
+                    {t("subtitle")}
                   </div>
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function LayoutWrapper() {
                         Everblue
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {t("app.subtitle")}
+                        {t("subtitle")}
                       </div>
                     </div>
                   </div>
@@ -356,13 +356,13 @@ export default function LayoutWrapper() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <div className="text-xs font-medium text-muted-foreground mb-1">
-                        {t("menu.theme")}
+                        {t("common.theme")}
                       </div>
                       <ThemeToggle />
                     </div>
                     <div>
                       <div className="text-xs font-medium text-muted-foreground mb-1">
-                        {t("menu.language")}
+                        {t("common.language")}
                       </div>
                       <LanguageSelector />
                     </div>
@@ -409,10 +409,10 @@ export default function LayoutWrapper() {
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-foreground">
-                        {t("user.guest")}
+                        {t("user")}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {t("user.account")}
+                        {t("account")}
                       </div>
                     </div>
                   </div>

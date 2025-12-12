@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CardDesignProps {
   type: string;
@@ -11,6 +12,8 @@ interface CardDesignProps {
 const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
 export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1, data }) => {
+  const { t } = useLanguage();
+  
   const renderDesign = () => {
     // Si c'est un template personnalisé avec des données
     if (type === "custom" && data) {
@@ -127,10 +130,10 @@ export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1
               style={{ backgroundColor: colors[1] }}
             >
               <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Pacifico', cursive" }}>
-                Joyeux
+                {t("homePage.cardDesigns.happyBirthday")}
               </h2>
               <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white text-center" style={{ fontFamily: "'Pacifico', cursive" }}>
-                Anniversaire
+                {t("homePage.cardDesigns.birthday")}
               </h1>
             </div>
           </div>
@@ -144,7 +147,7 @@ export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1
           >
             <div className="absolute top-3 left-3 right-3 bottom-3 sm:top-6 sm:left-6 sm:right-6 sm:bottom-6 border-2" style={{ borderColor: colors[0] }} />
             <h3 className="text-[10px] sm:text-sm lg:text-xl mb-1 sm:mb-3 text-center px-2" style={{ fontFamily: "'Great Vibes', cursive", color: colors[0] }}>
-              Vous êtes invités au mariage de
+              {t("homePage.cardDesigns.weddingInvitation")}
             </h3>
             <h1 className="text-xl sm:text-3xl lg:text-5xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Playfair Display', serif", color: colors[0] }}>
               Jean & Marie
@@ -176,10 +179,10 @@ export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-white/90 backdrop-blur-sm p-3 sm:p-5 lg:p-6 rounded-2xl shadow-xl text-center">
                 <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold mb-1" style={{ fontFamily: "'Quicksand', sans-serif", color: colors[0] }}>
-                  Baptême
+                  {t("homePage.cardDesigns.baptism")}
                 </h2>
                 <p className="text-sm sm:text-lg lg:text-xl" style={{ fontFamily: "'Quicksand', sans-serif", color: colors[2] }}>
-                  de Lucas
+                  {t("homePage.cardDesigns.of")} Lucas
                 </p>
               </div>
             </div>
@@ -203,13 +206,13 @@ export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1
             </div>
             <div className="text-center z-10">
               <h3 className="text-xs sm:text-lg lg:text-2xl text-white mb-1 sm:mb-3" style={{ fontFamily: "'Great Vibes', cursive" }}>
-                Joyeux Anniversaire
+                {t("homePage.cardDesigns.happyAnniversary")}
               </h3>
               <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold text-white mb-2 sm:mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                25 Ans
+                25 {t("homePage.cardDesigns.years")}
               </h1>
               <p className="text-[10px] sm:text-base lg:text-xl text-white" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                d'Amour & de Bonheur
+                {t("homePage.cardDesigns.loveAndHappiness")}
               </p>
             </div>
           </div>
@@ -220,7 +223,7 @@ export const CardDesigns: React.FC<CardDesignProps> = ({ type, colors, scale = 1
       default:
         return (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <p>Design non disponible</p>
+            <p>{t("homePage.cardDesigns.designNotAvailable")}</p>
           </div>
         );
     }

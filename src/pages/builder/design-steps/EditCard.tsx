@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   Plus,
   Image as ImageIcon,
@@ -163,6 +164,7 @@ const UNIFIED_TEMPLATES = [
 
 export function EditCard({ ctx }: { ctx: any }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const {
     canvasRef,
     onMouseMove,
@@ -481,7 +483,11 @@ export function EditCard({ ctx }: { ctx: any }) {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/80 px-3 py-2 rounded-full border">
+              <div className={`flex items-center gap-2 text-sm text-muted-foreground px-3 py-2 rounded-full border ${
+                theme === "dark" 
+                  ? "bg-gray-800/80 border-gray-700" 
+                  : "bg-white/80 border-gray-200"
+              }`}>
                 <Move className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("editCard.dragToMove")}</span>
               </div>
@@ -536,36 +542,86 @@ export function EditCard({ ctx }: { ctx: any }) {
                 >
                   {it.type === "text" ? (
                     <div
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => {
-                        try {
-                          setItems((prev: any[]) =>
-                            prev.map((p: any) =>
-                              p.id === it.id
-                                ? { ...p, text: e.currentTarget.innerText }
-                                : p
-                            )
-                          );
-                        } catch (error) {
-                          console.error("Erreur édition texte:", error);
-                        }
-                      }}
-                      className="outline-none min-w-[80px] bg-transparent px-4 py-3 transition-all duration-200"
-                      style={{
-                        color: it.color || "#000000",
-                        fontSize: `${it.fontSize || 16}px`,
-                        fontFamily: it.fontFamily || "Arial",
-                        fontWeight: it.fontWeight || "normal",
-                        textAlign: it.textAlign || "left",
-                        textShadow: it.textShadow || "none",
-                        lineHeight: 1.4,
-                        wordBreak: "break-word",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {it.text || t("editCard.elements.text")}
-                    </div>
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => {
+                      try {
+                        // Vérifications en chaîne
+                        const target = e?.currentTarget;
+                        const itemId = it?.id;
+                        
+                        if (!target || !itemId) return;
+                        
+                        // Récupérer le texte de manière sécurisée
+                        const newText = target.innerText?.trim() || 
+                                      target.textContent?.trim() || 
+                                      "";
+                        
+                        // Mettre à jour seulement si le texte a changé
+                        const currentText = it?.text || "";
+                        if (newText === currentText) return;
+                        
+                        setItems((prev: any[]) => {
+                          try {
+                            // S'assurer que prev est un tableau valide
+                            if (!Array.isArray(prev) || prev.length === 0) {
+                              console.warn("Items array is invalid or empty");
+                              return prev || [];
+                            }
+                            
+                            return prev.map((p: any) => {
+                              // Vérifier chaque élément du tableau
+                              if (!p || typeof p !== 'object') return p;
+                              if (!p.id || p.id !== itemId) return p;
+                              
+                              return {
+                                ...p,
+                                text: newText,
+                                // Mettre à jour le timestamp si nécessaire
+                                updatedAt: new Date().toISOString()
+                              };
+                            });
+                          } catch (mapError) {
+                            console.error("Error mapping items:", mapError);
+                            return prev; // Retourner l'ancien état en cas d'erreur
+                          }
+                        });
+                        
+                      } catch (error) {
+                        console.error("Erreur lors de l'édition du texte:", error);
+                        // Ne pas throw l'erreur pour éviter de casser l'UI
+                      }
+                    }}
+                    className="outline-none min-w-[80px] bg-transparent px-4 py-3 transition-all duration-200"
+                    style={{
+                      color: it?.color || "#000000",
+                      fontSize: `${it?.fontSize || 16}px`,
+                      fontFamily: it?.fontFamily || "system-ui, -apple-system, sans-serif",
+                      fontWeight: it?.fontWeight || "normal",
+                      textAlign: it?.textAlign || "left",
+                      textShadow: it?.textShadow || "none",
+                      lineHeight: 1.4,
+                      wordBreak: "break-word",
+                      whiteSpace: "pre-wrap",
+                      minHeight: "24px",
+                      display: "inline-block",
+                      // Ajouter un indicateur visuel pour les éléments vides
+                      opacity: (!it?.text || it.text.trim() === "") ? 0.7 : 1,
+                    }}
+                    // Attributes pour améliorer l'accessibilité
+                    role="textbox"
+                    aria-label={`Élément texte éditable: ${it?.text || "vide"}`}
+                    tabIndex={0}
+                    // Éviter le copier/coller de mise en forme indésirable
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const text = e.clipboardData.getData('text/plain');
+                      document.execCommand('insertText', false, text);
+                    }}
+                    data-placeholder={!it?.text || it.text.trim() === "" ? t("builder.defaults.yourTextHere") : ""}
+                  >
+                    {it?.text || ""}
+                  </div>
                   ) : it.type === "video" ? (
                     <div className="relative">
                       <video
@@ -624,8 +680,16 @@ export function EditCard({ ctx }: { ctx: any }) {
               ))}
 
               {items.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground bg-gradient-to-br from-transparent to-white/50">
-                  <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60">
+                <div className={`absolute inset-0 flex items-center justify-center text-muted-foreground ${
+                  theme === "dark" 
+                    ? "bg-gradient-to-br from-transparent to-gray-800/50" 
+                    : "bg-gradient-to-br from-transparent to-white/50"
+                }`}>
+                  <div className={`text-center p-8 backdrop-blur-sm rounded-2xl shadow-lg border ${
+                    theme === "dark" 
+                      ? "bg-gray-800/80 border-gray-700/60" 
+                      : "bg-white/80 border-white/60"
+                  }`}>
                     <ImageIcon2 className="h-16 w-16 mx-auto mb-4 opacity-60 text-muted-foreground" />
                     <p className="text-lg font-medium text-muted-foreground mb-2">
                       {t("editCard.emptyCanvas.title")}
@@ -1262,7 +1326,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer ${
+                                  theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                                }`}
                               />
                               <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.opacity || 100}%
@@ -1286,7 +1352,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer ${
+                                  theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                                }`}
                               />
                               <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.rotation || 0}°
@@ -1769,7 +1837,11 @@ export function EditCard({ ctx }: { ctx: any }) {
 
       {/* Fenêtre du chatbot */}
       {isChatOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border z-50 flex flex-col overflow-hidden">
+        <div className={`fixed bottom-6 right-6 w-96 h-[500px] rounded-2xl shadow-2xl border z-50 flex flex-col overflow-hidden ${
+          theme === "dark" 
+            ? "bg-gray-800 border-gray-700" 
+            : "bg-white border-gray-200"
+        }`}>
           {/* Header du chat */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1812,7 +1884,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                     className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 ${
                       message.role === "user"
                         ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
-                        : "bg-white border border text-gray-800 shadow-lg"
+                        : theme === "dark"
+                          ? "bg-gray-700 border-gray-600 text-gray-100 shadow-lg"
+                          : "bg-white border border-gray-200 text-gray-800 shadow-lg"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">

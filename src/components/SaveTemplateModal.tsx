@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SaveTemplateModalProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function SaveTemplateModal({
   data,
   modelPreviewId,
 }: SaveTemplateModalProps) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +44,7 @@ export function SaveTemplateModal({
     setError(null);
 
     if (!title.trim()) {
-      setError("Le nom du template est requis");
+      setError(t("saveTemplate.titleRequired"));
       return;
     }
 
@@ -56,7 +58,7 @@ export function SaveTemplateModal({
       setTitle("");
       onOpenChange(false);
     } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
+      setError(err.message || t("common.error"));
     }
   };
 
@@ -64,9 +66,9 @@ export function SaveTemplateModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Sauvegarder le template</DialogTitle>
+          <DialogTitle>{t("saveTemplate.title")}</DialogTitle>
           <DialogDescription>
-            Conservez ce design pour une utilisation future
+            {t("saveTemplate.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -79,12 +81,12 @@ export function SaveTemplateModal({
           )}
 
           <div>
-            <Label htmlFor="template-title">Nom du template *</Label>
+            <Label htmlFor="template-title">{t("saveTemplate.nameLabel")}</Label>
             <Input
               id="template-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Invitation Mariage 2025"
+              placeholder={t("saveTemplate.namePlaceholder")}
               className="mt-2"
             />
           </div>
@@ -96,16 +98,16 @@ export function SaveTemplateModal({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Sauvegarde...
+                  {t("saveTemplate.saving")}
                 </>
               ) : (
-                "Sauvegarder"
+                t("saveTemplate.save")
               )}
             </Button>
           </div>

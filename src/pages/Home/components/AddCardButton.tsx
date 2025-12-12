@@ -1,9 +1,11 @@
 import React from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const AddCardButton: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div 
@@ -20,15 +22,15 @@ export const AddCardButton: React.FC = () => {
             <Plus className="w-8 h-8 text-neutral-500 group-hover:text-white transition-colors duration-300" />
           </div>
           <p className="text-sm font-medium text-neutral-600 group-hover:text-blue-600 transition-colors duration-300">
-            Créer un modèle
+            {t("homePage.addCard.createTemplate")}
           </p>
         </div>
       </div>
 
       {/* Infos */}
       <div className="mt-2 flex flex-col gap-0.5">
-        <h3 className="font-medium text-xs text-neutral-800 leading-tight">Nouveau modèle</h3>
-        <p className="text-[10px] text-neutral-500">Personnalisé</p>
+        <h3 className="font-medium text-xs text-neutral-800 leading-tight">{t("homePage.addCard.newTemplate")}</h3>
+        <p className="text-[10px] text-neutral-500">{t("homePage.addCard.custom")}</p>
       </div>
     </div>
   );

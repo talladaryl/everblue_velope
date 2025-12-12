@@ -12,6 +12,8 @@ import { Globe, Check } from "lucide-react";
 const languages = [
   { code: "fr" as const, name: "Français", flag: "🇫🇷" },
   { code: "en" as const, name: "English", flag: "🇬🇧" },
+  { code: "it" as const, name: "Italiano", flag: "🇮🇹" },
+  { code: "de" as const, name: "Deutsch", flag: "🇩🇪" },
 ];
 
 export const LanguageSelector: React.FC = () => {
@@ -22,7 +24,7 @@ export const LanguageSelector: React.FC = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="h-9 w-9">
           <Globe className="h-4 w-4" />
-          <span className="sr-only">{t("menu.language")}</span>
+          <span className="sr-only">{t("common.language")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

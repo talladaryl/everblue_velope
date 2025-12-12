@@ -7,7 +7,13 @@
     "english": "English",
     "french": "Français",
     "italian": "Italiano",
-    "german": "Deutsch"
+    "german": "Deutsch",
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "close": "Chiudi"
   },
   "header": {
     "home": "Home",
@@ -189,5 +195,382 @@
       },
       "close": "Chiudi"
     }
-  }
+  },
+  "guests": {
+    "title": "Gestione Ospiti",
+    "subtitle": "Aggiungi e gestisci i tuoi ospiti per l'invio degli inviti",
+    "stats": {
+      "total": "Totale",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "valid": "Valido"
+    },
+    "alerts": {
+      "noGuests": "Inizia aggiungendo ospiti o importando una lista.",
+      "noValidGuests": "Nessun ospite valido. Si prega di correggere le informazioni.",
+      "validGuests": "ospite(i) pronto(i) a ricevere l'invito."
+    },
+    "search": {
+      "placeholder": "Cerca un ospite...",
+      "filterAll": "Tutti i canali",
+      "filterWhatsapp": "Solo WhatsApp",
+      "filterEmail": "Solo Email"
+    },
+    "import": {
+      "title": "Importa ospiti",
+      "csv": "CSV",
+      "google": "Google",
+      "excel": "Excel",
+      "icloud": "iCloud",
+      "csvDescription": "Formato atteso: Nome, Email o Telefono",
+      "connectGoogle": "Connetti a Google Contatti",
+      "connectIcloud": "Connetti a iCloud Contatti",
+      "excelNotAvailable": "L'importazione Excel sarà disponibile nella prossima versione. Usa l'esportazione CSV per ora.",
+      "serviceWillBeImplemented": "Funzionalità di importazione da",
+      "importSuccess": "ospiti importati con successo!",
+      "importError": "Errore nell'importazione. Controlla il formato del file.",
+      "noGuestsToExport": "Nessun ospite da esportare"
+    },
+    "table": {
+      "title": "Lista ospiti",
+      "description": "ospite(i) trovato(i)",
+      "descriptionFiltered": "ospite(i) trovato(i)",
+      "headers": {
+        "status": "Stato",
+        "channel": "Canale",
+        "name": "Nome & Cognome",
+        "contact": "Telefono / Email",
+        "countryCode": "Prefisso Paese",
+        "actions": "Azioni"
+      },
+      "status": {
+        "new": "Nuovo",
+        "valid": "✓ Valido",
+        "invalid": "✗ Non valido"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "email": "Email"
+      },
+      "placeholders": {
+        "name": "Nome & Cognome",
+        "phone": "XX XX XX XX XX",
+        "email": "mario@esempio.it"
+      },
+      "actions": {
+        "add": "Aggiungi",
+        "edit": "Modifica (doppio clic)",
+        "delete": "Elimina",
+        "save": "Salva",
+        "cancel": "Annulla"
+      },
+      "empty": {
+        "noResults": "Nessun ospite corrisponde ai tuoi filtri",
+        "noGuests": "Nessun ospite ancora. Aggiungi il tuo primo ospite sopra."
+      }
+    },
+    "form": {
+      "validation": {
+        "nameRequired": "Inserisci un nome",
+        "invalidPhone": "Numero di telefono non valido. Formato: +XX XXX XX XX XX",
+        "invalidEmail": "Indirizzo email non valido"
+      },
+      "confirmDelete": "Sei sicuro di voler eliminare questo ospite?"
+    },
+    "navigation": {
+      "backToDesign": "← Torna al design",
+      "continueToPreview": "Continua all'anteprima →"
+    }
+  },
+  "preview": {
+    "title": "Anteprima Invito",
+    "subtitle": "Controlla come il tuo invito verrà visualizzato per ogni ospite",
+    "noGuest": {
+      "title": "Nessun ospite trovato",
+      "description": "Torna al passaggio precedente per aggiungere ospiti.",
+      "backButton": "← Indietro"
+    },
+    "configuration": {
+      "title": "Configurazione",
+      "subtitle": "Seleziona un ospite e un modello",
+      "guestLabel": "Ospite",
+      "modelLabel": "Modello design",
+      "deviceLabel": "Anteprima su",
+      "devices": {
+        "mobile": "Mobile",
+        "tablet": "Tablet",
+        "desktop": "Desktop"
+      }
+    },
+    "guestInfo": {
+      "title": "Informazioni Ospite",
+      "location": "Luogo:",
+      "date": "Data:",
+      "time": "Ora:"
+    },
+    "validation": {
+      "warning": "Attenzione:",
+      "success": "Perfetto! Tutte le variabili sono state sostituite con successo per questo ospite."
+    },
+    "livePreview": {
+      "title": "Anteprima Live",
+      "description": "Visualizzazione su"
+    },
+    "models": {
+      "default": {
+        "name": "Anteprima Semplice",
+        "description": "Visualizzazione di base"
+      },
+      "selectModel": "Seleziona un modello"
+    },
+    "navigation": {
+      "backToDetails": "← Torna ai dettagli",
+      "continueToSend": "Continua all'invio"
+    },
+    "fullPreview": {
+      "title": "Anteprima completa dell'invito"
+    },
+    "templatePreview": {
+      "clickToOpen": "✨ Clicca sulla busta per aprirla",
+      "noContent": "⚠️ Questo modello non ha ancora contenuti personalizzati.",
+      "clickEdit": "Clicca \"Modifica\" per creare il tuo design.",
+      "closePreview": "Chiudi anteprima"
+    }
+  },
+  "saveTemplate": {
+    "title": "Salva Modello",
+    "description": "Conserva questo design per uso futuro",
+    "nameLabel": "Nome modello *",
+    "namePlaceholder": "Es: Invito Matrimonio 2025",
+    "titleRequired": "Il nome del modello è obbligatorio",
+    "saving": "Salvataggio...",
+    "save": "Salva"
+  },
+  "send": {
+    "title": "Invia Inviti",
+    "subtitle": "Configura e invia i tuoi inviti agli ospiti",
+    "noGuests": "Nessun ospite trovato. Torna al passaggio precedente per aggiungere ospiti.",
+    "noValidGuests": "Nessun ospite valido trovato per il canale. Controlla i dati degli ospiti.",
+    "summary": {
+      "title": "Riepilogo Invio",
+      "subtitle": "Controlla le informazioni prima dell'invio",
+      "elements": "Elementi",
+      "validGuests": "Ospiti validi",
+      "variables": "Variabili",
+      "sendMode": "Modalità invio",
+      "personalized": "Personalizzato",
+      "group": "Gruppo",
+      "personalizedMode": "Personalizzato"
+    },
+    "sendMode": {
+      "title": "Modalità Invio",
+      "subtitle": "Scegli tra invio di gruppo o personalizzato per ospite",
+      "group": {
+        "title": "Invio di Gruppo",
+        "description": "Invia lo stesso messaggio a tutti gli ospiti di un canale specifico.",
+        "channelLabel": "Canale invio gruppo",
+        "whatsapp": "WhatsApp",
+        "email": "Email",
+        "subjectLabel": "Oggetto",
+        "messageLabel": "Messaggio di gruppo",
+        "messagePlaceholder": "Scrivi il tuo messaggio...",
+        "templates": {
+          "casual": "Modello informale",
+          "formal": "Modello formale"
+        }
+      },
+      "personalized": {
+        "title": "Personalizzazione per ospite",
+        "description": "Abilita la personalizzazione per ogni ospite, poi clicca la freccia per modificare il messaggio.",
+        "personalizedCount": "messaggio(i) personalizzato(i)",
+        "personalizeAll": "Personalizza tutti",
+        "standardAll": "Tutti standard",
+        "personalizedBadge": "Personalizzato",
+        "subjectLabel": "Oggetto messaggio",
+        "messageLabel": "Messaggio personalizzato per",
+        "messagePlaceholder": "Scrivi il tuo messaggio personalizzato per...",
+        "templates": {
+          "casual": "Informale",
+          "formal": "Formale",
+          "reminder": "Promemoria"
+        },
+        "noValidGuests": "Nessun ospite valido per personalizzare i messaggi."
+      }
+    },
+    "settings": {
+      "title": "Impostazioni Invio",
+      "subtitle": "Configura dettagli tecnici di invio",
+      "channelLabel": "Canale invio tecnico",
+      "subjectLabel": "Oggetto email",
+      "defaultSubjectLabel": "Oggetto predefinito",
+      "subjectPlaceholder": "Es: Sei invitato al nostro matrimonio!",
+      "eventLabel": "Evento associato",
+      "eventOptions": {
+        "new": "Crea nuovo evento",
+        "event1": "Evento 1",
+        "event2": "Evento 2",
+        "event3": "Evento 3"
+      },
+      "variablesTitle": "Variabili disponibili:"
+    },
+    "preview": {
+      "title": "Anteprima Messaggio",
+      "subtitle": "Ecco cosa verrà inviato ai tuoi ospiti",
+      "groupSend": "Invio di gruppo",
+      "personalizedSend": "Invio personalizzato",
+      "emailTo": "Email a",
+      "whatsappTo": "WhatsApp a",
+      "guests": "ospiti",
+      "completePreview": "ANTEPRIMA COMPLETA",
+      "modelDescription": "Questo modello di carta verrà inviato ai tuoi ospiti con variabili personalizzate",
+      "emailDescription": "Questo modello di invito verrà inviato via email con variabili sostituite",
+      "whatsappDescription": "Questo messaggio di testo verrà inviato via WhatsApp a tutti i contatti",
+      "personalizedDescription": "I messaggi saranno personalizzati per ogni ospite secondo le tue impostazioni"
+    },
+    "action": {
+      "title": "Azione di Invio",
+      "subtitle": "Avvia l'invio dei tuoi inviti",
+      "sendButton": "Invia a",
+      "sendPersonalized": "Invia messaggio(i) personalizzato(i)",
+      "sending": "Invio in corso...",
+      "maxRecipientsError": "Il numero di destinatari supera 500. Riduci il numero di ospiti."
+    },
+    "navigation": {
+      "backToPreview": "← Torna all'Anteprima",
+      "home": "Home"
+    },
+    "channels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "mms": "MMS"
+    },
+    "defaults": {
+      "invitationTitle": "Il mio invito",
+      "emailSubject": "Sei invitato!",
+      "defaultSubject": "Sei invitato al nostro evento",
+      "defaultBody": "Ciao, sei invitato al nostro evento. Vedi i dettagli qui sotto.",
+      "subjectPlaceholder": "Sei invitato!",
+      "messagePlaceholder": "Scrivi il tuo messaggio...",
+      "selectChannel": "Seleziona un canale",
+      "selectChannelError": "Seleziona un canale di invio",
+      "subjectRequired": "L'oggetto è obbligatorio",
+      "modelWillBeSent": "Questo modello di carta ({{model}}) verrà inviato ai tuoi ospiti con variabili personalizzate",
+      "personalizedToSend": "messaggio(i) personalizzato(i) da inviare",
+      "noPersonalizedMessage": "Nessun messaggio personalizzato",
+      "enablePersonalization": "Abilita la personalizzazione per vedere l'anteprima",
+      "whatsappWillBeSent": "Questo messaggio verrà inviato via WhatsApp",
+      "messageTemplates": {
+        "whatsapp": {
+          "casual": "Ciao {name}! Ti invito al mio evento il {date}. Rispondi per confermare!",
+          "formal": "Ciao {name}, sei cordialmente invitato al nostro evento il {date}. Speriamo di vederti lì.",
+          "reminder": "Promemoria: {name}, non dimenticare il nostro evento domani!"
+        },
+        "email": {
+          "casual": "Ciao {name},\n\nSei invitato al mio evento!\n\nA presto!",
+          "formal": "Gentile {name},\n\nAbbiamo il piacere di invitarti al nostro evento.\n\nCordiali saluti,",
+          "invitation": "Gentile {name},\n\nCon piacere ti invito a partecipare a questo evento speciale."
+        }
+      }
+    }
+  },
+  "builder": {
+    "title": "Creazione Invito",
+    "subtitle": "Personalizza la tua carta e busta",
+    "editor": "Editor",
+    "steps": {
+      "design": "Design",
+      "details": "Dettagli",
+      "preview": "Anteprima",
+      "send": "Invia"
+    },
+    "actions": {
+      "save": "Salva",
+      "saving": "Salvataggio...",
+      "saveModel": "Salva modello",
+      "back": "Indietro"
+    },
+    "defaults": {
+      "yourTextHere": "Il tuo testo qui"
+    }
+  },
+  "homePage": {
+    "search": {
+      "placeholder": "Cerca un modello..."
+    },
+    "newTemplate": "Nuovo modello",
+    "categories": {
+      "all": "Tutti",
+      "custom": "I Miei Modelli",
+      "birthday": "Compleanno",
+      "wedding": "Matrimonio",
+      "baptism": "Battesimo",
+      "anniversary": "Anniversario di Matrimonio"
+    },
+    "results": {
+      "found": "risultato(i) trovato(i)",
+      "noResults": "Nessun modello trovato",
+      "tryModifying": "Prova a modificare la tua ricerca o cambiare categoria"
+    },
+    "loading": "Caricamento modelli...",
+    "designers": {
+      "serverTemplates": "I Miei Modelli (Server)",
+      "localTemplates": "I Miei Modelli (Locale)"
+    },
+    "addCard": {
+      "createTemplate": "Crea modello",
+      "newTemplate": "Nuovo modello",
+      "custom": "Personalizzato"
+    },
+    "cardDesigns": {
+      "happyBirthday": "Buon",
+      "birthday": "Compleanno",
+      "weddingInvitation": "Sei invitato al matrimonio di",
+      "baptism": "Battesimo",
+      "of": "di",
+      "happyAnniversary": "Buon Anniversario",
+      "years": "Anni",
+      "loveAndHappiness": "di Amore & Felicità",
+      "designNotAvailable": "Design non disponibile"
+    },
+    "templateCard": {
+      "viewDetails": "Visualizza dettagli"
+    },
+    "templateModal": {
+      "backsideSupported": "Retro supportato",
+      "changeColor": "Cambia colore",
+      "edit": "Modifica",
+      "preview": "Anteprima",
+      "delete": "Elimina",
+      "deleteConfirmTitle": "Elimina modello",
+      "deleteConfirmDescription": "Sei sicuro di voler eliminare questo modello? Questa azione è irreversibile.",
+      "deleteConfirmButton": "Elimina",
+      "cancelButton": "Annulla",
+      "cannotDeleteDefault": "Questo modello non può essere eliminato",
+      "cannotDeleteDefaultDesc": "Solo i modelli personalizzati possono essere eliminati.",
+      "deleteSuccess": "Modello eliminato con successo",
+      "deleteSuccessDesc": "Il modello è stato eliminato definitivamente.",
+      "deleteError": "Errore durante l'eliminazione",
+      "deleteErrorDesc": "Impossibile eliminare il modello. Controlla la console per maggiori dettagli.",
+      "customizationInfo": "Potrai personalizzare completamente il testo, lo sfondo e la busta della carta.",
+      "footerDescription": "Tocchi moderni di colori strutturati conferiscono a questa cartolina fotografica vacanziera un'atmosfera artistica e bohémien, mentre il testo metallico moderno la mantiene fresca per la famiglia che è \"la più felice di tutte\"."
+    }
+  },
+  "nav": {
+    "designs": "Design",
+    "invitations": "Inviti",
+    "messages": "Messaggi",
+    "events": "Eventi",
+    "inbox": "Posta in arrivo",
+    "organizations": "Organizzazioni"
+  },
+  "menu": {
+    "settings": "Impostazioni",
+    "theme": "Tema",
+    "language": "Lingua",
+    "main": "Principale"
+  },
+  "subtitle": "Creatore di inviti",
+  "user": "Utente",
+  "account": "Il mio account",
+  "help": "Aiuto"
 }

@@ -453,3 +453,15 @@ nimation pour l'ellipse de chargement */
   background-color: rgba(0, 0, 0, 0.5);
   animation-delay: 0.5s;
 }
+/*
+ Styles pour les éléments texte éditables avec placeholder */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+}
+
+[contenteditable][data-placeholder]:empty:focus::before {
+  content: "";
+}

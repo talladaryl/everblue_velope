@@ -4,10 +4,16 @@
     "language": "Sprache",
     "light": "Hell",
     "dark": "Dunkel",
-    "english": "English",
-    "french": "Français",
-    "italian": "Italiano",
-    "german": "Deutsch"
+    "english": "Englisch",
+    "french": "Französisch",
+    "italian": "Italienisch",
+    "german": "Deutsch",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "close": "Schließen"
   },
   "header": {
     "home": "Startseite",
@@ -15,38 +21,38 @@
     "pricing": "Preise",
     "help": "Hilfe",
     "login": "Anmelden",
-    "signup": "Meine Einladung erstellen",
+    "signup": "Einladung erstellen",
     "mySpace": "Mein Bereich"
   },
   "hero": {
     "badge": "Premium-Einladungsplattform",
     "title": "Erstellen Sie",
     "titleHighlight": "außergewöhnliche Einladungen",
-    "description": "Verwandeln Sie Ihre Veranstaltungen mit personalisierten Einladungen, die von Experten entworfen wurden. Einfach, schnell und professionell.",
+    "description": "Verwandeln Sie Ihre Veranstaltungen mit personalisierten, von Experten gestalteten Einladungen. Einfach, schnell und professionell.",
     "startFree": "Kostenlos starten",
-    "viewModels": "Vorlagen anzeigen",
+    "viewModels": "Vorlagen ansehen",
     "modelsCount": "500+",
     "modelsLabel": "Premium-Vorlagen",
     "clientsCount": "25k+",
     "clientsLabel": "Zufriedene Kunden",
-    "rating": "4.9",
+    "rating": "4,9",
     "ratingLabel": "Kundenbewertungen"
   },
   "features": {
     "title": "Warum Everblue wählen?",
-    "description": "Entdecken Sie die Funktionen, die unsere Plattform zur idealen Lösung für Ihre besonderen Veranstaltungen machen",
+    "description": "Entdecken Sie die Funktionen, die unsere Plattform zur idealen Lösung für Ihre besonderen Anlässe machen",
     "design": "Anpassbares Design",
     "designDesc": "Ändern Sie jedes Detail, um eine einzigartige Einladung zu erstellen",
     "speed": "Schnelle Erstellung",
-    "speedDesc": "Erstellen Sie professionelle Einladungen in wenigen Minuten",
+    "speedDesc": "Erzeugen Sie professionelle Einladungen in nur wenigen Minuten",
     "download": "Unbegrenzter Download",
     "downloadDesc": "Greifen Sie auf alle Ihre Designs in hoher Qualität zu",
     "share": "Einfaches Teilen",
-    "shareDesc": "Senden Sie Ihre Einladungen per E-Mail oder in sozialen Medien"
+    "shareDesc": "Senden Sie Ihre Einladungen per E-Mail oder soziale Medien"
   },
   "catalog": {
     "title": "Unsere Einladungsvorlagen",
-    "description": "Entdecken Sie unsere Sammlung von Premium-Vorlagen, die von professionellen Designern für alle Ihre besonderen Veranstaltungen entworfen wurden",
+    "description": "Entdecken Sie unsere Sammlung von Premium-Vorlagen, die von professionellen Designern für alle Ihre besonderen Anlässe gestaltet wurden",
     "search": "Vorlage suchen...",
     "all": "Alle",
     "wedding": "Hochzeit",
@@ -67,8 +73,8 @@
   },
   "editCard": {
     "title": "Professioneller Karten-Editor",
-    "subtitle": "Erstellen Sie atemberaubende Designs mit nur wenigen Klicks",
-    "dragToMove": "Ziehen zum Bewegen",
+    "subtitle": "Erstellen Sie beeindruckende Designs mit nur wenigen Klicks",
+    "dragToMove": "Zum Bewegen ziehen",
     "emptyCanvas": {
       "title": "Leere Karte",
       "description": "Beginnen Sie mit dem Hinzufügen von Inhalten oder wählen Sie eine professionelle Vorlage"
@@ -95,7 +101,7 @@
       "selectedType": "ausgewählt",
       "noSelection": {
         "title": "Kein Element ausgewählt",
-        "description": "Klicken Sie auf ein Element im Editor, um seine Eigenschaften zu ändern"
+        "description": "Klicken Sie im Editor auf ein Element, um dessen Eigenschaften zu ändern"
       },
       "text": {
         "content": "Inhalt",
@@ -107,19 +113,19 @@
         "alignment": "Ausrichtung",
         "weight": "Gewicht",
         "shadowOptions": {
-          "none": "Keine",
+          "none": "Kein",
           "light": "Leicht",
           "medium": "Mittel",
           "strong": "Stark",
           "veryStrong": "Sehr stark",
-          "whiteGlow": "Weißes Leuchten",
-          "goldGlow": "Goldenes Leuchten",
-          "blackOutline": "Schwarzer Umriss",
-          "goldOutline": "Goldener Umriss"
+          "whiteGlow": "Weißer Schein",
+          "goldGlow": "Goldener Schein",
+          "blackOutline": "Schwarze Kontur",
+          "goldOutline": "Goldene Kontur"
         },
         "alignmentOptions": {
           "left": "Links",
-          "center": "Mitte",
+          "center": "Zentriert",
           "right": "Rechts"
         },
         "weightOptions": {
@@ -138,13 +144,13 @@
         "horizontal": "Horizontal",
         "vertical": "Vertikal",
         "style": "Stil",
-        "borderRadius": "Randradius",
-        "borderColor": "Randfarbe",
-        "thickness": "Dicke",
+        "borderRadius": "Rahmenradius",
+        "borderColor": "Rahmenfarbe",
+        "thickness": "Stärke",
         "shadows": "Schatten",
         "enableShadow": "Schatten aktivieren",
         "shadowColor": "Schattenfarbe",
-        "blur": "Unschärfe",
+        "blur": "Weichzeichnen",
         "offsetX": "Versatz X",
         "offsetY": "Versatz Y",
         "filters": "Filter",
@@ -157,8 +163,8 @@
         "pause": "Pause",
         "sound": "Ton",
         "mute": "Stumm",
-        "autoPlay": "Automatische Wiedergabe",
-        "loop": "Schleife",
+        "autoPlay": "Automatisch abspielen",
+        "loop": "Wiederholen",
         "useAsBackground": "Als Hintergrund verwenden"
       },
       "deleteElement": "Element löschen"
@@ -166,8 +172,8 @@
     "chat": {
       "title": "Design-Assistent",
       "subtitle": "Kreative KI",
-      "placeholder": "Beschreiben Sie Ihre Karte oder bitten Sie um Verbesserungen...",
-      "examples": "💡 Beispiele: \"Geburtstagskarte\" oder \"verbessere mein Design mit einem modernen Stil\"",
+      "placeholder": "Beschreiben Sie Ihre Karte oder fragen Sie nach Verbesserungen...",
+      "examples": "💡 Beispiele: \"Geburtstagskarte\" oder \"Verbessern Sie mein Design mit modernem Stil\"",
       "assistant": "KI-Assistent",
       "you": "Sie",
       "apply": "✅ Anwenden",
@@ -175,7 +181,7 @@
     },
     "templates": {
       "title": "🎨 Professionelle Vorlagen",
-      "subtitle": "20+ Designs mit Bildern, verschiedenen Rändern und realistischem Papiereffekt",
+      "subtitle": "20+ Designs mit Bildern, vielfältigen Rahmen und realistischem Papiereffekt",
       "categories": {
         "all": "Alle",
         "birthday": "Geburtstag",
@@ -189,5 +195,382 @@
       },
       "close": "Schließen"
     }
-  }
+  },
+  "guests": {
+    "title": "Gästeverwaltung",
+    "subtitle": "Fügen Sie Gäste hinzu und verwalten Sie sie zum Versenden von Einladungen",
+    "stats": {
+      "total": "Gesamt",
+      "whatsapp": "WhatsApp",
+      "email": "E-Mail",
+      "valid": "Gültig"
+    },
+    "alerts": {
+      "noGuests": "Beginnen Sie mit dem Hinzufügen von Gästen oder dem Importieren einer Liste.",
+      "noValidGuests": "Keine gültigen Gäste. Bitte korrigieren Sie die Informationen.",
+      "validGuests": "Gast/Gäste bereit zum Empfang der Einladung."
+    },
+    "search": {
+      "placeholder": "Gast suchen...",
+      "filterAll": "Alle Kanäle",
+      "filterWhatsapp": "Nur WhatsApp",
+      "filterEmail": "Nur E-Mail"
+    },
+    "import": {
+      "title": "Gäste importieren",
+      "csv": "CSV",
+      "google": "Google",
+      "excel": "Excel",
+      "icloud": "iCloud",
+      "csvDescription": "Erwartetes Format: Name, E-Mail oder Telefon",
+      "connectGoogle": "Mit Google Kontakten verbinden",
+      "connectIcloud": "Mit iCloud Kontakten verbinden",
+      "excelNotAvailable": "Excel-Import wird in der nächsten Version verfügbar sein. Verwenden Sie vorerst CSV-Export.",
+      "serviceWillBeImplemented": "Import-Funktionalität von",
+      "importSuccess": "Gäste erfolgreich importiert!",
+      "importError": "Importfehler. Überprüfen Sie das Dateiformat.",
+      "noGuestsToExport": "Keine Gäste zum Exportieren"
+    },
+    "table": {
+      "title": "Gästeliste",
+      "description": "Gast/Gäste gefunden",
+      "descriptionFiltered": "Gast/Gäste gefunden",
+      "headers": {
+        "status": "Status",
+        "channel": "Kanal",
+        "name": "Name & Nachname",
+        "contact": "Telefon / E-Mail",
+        "countryCode": "Ländervorwahl",
+        "actions": "Aktionen"
+      },
+      "status": {
+        "new": "Neu",
+        "valid": "✓ Gültig",
+        "invalid": "✗ Ungültig"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "email": "E-Mail"
+      },
+      "placeholders": {
+        "name": "Name & Vorname",
+        "phone": "XX XX XX XX XX",
+        "email": "max@beispiel.de"
+      },
+      "actions": {
+        "add": "Hinzufügen",
+        "edit": "Bearbeiten (Doppelklick)",
+        "delete": "Löschen",
+        "save": "Speichern",
+        "cancel": "Abbrechen"
+      },
+      "empty": {
+        "noResults": "Keine Gäste entsprechen Ihren Filtern",
+        "noGuests": "Noch keine Gäste. Fügen Sie Ihren ersten Gast oben hinzu."
+      }
+    },
+    "form": {
+      "validation": {
+        "nameRequired": "Bitte geben Sie einen Namen ein",
+        "invalidPhone": "Ungültige Telefonnummer. Format: +XX XXX XX XX XX",
+        "invalidEmail": "Ungültige E-Mail-Adresse"
+      },
+      "confirmDelete": "Möchten Sie diesen Gast wirklich löschen?"
+    },
+    "navigation": {
+      "backToDesign": "← Zurück zum Design",
+      "continueToPreview": "Weiter zur Vorschau →"
+    }
+  },
+  "preview": {
+    "title": "Einladungsvorschau",
+    "subtitle": "Überprüfen Sie, wie Ihre Einladung für jeden Gast angezeigt wird",
+    "noGuest": {
+      "title": "Kein Gast gefunden",
+      "description": "Bitte kehren Sie zum vorherigen Schritt zurück, um Gäste hinzuzufügen.",
+      "backButton": "← Zurück"
+    },
+    "configuration": {
+      "title": "Konfiguration",
+      "subtitle": "Wählen Sie einen Gast und ein Modell",
+      "guestLabel": "Gast",
+      "modelLabel": "Designmodell",
+      "deviceLabel": "Vorschau auf",
+      "devices": {
+        "mobile": "Smartphone",
+        "tablet": "Tablet",
+        "desktop": "Desktop"
+      }
+    },
+    "guestInfo": {
+      "title": "Gastinformationen",
+      "location": "Ort:",
+      "date": "Datum:",
+      "time": "Uhrzeit:"
+    },
+    "validation": {
+      "warning": "Warnung:",
+      "success": "Perfekt! Alle Variablen wurden für diesen Gast erfolgreich ersetzt."
+    },
+    "livePreview": {
+      "title": "Live-Vorschau",
+      "description": "Darstellung auf"
+    },
+    "models": {
+      "default": {
+        "name": "Einfache Vorschau",
+        "description": "Grundlegende Darstellung"
+      },
+      "selectModel": "Modell auswählen"
+    },
+    "navigation": {
+      "backToDetails": "← Zurück zu den Details",
+      "continueToSend": "Weiter zum Senden"
+    },
+    "fullPreview": {
+      "title": "Vollständige Einladungsvorschau"
+    },
+    "templatePreview": {
+      "clickToOpen": "✨ Klicken Sie auf den Umschlag, um ihn zu öffnen",
+      "noContent": "⚠️ Diese Vorlage hat noch keinen personalisierten Inhalt.",
+      "clickEdit": "Klicken Sie auf \"Bearbeiten\", um Ihr Design zu erstellen.",
+      "closePreview": "Vorschau schließen"
+    }
+  },
+  "saveTemplate": {
+    "title": "Vorlage speichern",
+    "description": "Bewahren Sie dieses Design für die zukünftige Verwendung auf",
+    "nameLabel": "Vorlagenname *",
+    "namePlaceholder": "z.B. Hochzeitseinladung 2025",
+    "titleRequired": "Vorlagenname ist erforderlich",
+    "saving": "Wird gespeichert...",
+    "save": "Speichern"
+  },
+  "send": {
+    "title": "Einladungen senden",
+    "subtitle": "Konfigurieren und senden Sie Ihre Einladungen an Gäste",
+    "noGuests": "Keine Gäste gefunden. Bitte kehren Sie zum vorherigen Schritt zurück, um Gäste hinzuzufügen.",
+    "noValidGuests": "Keine gültigen Gäste für Kanal gefunden. Bitte überprüfen Sie Ihre Gastdaten.",
+    "summary": {
+      "title": "Sendezusammenfassung",
+      "subtitle": "Überprüfen Sie die Informationen vor dem Senden",
+      "elements": "Elemente",
+      "validGuests": "Gültige Gäste",
+      "variables": "Variablen",
+      "sendMode": "Sendemodus",
+      "personalized": "Personalisiert",
+      "group": "Gruppe",
+      "personalizedMode": "Personalisiert"
+    },
+    "sendMode": {
+      "title": "Sendemodus",
+      "subtitle": "Wählen Sie zwischen Gruppen- oder personalisiertem Versand pro Gast",
+      "group": {
+        "title": "Gruppensendung",
+        "description": "Senden Sie dieselbe Nachricht an alle Gäste eines bestimmten Kanals.",
+        "channelLabel": "Gruppensendekanal",
+        "whatsapp": "WhatsApp",
+        "email": "E-Mail",
+        "subjectLabel": "Betreff",
+        "messageLabel": "Gruppennachricht",
+        "messagePlaceholder": "Schreiben Sie Ihre Nachricht...",
+        "templates": {
+          "casual": "Lässige Vorlage",
+          "formal": "Formelle Vorlage"
+        }
+      },
+      "personalized": {
+        "title": "Personalisierung pro Gast",
+        "description": "Aktivieren Sie die Personalisierung für jeden Gast, dann klicken Sie auf den Pfeil, um die Nachricht zu bearbeiten.",
+        "personalizedCount": "personalisierte Nachricht(en)",
+        "personalizeAll": "Alle personalisieren",
+        "standardAll": "Alle Standard",
+        "personalizedBadge": "Personalisiert",
+        "subjectLabel": "Nachrichtenbetreff",
+        "messageLabel": "Personalisierte Nachricht für",
+        "messagePlaceholder": "Schreiben Sie Ihre personalisierte Nachricht für...",
+        "templates": {
+          "casual": "Lässig",
+          "formal": "Formell",
+          "reminder": "Erinnerung"
+        },
+        "noValidGuests": "Keine gültigen Gäste zum Personalisieren von Nachrichten."
+      }
+    },
+    "settings": {
+      "title": "Versandeinstellungen",
+      "subtitle": "Konfigurieren Sie technische Versanddetails",
+      "channelLabel": "Technischer Versandkanal",
+      "subjectLabel": "E-Mail-Betreff",
+      "defaultSubjectLabel": "Standardbetreff",
+      "subjectPlaceholder": "z.B.: Sie sind zu unserer Hochzeit eingeladen!",
+      "eventLabel": "Zugehörige Veranstaltung",
+      "eventOptions": {
+        "new": "Neue Veranstaltung erstellen",
+        "event1": "Veranstaltung 1",
+        "event2": "Veranstaltung 2",
+        "event3": "Veranstaltung 3"
+      },
+      "variablesTitle": "Verfügbare Variablen:"
+    },
+    "preview": {
+      "title": "Nachrichtenvorschau",
+      "subtitle": "So wird es an Ihre Gäste gesendet",
+      "groupSend": "Gruppensendung",
+      "personalizedSend": "Personalisierte Sendung",
+      "emailTo": "E-Mail an",
+      "whatsappTo": "WhatsApp an",
+      "guests": "Gäste",
+      "completePreview": "VOLLSTÄNDIGE VORSCHAU",
+      "modelDescription": "Dieses Kartenmodell wird mit personalisierten Variablen an Ihre Gäste gesendet",
+      "emailDescription": "Diese Einladungsvorlage wird per E-Mail mit ersetzten Variablen gesendet",
+      "whatsappDescription": "Diese Textnachricht wird per WhatsApp an alle Kontakte gesendet",
+      "personalizedDescription": "Nachrichten werden für jeden Gast gemäß Ihren Einstellungen personalisiert"
+    },
+    "action": {
+      "title": "Sendeaktion",
+      "subtitle": "Starten Sie den Versand Ihrer Einladungen",
+      "sendButton": "Senden an",
+      "sendPersonalized": "Personalisierte Nachricht(en) senden",
+      "sending": "Wird gesendet...",
+      "maxRecipientsError": "Anzahl der Empfänger übersteigt 500. Bitte reduzieren Sie die Anzahl der Gäste."
+    },
+    "navigation": {
+      "backToPreview": "← Zurück zur Vorschau",
+      "home": "Startseite"
+    },
+    "channels": {
+      "email": "E-Mail",
+      "whatsapp": "WhatsApp",
+      "mms": "MMS"
+    },
+    "defaults": {
+      "invitationTitle": "Meine Einladung",
+      "emailSubject": "Sie sind eingeladen!",
+      "defaultSubject": "Sie sind zu unserer Veranstaltung eingeladen",
+      "defaultBody": "Hallo, Sie sind zu unserer Veranstaltung eingeladen. Details finden Sie unten.",
+      "subjectPlaceholder": "Sie sind eingeladen!",
+      "messagePlaceholder": "Schreiben Sie Ihre Nachricht...",
+      "selectChannel": "Kanal auswählen",
+      "selectChannelError": "Bitte wählen Sie einen Sendekanal aus",
+      "subjectRequired": "Betreff ist erforderlich",
+      "modelWillBeSent": "Dieses Kartenmodell ({{model}}) wird mit personalisierten Variablen an Ihre Gäste gesendet",
+      "personalizedToSend": "zu sendende personalisierte Nachricht(en)",
+      "noPersonalizedMessage": "Keine personalisierte Nachricht",
+      "enablePersonalization": "Aktivieren Sie die Personalisierung, um die Vorschau zu sehen",
+      "whatsappWillBeSent": "Diese Nachricht wird per WhatsApp gesendet",
+      "messageTemplates": {
+        "whatsapp": {
+          "casual": "Hallo {name}! Ich lade Sie zu meiner Veranstaltung am {date} ein. Antworten Sie zur Bestätigung!",
+          "formal": "Hallo {name}, Sie sind herzlich zu unserer Veranstaltung am {date} eingeladen. Wir freuen uns auf Ihr Kommen.",
+          "reminder": "Erinnerung: {name}, vergessen Sie nicht unsere Veranstaltung morgen!"
+        },
+        "email": {
+          "casual": "Hallo {name},\n\nSie sind zu meiner Veranstaltung eingeladen!\n\nBis bald!",
+          "formal": "Sehr geehrte(r) {name},\n\nWir haben die Freude, Sie zu unserer Veranstaltung einzuladen.\n\nMit freundlichen Grüßen,",
+          "invitation": "Sehr geehrte(r) {name},\n\nEs ist mir eine Freude, Sie zu dieser besonderen Veranstaltung einzuladen."
+        }
+      }
+    }
+  },
+  "builder": {
+    "title": "Einladungserstellung",
+    "subtitle": "Personalisiere deine Karte und deinen Umschlag",
+    "editor": "Editor",
+    "steps": {
+      "design": "Design",
+      "details": "Details",
+      "preview": "Vorschau",
+      "send": "Senden"
+    },
+    "actions": {
+      "save": "Speichern",
+      "saving": "Wird gespeichert...",
+      "saveModel": "Modell speichern",
+      "back": "Zurück"
+    },
+    "defaults": {
+      "yourTextHere": "Ihr Text hier"
+    }
+  },
+  "homePage": {
+    "search": {
+      "placeholder": "Vorlage suchen..."
+    },
+    "newTemplate": "Neue Vorlage",
+    "categories": {
+      "all": "Alle",
+      "custom": "Meine Vorlagen",
+      "birthday": "Geburtstag",
+      "wedding": "Hochzeit",
+      "baptism": "Taufe",
+      "anniversary": "Hochzeitstag"
+    },
+    "results": {
+      "found": "Ergebnis(se) gefunden",
+      "noResults": "Keine Vorlage gefunden",
+      "tryModifying": "Versuchen Sie, Ihre Suche zu ändern oder die Kategorie zu wechseln"
+    },
+    "loading": "Vorlagen werden geladen...",
+    "designers": {
+      "serverTemplates": "Meine Vorlagen (Server)",
+      "localTemplates": "Meine Vorlagen (Lokal)"
+    },
+    "addCard": {
+      "createTemplate": "Vorlage erstellen",
+      "newTemplate": "Neue Vorlage",
+      "custom": "Benutzerdefiniert"
+    },
+    "cardDesigns": {
+      "happyBirthday": "Alles Gute",
+      "birthday": "zum Geburtstag",
+      "weddingInvitation": "Sie sind eingeladen zur Hochzeit von",
+      "baptism": "Taufe",
+      "of": "von",
+      "happyAnniversary": "Alles Gute",
+      "years": "Jahre",
+      "loveAndHappiness": "Liebe & Glück",
+      "designNotAvailable": "Design nicht verfügbar"
+    },
+    "templateCard": {
+      "viewDetails": "Details anzeigen"
+    },
+    "templateModal": {
+      "backsideSupported": "Rückseite unterstützt",
+      "changeColor": "Farbe ändern",
+      "edit": "Bearbeiten",
+      "preview": "Vorschau",
+      "delete": "Löschen",
+      "deleteConfirmTitle": "Vorlage löschen",
+      "deleteConfirmDescription": "Möchten Sie diese Vorlage wirklich löschen? Diese Aktion ist unwiderruflich.",
+      "deleteConfirmButton": "Löschen",
+      "cancelButton": "Abbrechen",
+      "cannotDeleteDefault": "Diese Vorlage kann nicht gelöscht werden",
+      "cannotDeleteDefaultDesc": "Nur benutzerdefinierte Vorlagen können gelöscht werden.",
+      "deleteSuccess": "Vorlage erfolgreich gelöscht",
+      "deleteSuccessDesc": "Die Vorlage wurde endgültig gelöscht.",
+      "deleteError": "Fehler beim Löschen",
+      "deleteErrorDesc": "Vorlage kann nicht gelöscht werden. Überprüfen Sie die Konsole für weitere Details.",
+      "customizationInfo": "Sie können den Text, den Hintergrund und den Umschlag der Karte vollständig anpassen.",
+      "footerDescription": "Moderne Akzente von strukturierten Farben verleihen dieser Urlaubsfotokarte eine künstlerische und bohemehafte Ausstrahlung, während der moderne metallische Text sie für die Familie, die \"die glücklichste von allen\" ist, frisch hält."
+    }
+  },
+  "nav": {
+    "designs": "Designs",
+    "invitations": "Einladungen",
+    "messages": "Nachrichten",
+    "events": "Veranstaltungen",
+    "inbox": "Posteingang",
+    "organizations": "Organisationen"
+  },
+  "menu": {
+    "settings": "Einstellungen",
+    "theme": "Design",
+    "language": "Sprache",
+    "main": "Hauptmenü"
+  },
+  "subtitle": "Einladungsersteller",
+  "user": "Benutzer",
+  "account": "Mein Konto",
+  "help": "Hilfe"
 }

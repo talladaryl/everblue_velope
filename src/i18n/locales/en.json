@@ -7,7 +7,13 @@
     "english": "English",
     "french": "Français",
     "italian": "Italiano",
-    "german": "Deutsch"
+    "german": "Deutsch",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
   },
   "header": {
     "home": "Home",
@@ -247,7 +253,7 @@
         "email": "Email"
       },
       "placeholders": {
-        "name": "John Doe",
+        "name": "Nom & Prenoms",
         "phone": "XX XX XX XX XX",
         "email": "john@example.com"
       },
@@ -323,7 +329,22 @@
     },
     "fullPreview": {
       "title": "Full invitation preview"
+    },
+    "templatePreview": {
+      "clickToOpen": "✨ Click on the envelope to open it",
+      "noContent": "⚠️ This template doesn't have personalized content yet.",
+      "clickEdit": "Click \"Edit\" to create your design.",
+      "closePreview": "Close preview"
     }
+  },
+  "saveTemplate": {
+    "title": "Save Template",
+    "description": "Keep this design for future use",
+    "nameLabel": "Template name *",
+    "namePlaceholder": "Ex: Wedding Invitation 2025",
+    "titleRequired": "Template name is required",
+    "saving": "Saving...",
+    "save": "Save"
   },
   "send": {
     "title": "Send Invitations",
@@ -471,5 +492,85 @@
     "defaults": {
       "yourTextHere": "Your text here"
     }
-  }
+  },
+  "homePage": {
+    "search": {
+      "placeholder": "Search a template..."
+    },
+    "newTemplate": "New template",
+    "categories": {
+      "all": "All",
+      "custom": "My Templates",
+      "birthday": "Birthday",
+      "wedding": "Wedding",
+      "baptism": "Baptism",
+      "anniversary": "Wedding Anniversary"
+    },
+    "results": {
+      "found": "result(s) found",
+      "noResults": "No template found",
+      "tryModifying": "Try modifying your search or changing category"
+    },
+    "loading": "Loading templates...",
+    "designers": {
+      "serverTemplates": "My Templates (Server)",
+      "localTemplates": "My Templates (Local)"
+    },
+    "addCard": {
+      "createTemplate": "Create template",
+      "newTemplate": "New template",
+      "custom": "Custom"
+    },
+    "cardDesigns": {
+      "happyBirthday": "Happy",
+      "birthday": "Birthday",
+      "weddingInvitation": "You are invited to the wedding of",
+      "baptism": "Baptism",
+      "of": "of",
+      "happyAnniversary": "Happy Anniversary",
+      "years": "Years",
+      "loveAndHappiness": "of Love & Happiness",
+      "designNotAvailable": "Design not available"
+    },
+    "templateCard": {
+      "viewDetails": "View details"
+    },
+    "templateModal": {
+      "backsideSupported": "Backside supported",
+      "changeColor": "Change color",
+      "edit": "Edit",
+      "preview": "Preview",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete template",
+      "deleteConfirmDescription": "Are you sure you want to delete this template? This action is irreversible.",
+      "deleteConfirmButton": "Delete",
+      "cancelButton": "Cancel",
+      "cannotDeleteDefault": "This template cannot be deleted",
+      "cannotDeleteDefaultDesc": "Only custom templates can be deleted.",
+      "deleteSuccess": "Template deleted successfully",
+      "deleteSuccessDesc": "The template has been permanently deleted.",
+      "deleteError": "Error during deletion",
+      "deleteErrorDesc": "Unable to delete template. Check console for more details.",
+      "customizationInfo": "You will be able to fully customize the text, background and envelope of the card.",
+      "footerDescription": "Modern touches of textured colors give this vacation photo card an artistic and bohemian vibe, while the modern metallic text keeps it fresh for the family that is \"the happiest of all\"."
+    }
+  },
+  "nav": {
+    "designs": "Designs",
+    "invitations": "Invitations",
+    "messages": "Messages",
+    "events": "Events",
+    "inbox": "Inbox",
+    "organizations": "Organizations"
+  },
+  "menu": {
+    "settings": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "main": "Main"
+  },
+  "subtitle": "Invitation Creator",
+  "user": "User",
+  "account": "My account",
+  "help": "Help"
 }
