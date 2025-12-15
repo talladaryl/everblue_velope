@@ -467,12 +467,24 @@ export function EditCard({ ctx }: { ctx: any }) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative min-h-screen">
       {/* Zone de design principale */}
       <div className="lg:col-span-2">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50">
-          <CardHeader className="pb-4 border-b bg-gradient-to-r from-gray-50 to-white">
+        <Card className={`border-0 shadow-lg ${
+          theme === "dark" 
+            ? "bg-gradient-to-br from-gray-800 to-gray-900/50" 
+            : "bg-gradient-to-br from-white to-gray-50/50"
+        }`}>
+          <CardHeader className={`pb-4 border-b ${
+            theme === "dark" 
+              ? "bg-gradient-to-r from-gray-800 to-gray-700 border-gray-700" 
+              : "bg-gradient-to-r from-gray-50 to-white border-gray-200"
+          }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Sparkles className="h-5 w-5 text-blue-600" />
+                <div className={`p-2 rounded-lg ${
+                  theme === "dark" ? "bg-blue-900/30" : "bg-blue-100"
+                }`}>
+                  <Sparkles className={`h-5 w-5 ${
+                    theme === "dark" ? "text-blue-400" : "text-blue-600"
+                  }`} />
                 </div>
                 <div>
                   <CardTitle className="text-xl font-bold text-foreground">
@@ -707,32 +719,52 @@ export function EditCard({ ctx }: { ctx: any }) {
 
       {/* Panneau de contrôle sur le côté - HAUTEUR AMÉLIORÉE */}
       <div className="space-y-4 h-180">
-        <Card className="border-0 shadow-lg bg-gradient-to-b from-white to-gray-50/50 overflow-hidden h-180">
+        <Card className={`border-0 shadow-lg overflow-hidden h-180 ${
+          theme === "dark" 
+            ? "bg-gradient-to-b from-gray-800 to-gray-900/50" 
+            : "bg-gradient-to-b from-white to-gray-50/50"
+        }`}>
           <CardContent className="p-0 h-180 flex flex-col">
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
               className="w-full flex-1 flex flex-col"
             >
-              <div className="border-b bg-gradient-to-r from-gray-50 to-white">
+              <div className={`border-b ${
+                theme === "dark" 
+                  ? "bg-gradient-to-r from-gray-800 to-gray-700 border-gray-700" 
+                  : "bg-gradient-to-r from-gray-50 to-white border-gray-200"
+              }`}>
                 <TabsList className="grid grid-cols-3 w-full bg-transparent p-0 h-12">
                   <TabsTrigger
                     value="elements"
-                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all"
+                    className={`rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 font-medium transition-all ${
+                      theme === "dark"
+                        ? "data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300 text-gray-300 hover:text-white"
+                        : "data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 text-gray-600 hover:text-gray-900"
+                    }`}
                   >
                     <Zap className="h-4 w-4 mr-2" />
                     {t("editCard.tabs.elements")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="background"
-                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all"
+                    className={`rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 font-medium transition-all ${
+                      theme === "dark"
+                        ? "data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300 text-gray-300 hover:text-white"
+                        : "data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 text-gray-600 hover:text-gray-900"
+                    }`}
                   >
                     <Palette className="h-4 w-4 mr-2" />
                     {t("editCard.tabs.background")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="properties"
-                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all"
+                    className={`rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 font-medium transition-all ${
+                      theme === "dark"
+                        ? "data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300 text-gray-300 hover:text-white"
+                        : "data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 text-gray-600 hover:text-gray-900"
+                    }`}
                   >
                     <Settings className="h-4 w-4 mr-2" />
                     {t("editCard.tabs.properties")}
@@ -858,7 +890,9 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                 <label className="flex items-center justify-center gap-3 w-full h-12 py-2 border-2 border-dashed border rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200">
                   <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className={`text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}>
                     {t("editCard.background.customBackground")}
                   </span>
                   <input
@@ -899,7 +933,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                       <>
                         {/* SECTION TEXTE */}
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-blue-500 pl-2">
+                          <h4 className={`font-semibold text-md border-l-4 border-blue-500 pl-2 ${
+                            theme === "dark" ? "text-gray-200" : "text-gray-800"
+                          }`}>
                             {t("editCard.properties.text.content")}
                           </h4>
                           <div>
@@ -1271,7 +1307,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                       <>
                         {/* PROPRIÉTÉS DE BASE */}
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-green-500 pl-2">
+                          <h4 className={`font-semibold text-md border-l-4 border-green-500 pl-2 ${
+                            theme === "dark" ? "text-gray-200" : "text-gray-800"
+                          }`}>
                             {t("editCard.properties.media.base")}
                           </h4>
 
@@ -1395,7 +1433,9 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                         {/* STYLE ET BORDURES */}
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-purple-500 pl-2">
+                          <h4 className={`font-semibold text-md border-l-4 border-purple-500 pl-2 ${
+                            theme === "dark" ? "text-gray-200" : "text-gray-800"
+                          }`}>
                             {t("editCard.properties.media.style")}
                           </h4>
 
@@ -1415,7 +1455,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer ${
+                                  theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                                }`}
                               />
                               <span className="text-sm font-medium w-12 text-center bg-tertiary px-2 py-1 rounded-lg">
                                 {selected.borderRadius || 0}px
@@ -1463,7 +1505,9 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                         {/* OMBRES */}
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-yellow-500 pl-2">
+                          <h4 className={`font-semibold text-md border-l-4 border-yellow-500 pl-2 ${
+                            theme === "dark" ? "text-gray-200" : "text-gray-800"
+                          }`}>
                             {t("editCard.properties.media.shadows")}
                           </h4>
 
@@ -1566,7 +1610,9 @@ export function EditCard({ ctx }: { ctx: any }) {
 
                         {/* FILTRES */}
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-md text-gray-800 border-l-4 border-red-500 pl-2">
+                          <h4 className={`font-semibold text-md border-l-4 border-red-500 pl-2 ${
+                            theme === "dark" ? "text-gray-200" : "text-gray-800"
+                          }`}>
                             {t("editCard.properties.media.filters")}
                           </h4>
 
@@ -1695,7 +1741,9 @@ export function EditCard({ ctx }: { ctx: any }) {
                         {(selected.type === "video" ||
                           selected.type === "gif") && (
                           <div className="space-y-4">
-                            <h4 className="font-semibold text-md text-gray-800 border-l-4 border-blue-500 pl-2">
+                            <h4 className={`font-semibold text-md border-l-4 border-blue-500 pl-2 ${
+                              theme === "dark" ? "text-gray-200" : "text-gray-800"
+                            }`}>
                               {t("editCard.properties.media.mediaControls")}
                             </h4>
 

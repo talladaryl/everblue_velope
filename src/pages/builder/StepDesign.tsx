@@ -8,12 +8,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Palette, Eye, ArrowLeft, ArrowRight, Download } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Sous-composants
 import { EditCard } from "./design-steps/EditCard";
 // import { EditEnvelope } from "./design-steps/EditEnvelope";
 
 export default function StepDesign({ ctx }: { ctx: any }) {
+  const { t } = useLanguage();
   const [currentSubStep, setCurrentSubStep] = useState<"card" | "envelope">(
     "card"
   );
